@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import motokaLogo from "../../public/images/motoka-logo.png";
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -13,7 +14,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
       <header className="container mx-auto py-6 px-4 md:px-6 flex justify-between items-center">
         <Link href="/" className="h-12">
           <Image 
-            src="/images/motoka-logo.png" 
+            src={motokaLogo} 
             alt="Motoka Driver Logo" 
             width={180} 
             height={45} 
@@ -50,7 +51,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <div className="mb-4 md:mb-0">
               <Image 
-                src="/images/motoka-logo.png" 
+                src={motokaLogo} 
                 alt="Motoka Driver Logo" 
                 width={120} 
                 height={30} 

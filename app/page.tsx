@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import motokaLogo from "../public/images/motoka-logo.png";
+import motokaIcon from "../public/images/motoka-icon.png";
 
 export default function Home() {
   return (
@@ -8,7 +10,7 @@ export default function Home() {
       <header className="container mx-auto py-6 px-4 md:px-6 flex justify-between items-center">
         <div className="h-12">
           <Image 
-            src="/images/motoka-logo.png" 
+            src={motokaLogo} 
             alt="Motoka Driver Logo" 
             width={180} 
             height={45} 
@@ -60,7 +62,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-primary/20 rounded-3xl -rotate-6"></div>
               <div className="absolute inset-0 bg-white border-2 border-primary/30 rounded-3xl shadow-lg flex items-center justify-center p-8">
                 <Image 
-                  src="/images/motoka-icon.png" 
+                  src={motokaIcon} 
                   alt="Motoka Driver App Icon" 
                   width={240} 
                   height={240} 
@@ -171,7 +173,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <div className="mb-4 md:mb-0">
               <Image 
-                src="/images/motoka-logo.png" 
+                src={motokaLogo} 
                 alt="Motoka Driver Logo" 
                 width={120} 
                 height={30} 
