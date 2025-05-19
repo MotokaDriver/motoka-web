@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -16,9 +17,9 @@ export default function Home() {
           />
         </div>
         <nav className="hidden md:flex space-x-6">
-          <a href="#how-it-works" className="text-gray-700 hover:text-primary transition-colors">Como Funciona</a>
-          <a href="#download" className="text-gray-700 hover:text-primary transition-colors">Download</a>
-          <a href="#contact" className="text-gray-700 hover:text-primary transition-colors">Contato</a>
+          <a href="#how-it-works" className="text-gray-800 hover:text-primary transition-colors">Como Funciona</a>
+          <a href="#download" className="text-gray-800 hover:text-primary transition-colors">Download</a>
+          <a href="#contact" className="text-gray-800 hover:text-primary transition-colors">Contato</a>
         </nav>
       </header>
 
@@ -29,7 +30,7 @@ export default function Home() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900">
               Conectando <span className="text-primary">Motoboys</span> e <span className="text-primary">Estabelecimentos</span>
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-800">
               O Motoka Driver conecta motoboys com estabelecimentos que precisam de serviços de entrega. Encontre trabalhos diários ou crie serviços com o valor que deseja pagar.
             </p>
             <div className="pt-4 flex flex-col sm:flex-row gap-4" id="download">
@@ -81,7 +82,7 @@ export default function Home() {
                 <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-lg">1</span>
                 Para Motoboys
               </h3>
-              <ul className="space-y-3 text-gray-600">
+              <ul className="space-y-3 text-gray-800">
                 <li className="flex items-start gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -113,7 +114,7 @@ export default function Home() {
                 <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-lg">2</span>
                 Para Estabelecimentos
               </h3>
-              <ul className="space-y-3 text-gray-600">
+              <ul className="space-y-3 text-gray-800">
                 <li className="flex items-start gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -148,7 +149,7 @@ export default function Home() {
       <section className="py-16 bg-white" id="contact">
         <div className="container mx-auto px-4 md:px-6 text-center">
           <h2 className="text-3xl font-bold mb-6 text-gray-900">Entre em Contato</h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-800 mb-8 max-w-2xl mx-auto">
             Tem alguma dúvida sobre o Motoka Driver? Nossa equipe está pronta para ajudar.
           </p>
           <a 
@@ -166,17 +167,30 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-gray-50 py-8 border-t border-gray-200">
-        <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <Image 
-              src="/images/motoka-logo.png" 
-              alt="Motoka Driver Logo" 
-              width={120} 
-              height={30} 
-              className="h-8 w-auto"
-            />
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+            <div className="mb-4 md:mb-0">
+              <Image 
+                src="/images/motoka-logo.png" 
+                alt="Motoka Driver Logo" 
+                width={120} 
+                height={30} 
+                className="h-8 w-auto"
+              />
+            </div>
+            <p className="text-gray-800 text-sm">© {new Date().getFullYear()} Motoka Driver. Todos os direitos reservados.</p>
           </div>
-          <p className="text-gray-600 text-sm">© {new Date().getFullYear()} Motoka Driver. Todos os direitos reservados.</p>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-gray-800">
+            <Link href="/termos-de-uso" className="hover:text-primary transition-colors">
+              Termos de Uso
+            </Link>
+            <Link href="/politica-de-privacidade" className="hover:text-primary transition-colors">
+              Política de Privacidade
+            </Link>
+            <Link href="/excluir-conta" className="hover:text-primary transition-colors">
+              Excluir Conta
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
