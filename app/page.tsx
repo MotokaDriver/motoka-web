@@ -41,7 +41,7 @@ export default function Home() {
                 className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.16-.37.52-.22.81L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z" />
+                  <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.16-.37.52-.22.81L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z" />
                 </svg>
                 Download para Android
               </a>
@@ -84,64 +84,100 @@ export default function Home() {
                 <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-lg">1</span>
                 Para Motoboys
               </h3>
-              <ul className="space-y-3 text-gray-800">
+              <ol className="space-y-4 text-gray-800 list-decimal pl-4">
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Cadastre-se no aplicativo Motoka Driver
+                  <span className="flex-shrink-0 mt-1">1.</span>
+                  <div>
+                    <p className="font-medium">Baixe o aplicativo Motoka Driver</p>
+                    <p className="text-sm text-gray-600 mt-1">Disponível para Android e iOS</p>
+                  </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Procure serviços disponíveis em sua região
+                  <span className="flex-shrink-0 mt-1">2.</span>
+                  <div>
+                    <p className="font-medium">Crie sua conta</p>
+                    <p className="text-sm text-gray-600 mt-1">Forneça seus dados pessoais e documentos necessários</p>
+                  </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Veja os detalhes e valores oferecidos
+                  <span className="flex-shrink-0 mt-1">3.</span>
+                  <div>
+                    <p className="font-medium">Complete seu perfil</p>
+                    <p className="text-sm text-gray-600 mt-1">Adicione foto, CNH e informações da sua moto</p>
+                  </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Aceite serviços e receba pagamentos após a conclusão
+                  <span className="flex-shrink-0 mt-1">4.</span>
+                  <div>
+                    <p className="font-medium">Ative sua disponibilidade</p>
+                    <p className="text-sm text-gray-600 mt-1">Defina seus horários e áreas de atuação</p>
+                  </div>
                 </li>
-              </ul>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">5.</span>
+                  <div>
+                    <p className="font-medium">Realize as entregas</p>
+                    <p className="text-sm text-gray-600 mt-1">Siga as instruções do aplicativo e confirme cada etapa</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">6.</span>
+                  <div>
+                    <p className="font-medium">Receba seus pagamentos</p>
+                    <p className="text-sm text-gray-600 mt-1">Os valores são recebidos diretamente pelo estabelecimento ao final do serviço</p>
+                  </div>
+                </li>
+              </ol>
             </div>
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <h3 className="text-2xl font-semibold mb-4 text-primary flex items-center gap-3">
                 <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-lg">2</span>
                 Para Estabelecimentos
               </h3>
-              <ul className="space-y-3 text-gray-800">
+              <ol className="space-y-4 text-gray-800 list-decimal pl-4">
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Registre seu estabelecimento no Motoka Driver
+                  <span className="flex-shrink-0 mt-1">1.</span>
+                  <div>
+                    <p className="font-medium">Baixe o aplicativo Motoka Driver</p>
+                    <p className="text-sm text-gray-600 mt-1">Disponível para Android e iOS</p>
+                  </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Crie serviços de entrega com suas necessidades específicas
+                  <span className="flex-shrink-0 mt-1">2.</span>
+                  <div>
+                    <p className="font-medium">Crie sua conta</p>
+                    <p className="text-sm text-gray-600 mt-1">Forneça os dados do seu estabelecimento e documentos</p>
+                  </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Defina o valor que está disposto a pagar
+                  <span className="flex-shrink-0 mt-1">3.</span>
+                  <div>
+                    <p className="font-medium">Configure seu perfil</p>
+                    <p className="text-sm text-gray-600 mt-1">Adicione logo, horário de funcionamento e área de entrega</p>
+                  </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Acompanhe suas entregas em tempo real e avalie o serviço
+                  <span className="flex-shrink-0 mt-1">4.</span>
+                  <div>
+                    <p className="font-medium">Crie um serviço de entrega</p>
+                    <p className="text-sm text-gray-600 mt-1">Defina origem, destino e valor do serviço</p>
+                  </div>
                 </li>
-              </ul>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">5.</span>
+                  <div>
+                    <p className="font-medium">Aguarde um motoboy</p>
+                    <p className="text-sm text-gray-600 mt-1">O sistema notifica motoboys próximos automaticamente</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-1">6.</span>
+                  <div>
+                    <p className="font-medium">Avalie o serviço</p>
+                    <p className="text-sm text-gray-600 mt-1">Forneça feedback sobre a qualidade da entrega</p>
+                  </div>
+                </li>
+              </ol>
             </div>
           </div>
         </div>
