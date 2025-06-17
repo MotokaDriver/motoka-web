@@ -8,12 +8,12 @@ export default function Home() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="container mx-auto py-6 px-4 md:px-6 flex justify-between items-center">
-        <div className="h-12">
+        <div className="h-16">
           <Image 
             src={motokaLogo} 
             alt="Motoka Driver Logo" 
-            width={180} 
-            height={45} 
+            width={240} 
+            height={60} 
             className="h-full w-auto"
             priority
           />
@@ -184,7 +184,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 bg-white" id="contact">
+      <section className="py-16 bg-gray-50" id="contact">
         <div className="container mx-auto px-4 md:px-6 text-center">
           <h2 className="text-3xl font-bold mb-6 text-gray-900">Entre em Contato</h2>
           <p className="text-lg text-gray-800 mb-8 max-w-2xl mx-auto">
