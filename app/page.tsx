@@ -181,99 +181,89 @@ export default function Home() {
               
               <div className="space-y-6">
                 {/* Step 1 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">1</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">1</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Baixe o aplicativo Motoka Driver</h4>
                     <p className="text-gray-600 text-lg">Disponível para Android e iOS</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 2 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">2</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">2</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Crie sua conta</h4>
                     <p className="text-gray-600 text-lg">Forneça seus dados pessoais e documentos necessários</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 3 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">3</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">3</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Complete seu perfil</h4>
                     <p className="text-gray-600 text-lg">Adicione foto, CNH e informações da sua moto</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 4 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">4</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">4</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Ative sua disponibilidade</h4>
                     <p className="text-gray-600 text-lg">Defina seus horários e áreas de atuação</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 5 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">5</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">5</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Realize as entregas</h4>
                     <p className="text-gray-600 text-lg">Siga as instruções do aplicativo e confirme cada etapa</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 6 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">6</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">6</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Receba seus pagamentos</h4>
@@ -300,99 +290,89 @@ export default function Home() {
               
               <div className="space-y-6">
                 {/* Step 1 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">1</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">1</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Baixe o aplicativo Motoka Driver</h4>
                     <p className="text-gray-600 text-lg">Disponível para Android e iOS</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 2 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">2</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">2</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Crie sua conta</h4>
                     <p className="text-gray-600 text-lg">Forneça os dados do seu estabelecimento e documentos</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 3 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">3</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">3</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Configure seu perfil</h4>
                     <p className="text-gray-600 text-lg">Adicione logo, horário de funcionamento e área de entrega</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 4 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">4</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">4</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Crie um serviço de entrega</h4>
                     <p className="text-gray-600 text-lg">Defina origem, destino e valor do serviço</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 5 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">5</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">5</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Aguarde um motoboy</h4>
                     <p className="text-gray-600 text-lg">O sistema notifica motoboys próximos automaticamente</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="p-2 bg-white rounded-xl shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
 
                 {/* Step 6 */}
-                <div className="group flex items-start gap-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200">
+                <div className="group flex items-start gap-6 py-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-2xl w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">6</div>
+                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">6</div>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Avalie o serviço</h4>
