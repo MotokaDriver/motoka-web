@@ -106,23 +106,34 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-12 md:py-20 bg-gray-50" id="how-it-works">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 md:mb-6">
-              Como <span className="text-gray-600">Funciona</span>
+      <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden" id="how-it-works">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-black rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-black rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="text-center mb-16 md:mb-20">
+            <div className="inline-block mb-4">
+              <span className="text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider bg-gray-100 px-4 py-2 rounded-full">
+                Processo Simples
+              </span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-black mb-6 md:mb-8 leading-tight">
+              Como <span className="bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Funciona</span>
             </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Descubra como nossa plataforma conecta motoboys e estabelecimentos de forma simples e eficiente
             </p>
           </div>
           
           {/* Toggle Buttons */}
-          <div className="flex justify-center mb-12 md:mb-16 px-4">
-            <div className="bg-white p-1 md:p-2 rounded-xl md:rounded-2xl shadow-lg border border-gray-200 inline-flex w-full max-w-md">
+          <div className="flex justify-center mb-16 md:mb-20 px-4">
+            <div className="bg-white p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 inline-flex w-full max-w-lg backdrop-blur-sm">
               <button 
                 id="motoboy-btn"
-                className="px-4 py-3 md:px-8 md:py-4 rounded-lg md:rounded-xl font-semibold transition-all duration-300 bg-black text-white text-sm md:text-base flex-1"
+                className="px-6 py-4 md:px-10 md:py-5 rounded-xl md:rounded-2xl font-bold transition-all duration-500 bg-gradient-to-r from-black to-gray-800 text-white text-base md:text-lg flex-1 shadow-lg transform hover:scale-105"
                 onClick={() => {
                   const motoboyBtn = document.getElementById('motoboy-btn');
                   const establishmentBtn = document.getElementById('establishment-btn');
@@ -130,9 +141,9 @@ export default function Home() {
                   const establishmentSteps = document.getElementById('establishment-steps');
                   
                   if (motoboyBtn && establishmentBtn && motoboySteps && establishmentSteps) {
-                    motoboyBtn.classList.add('bg-black', 'text-white');
+                    motoboyBtn.classList.add('bg-gradient-to-r', 'from-black', 'to-gray-800', 'text-white', 'shadow-lg');
                     motoboyBtn.classList.remove('text-gray-600', 'hover:text-black', 'bg-white');
-                    establishmentBtn.classList.remove('bg-black', 'text-white');
+                    establishmentBtn.classList.remove('bg-gradient-to-r', 'from-black', 'to-gray-800', 'text-white', 'shadow-lg');
                     establishmentBtn.classList.add('text-gray-600', 'hover:text-black', 'bg-white');
                     motoboySteps.classList.remove('hidden');
                     establishmentSteps.classList.add('hidden');
@@ -143,7 +154,7 @@ export default function Home() {
               </button>
               <button 
                 id="establishment-btn"
-                className="px-4 py-3 md:px-8 md:py-4 rounded-lg md:rounded-xl font-semibold transition-all duration-300 text-gray-600 hover:text-black bg-white text-sm md:text-base flex-1"
+                className="px-6 py-4 md:px-10 md:py-5 rounded-xl md:rounded-2xl font-bold transition-all duration-500 text-gray-600 hover:text-black bg-white text-base md:text-lg flex-1 transform hover:scale-105"
                 onClick={() => {
                   const motoboyBtn = document.getElementById('motoboy-btn');
                   const establishmentBtn = document.getElementById('establishment-btn');
@@ -151,9 +162,9 @@ export default function Home() {
                   const establishmentSteps = document.getElementById('establishment-steps');
                   
                   if (motoboyBtn && establishmentBtn && motoboySteps && establishmentSteps) {
-                    establishmentBtn.classList.add('bg-black', 'text-white');
+                    establishmentBtn.classList.add('bg-gradient-to-r', 'from-black', 'to-gray-800', 'text-white', 'shadow-lg');
                     establishmentBtn.classList.remove('text-gray-600', 'hover:text-black', 'bg-white');
-                    motoboyBtn.classList.remove('bg-black', 'text-white');
+                    motoboyBtn.classList.remove('bg-gradient-to-r', 'from-black', 'to-gray-800', 'text-white', 'shadow-lg');
                     motoboyBtn.classList.add('text-gray-600', 'hover:text-black', 'bg-white');
                     establishmentSteps.classList.remove('hidden');
                     motoboySteps.classList.add('hidden');
@@ -166,108 +177,174 @@ export default function Home() {
           </div>
 
           {/* Motoboy Steps */}
-          <div id="motoboy-steps" className="max-w-5xl mx-auto px-4">
-            <div className="bg-white p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-lg border border-gray-200">
-              <h3 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12 text-center flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
-                <div className="p-2 md:p-3 bg-black rounded-xl md:rounded-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-8 md:w-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                <span className="text-black">
-                  Passo a Passo para Motoboys
-                </span>
-              </h3>
+          <div id="motoboy-steps" className="max-w-6xl mx-auto px-4">
+            <div className="bg-white p-8 md:p-12 rounded-3xl md:rounded-[2rem] shadow-2xl border border-gray-100 relative overflow-hidden">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-gray-100 to-transparent rounded-full blur-3xl opacity-50"></div>
               
-              <div className="space-y-6">
-                {/* Step 1 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">1</div>
+              <div className="relative z-10">
+                <h3 className="text-3xl md:text-4xl font-bold mb-12 md:mb-16 text-center">
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-4">
+                    <div className="p-4 md:p-5 bg-gradient-to-br from-black to-gray-800 rounded-2xl md:rounded-3xl shadow-xl transform hover:rotate-6 transition-transform duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-10 md:w-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                    </div>
+                    <span className="text-black">
+                      Passo a Passo para <span className="bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Motoboys</span>
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Baixe o aplicativo Motoka Driver</h4>
-                    <p className="text-gray-600 text-lg">Disponível para Android e iOS</p>
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                  {/* Step 1 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          1
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Baixe o aplicativo Motoka Driver
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Disponível para Android e iOS
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 2 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">2</div>
+                  {/* Step 2 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          2
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Crie sua conta
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Forneça seus dados pessoais e documentos necessários
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Crie sua conta</h4>
-                    <p className="text-gray-600 text-lg">Forneça seus dados pessoais e documentos necessários</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 3 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">3</div>
+                  {/* Step 3 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          3
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Complete seu perfil
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Adicione foto, CNH e informações da sua moto
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Complete seu perfil</h4>
-                    <p className="text-gray-600 text-lg">Adicione foto, CNH e informações da sua moto</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 4 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">4</div>
+                  {/* Step 4 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          4
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Ative sua disponibilidade
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Defina seus horários e áreas de atuação
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Ative sua disponibilidade</h4>
-                    <p className="text-gray-600 text-lg">Defina seus horários e áreas de atuação</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 5 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">5</div>
+                  {/* Step 5 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          5
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Realize as entregas
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Siga as instruções do aplicativo e confirme cada etapa
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Realize as entregas</h4>
-                    <p className="text-gray-600 text-lg">Siga as instruções do aplicativo e confirme cada etapa</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 6 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">6</div>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Receba seus pagamentos</h4>
-                    <p className="text-gray-600 text-lg">Os valores são recebidos diretamente pelo estabelecimento ao final do serviço</p>
+                  {/* Step 6 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          6
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Receba seus pagamentos
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Os valores são recebidos diretamente pelo estabelecimento ao final do serviço
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -275,108 +352,175 @@ export default function Home() {
           </div>
 
           {/* Establishment Steps */}
-          <div id="establishment-steps" className="max-w-5xl mx-auto hidden">
-            <div className="bg-white p-10 rounded-3xl shadow-lg border border-gray-200">
-              <h3 className="text-3xl font-bold mb-12 text-center flex items-center justify-center gap-4">
-                <div className="p-3 bg-black rounded-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                </div>
-                <span className="text-black">
-                  Passo a Passo para Estabelecimentos
-                </span>
-              </h3>
+          <div id="establishment-steps" className="max-w-6xl mx-auto hidden">
+            <div className="bg-white p-8 md:p-12 rounded-3xl md:rounded-[2rem] shadow-2xl border border-gray-100 relative overflow-hidden">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-gray-100 to-transparent rounded-full blur-3xl opacity-50"></div>
               
-              <div className="space-y-6">
-                {/* Step 1 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">1</div>
+              <div className="relative z-10">
+                <h3 className="text-3xl md:text-4xl font-bold mb-12 md:mb-16 text-center">
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-4">
+                    <div className="p-4 md:p-5 bg-gradient-to-br from-black to-gray-800 rounded-2xl md:rounded-3xl shadow-xl transform hover:rotate-6 transition-transform duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-10 md:w-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    </div>
+                    <span className="text-black">
+                      Passo a Passo para <span className="bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Estabelecimentos</span>
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Baixe o aplicativo Motoka Driver</h4>
-                    <p className="text-gray-600 text-lg">Disponível para Android e iOS</p>
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                  {/* Step 1 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          1
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Baixe o aplicativo Motoka Driver
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Disponível para Android e iOS
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 2 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">2</div>
+                  {/* Step 2 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          2
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Crie sua conta
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Forneça os dados do seu estabelecimento e documentos
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Crie sua conta</h4>
-                    <p className="text-gray-600 text-lg">Forneça os dados do seu estabelecimento e documentos</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 3 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">3</div>
+                  {/* Step 3 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          3
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Configure seu perfil
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Adicione logo, horário de funcionamento e área de entrega
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Configure seu perfil</h4>
-                    <p className="text-gray-600 text-lg">Adicione logo, horário de funcionamento e área de entrega</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 4 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">4</div>
+                  {/* Step 4 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          4
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Crie um serviço de entrega
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Defina origem, destino e valor do serviço
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Crie um serviço de entrega</h4>
-                    <p className="text-gray-600 text-lg">Defina origem, destino e valor do serviço</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 5 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">5</div>
+                  {/* Step 5 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          5
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Aguarde um motoboy
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          O sistema notifica motoboys próximos automaticamente
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Aguarde um motoboy</h4>
-                    <p className="text-gray-600 text-lg">O sistema notifica motoboys próximos automaticamente</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
 
-                {/* Step 6 */}
-                <div className="group flex items-start gap-6 py-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">6</div>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-black mb-3 group-hover:text-gray-600 transition-colors duration-300">Avalie o serviço</h4>
-                    <p className="text-gray-600 text-lg">Forneça feedback sobre a qualidade da entrega</p>
+                  {/* Step 6 */}
+                  <div className="group relative bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 hover:border-gray-300 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-2">
+                    <div className="flex items-start gap-4 md:gap-6">
+                      <div className="flex-shrink-0 relative">
+                        <div className="absolute inset-0 bg-black rounded-full blur-md opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-black to-gray-800 text-white rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          6
+                        </div>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl md:text-2xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300">
+                          Avalie o serviço
+                        </h4>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                          Forneça feedback sobre a qualidade da entrega
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
