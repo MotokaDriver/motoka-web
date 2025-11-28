@@ -2,12 +2,33 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
 import motokaLogo from "../public/images/motoka-logo.png";
 import HeroCarousel from "./components/HeroCarousel";
+import { inView } from "motion";
 
 export default function Home() {
+  useEffect(() => {
+    // Animate elements when they come into view
+    const elements = document.querySelectorAll(".animate-on-scroll");
+
+    elements.forEach((el) => {
+      inView(el as HTMLElement, () => {
+        const element = el as HTMLElement;
+        element.style.transition = "opacity 0.6s ease-out, transform 0.6s ease-out";
+        element.style.opacity = "1";
+        element.style.transform = "translateY(0)";
+      }, { amount: 0.2 });
+
+      // Set initial state
+      const element = el as HTMLElement;
+      element.style.opacity = "0";
+      element.style.transform = "translateY(30px)";
+    });
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-500 selection:text-white">''
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
         <div className="container mx-auto px-4 md:px-6 h-20 flex justify-between items-center">
@@ -104,7 +125,7 @@ export default function Home() {
 
       {/* How It Works Section */}
       <section className="py-24 bg-white relative" id="how-it-works">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container mx-auto px-4 md:px-6 animate-on-scroll">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Como Funciona
@@ -121,8 +142,26 @@ export default function Home() {
                 id="motoboy-btn"
                 className="px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 bg-white text-gray-900 shadow-md"
                 onClick={() => {
-                  document.getElementById('motoboy-steps')?.classList.remove('hidden');
-                  document.getElementById('establishment-steps')?.classList.add('hidden');
+                  const motoboySteps = document.getElementById('motoboy-steps');
+                  const establishmentSteps = document.getElementById('establishment-steps');
+
+                  // Fade out current content
+                  establishmentSteps?.classList.add('opacity-0', 'translate-y-4');
+
+                  setTimeout(() => {
+                    establishmentSteps?.classList.add('hidden');
+                    motoboySteps?.classList.remove('hidden');
+
+                    // Trigger reflow
+                    motoboySteps?.offsetHeight;
+
+                    // Fade in new content
+                    setTimeout(() => {
+                      motoboySteps?.classList.remove('opacity-0', 'translate-y-4');
+                    }, 10);
+                  }, 300);
+
+                  // Update button styles
                   document.getElementById('motoboy-btn')?.classList.add('bg-white', 'text-gray-900', 'shadow-md');
                   document.getElementById('motoboy-btn')?.classList.remove('text-gray-500', 'hover:text-gray-900');
                   document.getElementById('establishment-btn')?.classList.remove('bg-white', 'text-gray-900', 'shadow-md');
@@ -135,8 +174,26 @@ export default function Home() {
                 id="establishment-btn"
                 className="px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 text-gray-500 hover:text-gray-900"
                 onClick={() => {
-                  document.getElementById('motoboy-steps')?.classList.add('hidden');
-                  document.getElementById('establishment-steps')?.classList.remove('hidden');
+                  const motoboySteps = document.getElementById('motoboy-steps');
+                  const establishmentSteps = document.getElementById('establishment-steps');
+
+                  // Fade out current content
+                  motoboySteps?.classList.add('opacity-0', 'translate-y-4');
+
+                  setTimeout(() => {
+                    motoboySteps?.classList.add('hidden');
+                    establishmentSteps?.classList.remove('hidden');
+
+                    // Trigger reflow
+                    establishmentSteps?.offsetHeight;
+
+                    // Fade in new content
+                    setTimeout(() => {
+                      establishmentSteps?.classList.remove('opacity-0', 'translate-y-4');
+                    }, 10);
+                  }, 300);
+
+                  // Update button styles
                   document.getElementById('establishment-btn')?.classList.add('bg-white', 'text-gray-900', 'shadow-md');
                   document.getElementById('establishment-btn')?.classList.remove('text-gray-500', 'hover:text-gray-900');
                   document.getElementById('motoboy-btn')?.classList.remove('bg-white', 'text-gray-900', 'shadow-md');
@@ -149,7 +206,7 @@ export default function Home() {
           </div>
 
           {/* Steps Grid */}
-          <div id="motoboy-steps" className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div id="motoboy-steps" className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-300 ease-out">
             {[
               { title: "Baixe o App", desc: "Disponível para Android e iOS. Instale em segundos.", icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" },
               { title: "Crie sua Conta", desc: "Cadastro rápido com seus documentos básicos.", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
@@ -168,7 +225,7 @@ export default function Home() {
             ))}
           </div>
 
-          <div id="establishment-steps" className="hidden grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div id="establishment-steps" className="hidden grid md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-0 translate-y-4 transition-all duration-300 ease-out">
             {[
               { title: "Baixe o App", desc: "Instale o app Motoka Driver no seu smartphone.", icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" },
               { title: "Cadastre a Loja", desc: "Informe os dados do seu estabelecimento.", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" },
@@ -191,7 +248,7 @@ export default function Home() {
 
       {/* Download App Section */}
       <section className="py-24 bg-white" id="download-app">
-        <div className="container mx-auto px-4 md:px-6 text-center">
+        <div className="container mx-auto px-4 md:px-6 text-center animate-on-scroll">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8">
             Pronto para começar?
           </h2>
@@ -232,7 +289,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600 rounded-full blur-[100px]"></div>
         </div>
 
-        <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
+        <div className="container mx-auto px-4 md:px-6 relative z-10 text-center animate-on-scroll">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Para mais informações
           </h2>
