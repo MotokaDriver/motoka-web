@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 import motokaLogo from "../public/images/motoka-logo.png";
+import primeLogo from "../public/images/prime.png";
+import verificadaLogo from "../public/images/verificada-dark.png";
 import HeroCarousel from "./components/HeroCarousel";
 import { inView } from "motion";
 
@@ -312,21 +314,46 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-black py-12 border-t border-gray-900">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="relative w-32 h-8 opacity-80 hover:opacity-100 transition-opacity">
-              <Image
-                src={motokaLogo}
-                alt="Motoka Driver Logo"
-                fill
-                className="object-contain object-left"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-8">
+            {/* Left Side: Logo & Copyright */}
+            <div className="flex flex-col items-center md:items-start gap-4 md:justify-self-start">
+              <div className="relative w-32 h-8 opacity-80 hover:opacity-100 transition-opacity">
+                <Image
+                  src={motokaLogo}
+                  alt="Motoka Driver Logo"
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
+              <p className="text-gray-500 text-sm">© 2025 Motoka Driver</p>
             </div>
-            <div className="flex gap-8 text-sm text-gray-400">
+
+            {/* Center: Links */}
+            <div className="flex gap-8 text-sm text-gray-400 md:justify-self-center">
               <Link href="/termos-de-uso" className="hover:text-white transition-colors">Termos de Uso</Link>
               <Link href="/politica-de-privacidade" className="hover:text-white transition-colors">Privacidade</Link>
               <Link href="/excluir-conta" className="hover:text-white transition-colors">Excluir Conta</Link>
             </div>
-            <p className="text-gray-500 text-sm">© {new Date().getFullYear()} Motoka Driver</p>
+
+            {/* Right Side: Startup Logos */}
+            <div className="flex items-center gap-8 md:justify-self-end">
+              <div className="relative w-48 h-24">
+                <Image
+                  src={primeLogo}
+                  alt="Prime"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div className="relative w-48 h-24">
+                <Image
+                  src={verificadaLogo}
+                  alt="Verificada"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </footer>
