@@ -3,6 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
+import step1Img from "../public/images/step1.jpg";
+import step2Img from "../public/images/step2.jpg";
+import step3Img from "../public/images/step3.png";
+import step4Img from "../public/images/step4.png";
+import step5Img from "../public/images/step5.png";
+import step6Img from "../public/images/step6.png";
+import step7Img from "../public/images/step7.png";
 import motokaLogo from "../public/images/motoka-logo.png";
 import primeLogo from "../public/images/prime.png";
 import verificadaLogo from "../public/images/verificada-dark.png";
@@ -126,125 +133,262 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-24 bg-white relative" id="how-it-works">
-        <div className="container mx-auto px-4 md:px-6 animate-on-scroll">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Como Funciona
+      <section className="py-24 bg-white relative overflow-hidden" id="how-it-works">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16 animate-on-scroll">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-blue-900 mb-6">
+              Da urgência à solução em minutos
             </h2>
             <p className="text-xl text-gray-600">
-              Simples, rápido e eficiente. Escolha seu perfil e veja como começar.
+              Veja como é fácil e rápido solicitar um motoboy no Motoka Driver.
             </p>
           </div>
 
-          {/* Toggle Buttons */}
-          <div className="flex justify-center mb-16">
-            <div className="bg-gray-100 p-1.5 rounded-2xl inline-flex relative">
-              <button
-                id="motoboy-btn"
-                className="px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 bg-white text-gray-900 shadow-md"
-                onClick={() => {
-                  const motoboySteps = document.getElementById('motoboy-steps');
-                  const establishmentSteps = document.getElementById('establishment-steps');
 
-                  // Fade out current content
-                  establishmentSteps?.classList.add('opacity-0', 'translate-y-4');
+          {/* Winding Timeline */}
+          <div className="relative max-w-5xl mx-auto">
+            {/* Background dashed line */}
+            <div className="absolute left-[50%] top-0 bottom-0 w-0.5 border-l-2 border-dashed border-blue-200 -translate-x-[50%] hidden lg:block z-0"></div>
 
-                  setTimeout(() => {
-                    establishmentSteps?.classList.add('hidden');
-                    motoboySteps?.classList.remove('hidden');
+            {/* Step 1 */}
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-32 group animate-on-scroll">
+              <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
+                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                  <Image src={step1Img} alt="Urgência no estabelecimento" fill className="object-cover" />
+                </div>
+                {/* Speech Bubble */}
+                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                  <p className="text-sm font-medium text-gray-800">&quot;Poxa, meu motoboy precisou se ausentar, preciso de outro!&quot;</p>
+                </div>
+              </div>
 
-                    // Trigger reflow
-                    motoboySteps?.offsetHeight;
+              <div className="hidden lg:flex w-2/12 justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/30 border-4 border-white z-10">1</div>
+              </div>
 
-                    // Fade in new content
-                    setTimeout(() => {
-                      motoboySteps?.classList.remove('opacity-0', 'translate-y-4');
-                    }, 10);
-                  }, 300);
+              <div className="w-full lg:w-5/12 text-center lg:text-left">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:border-blue-100">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div className="lg:hidden w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">1</div>
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Urgência no estabelecimento</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg">Algo inesperado aconteceu e a entrega não pode esperar.</p>
+                </div>
+              </div>
+            </div>
 
-                  // Update button styles
-                  document.getElementById('motoboy-btn')?.classList.add('bg-white', 'text-gray-900', 'shadow-md');
-                  document.getElementById('motoboy-btn')?.classList.remove('text-gray-500', 'hover:text-gray-900');
-                  document.getElementById('establishment-btn')?.classList.remove('bg-white', 'text-gray-900', 'shadow-md');
-                  document.getElementById('establishment-btn')?.classList.add('text-gray-500', 'hover:text-gray-900');
-                }}
-              >
-                Para Motoboys
-              </button>
-              <button
-                id="establishment-btn"
-                className="px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 text-gray-500 hover:text-gray-900"
-                onClick={() => {
-                  const motoboySteps = document.getElementById('motoboy-steps');
-                  const establishmentSteps = document.getElementById('establishment-steps');
+            {/* Step 2 */}
+            <div className="relative z-10 flex flex-col lg:flex-row-reverse items-center justify-between mb-32 group animate-on-scroll">
+              <div className="w-full lg:w-5/12 flex justify-center lg:justify-start mb-8 lg:mb-0 relative">
+                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                  <Image src={step2Img} alt="Solicitação criada" fill className="object-cover" />
+                </div>
+                {/* Speech Bubble */}
+                <div className="absolute -left-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                  <p className="text-sm font-medium text-gray-800">&quot;Vou solicitar um motoboy no Motoka Driver.&quot;</p>
+                </div>
+              </div>
 
-                  // Fade out current content
-                  motoboySteps?.classList.add('opacity-0', 'translate-y-4');
+              <div className="hidden lg:flex w-2/12 justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/30 border-4 border-white z-10">2</div>
+              </div>
 
-                  setTimeout(() => {
-                    motoboySteps?.classList.add('hidden');
-                    establishmentSteps?.classList.remove('hidden');
+              <div className="w-full lg:w-5/12 text-center lg:text-left">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:border-blue-100">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div className="lg:hidden w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">2</div>
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Solicitação criada no app</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg">Ele informa origem, destino, período desejado e valor sugerido e envia a solicitação.</p>
+                </div>
+              </div>
+            </div>
 
-                    // Trigger reflow
-                    establishmentSteps?.offsetHeight;
+            {/* Step 3 */}
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-32 group animate-on-scroll">
+              <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
+                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                  <Image src={step3Img} alt="Motoboys próximos" fill className="object-cover" />
+                </div>
+                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                  <p className="text-sm font-medium text-gray-800">&quot;Sua solicitação foi enviada para motoboys próximos.&quot;</p>
+                </div>
+              </div>
 
-                    // Fade in new content
-                    setTimeout(() => {
-                      establishmentSteps?.classList.remove('opacity-0', 'translate-y-4');
-                    }, 10);
-                  }, 300);
+              <div className="hidden lg:flex w-2/12 justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/30 border-4 border-white z-10">3</div>
+              </div>
 
-                  // Update button styles
-                  document.getElementById('establishment-btn')?.classList.add('bg-white', 'text-gray-900', 'shadow-md');
-                  document.getElementById('establishment-btn')?.classList.remove('text-gray-500', 'hover:text-gray-900');
-                  document.getElementById('motoboy-btn')?.classList.remove('bg-white', 'text-gray-900', 'shadow-md');
-                  document.getElementById('motoboy-btn')?.classList.add('text-gray-500', 'hover:text-gray-900');
-                }}
-              >
-                Para Estabelecimentos
-              </button>
+              <div className="w-full lg:w-5/12 text-center lg:text-left">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:border-blue-100">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div className="lg:hidden w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">3</div>
+                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Motoboys próximos recebem</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg">A solicitação é enviada para motoboys disponíveis na região.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="relative z-10 flex flex-col lg:flex-row-reverse items-center justify-between mb-32 group animate-on-scroll">
+              <div className="w-full lg:w-5/12 flex justify-center lg:justify-start mb-8 lg:mb-0 relative">
+                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                  <Image src={step4Img} alt="Contraproposta" fill className="object-cover" />
+                </div>
+                <div className="absolute -left-12 -top-12 bg-white p-4 rounded-2xl shadow-xl max-w-[220px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                  <p className="text-sm font-medium text-gray-800">&quot;Posso ficar no local por R$ 80,00 no período + R$ 5,00 por entrega ou fazer uma contraproposta.&quot;</p>
+                </div>
+              </div>
+
+              <div className="hidden lg:flex w-2/12 justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/30 border-4 border-white z-10">4</div>
+              </div>
+
+              <div className="w-full lg:w-5/12 text-center lg:text-left">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:border-blue-100">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div className="lg:hidden w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">4</div>
+                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Motoboy aceita ou faz contraproposta</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg">O motoboy pode aceitar instantaneamente ou sugerir outro valor para o período.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 5 */}
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-32 group animate-on-scroll">
+              <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
+                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                  <Image src={step2Img} alt="Negociação" fill className="object-cover" />
+                </div>
+                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                  <p className="text-sm font-medium text-gray-800">&quot;Ótima proposta! Vamos confirmar.&quot;</p>
+                </div>
+              </div>
+
+              <div className="hidden lg:flex w-2/12 justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/30 border-4 border-white z-10">5</div>
+              </div>
+
+              <div className="w-full lg:w-5/12 text-center lg:text-left">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:border-blue-100">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div className="lg:hidden w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">5</div>
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Negociação e confirmação</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg">O estabelecimento escolhe a melhor proposta e confirma o período de trabalho.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 6 */}
+            <div className="relative z-10 flex flex-col lg:flex-row-reverse items-center justify-between mb-32 group animate-on-scroll">
+              <div className="w-full lg:w-5/12 flex justify-center lg:justify-start mb-8 lg:mb-0 relative">
+                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                  <Image src={step6Img} alt="Motoboy no local" fill className="object-cover" />
+                </div>
+                <div className="absolute -left-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                  <p className="text-sm font-medium text-gray-800">&quot;Combinado! Estou no local e pronto para ajudar.&quot;</p>
+                </div>
+              </div>
+
+              <div className="hidden lg:flex w-2/12 justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/30 border-4 border-white z-10">6</div>
+              </div>
+
+              <div className="w-full lg:w-5/12 text-center lg:text-left">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:border-blue-100">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div className="lg:hidden w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">6</div>
+                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Motoboy no local pelo período combinado</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg">O motoboy fica no estabelecimento pelo tempo acordado, pronto para realizar as entregas sempre que precisar.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 7 */}
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-16 group animate-on-scroll">
+              <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
+                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                  <Image src={step7Img} alt="Pagamento" fill className="object-cover" />
+                </div>
+                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                  <p className="text-sm font-medium text-gray-800">&quot;Período concluído! Aqui está o pagamento. Obrigado pelo apoio!&quot;</p>
+                </div>
+              </div>
+
+              <div className="hidden lg:flex w-2/12 justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/30 border-4 border-white z-10">7</div>
+              </div>
+
+              <div className="w-full lg:w-5/12 text-center lg:text-left">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:border-blue-100">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div className="lg:hidden w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">7</div>
+                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Pagamento direto ao motoboy</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg">No final do período combinado, o estabelecimento paga o valor acordado diretamente ao motoboy.</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Steps Grid */}
-          <div id="motoboy-steps" className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-300 ease-out">
-            {[
-              { title: "Baixe o App", desc: "Disponível para Android e iOS. Instale em segundos.", icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" },
-              { title: "Crie sua Conta", desc: "Cadastro rápido com seus documentos básicos.", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
-              { title: "Complete o Perfil", desc: "Adicione foto e dados da sua moto para validação.", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
-              { title: "Fique Online", desc: "Ative sua disponibilidade quando quiser trabalhar.", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
-              { title: "Aceite Corridas", desc: "Receba chamados próximos e aumente sua renda.", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
-              { title: "Receba Pagamentos", desc: "Pagamento direto e transparente a cada entrega.", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" }
-            ].map((step, i) => (
-              <div key={i} className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300">
-                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mb-6 shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={step.icon}></path></svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.desc}</p>
+          {/* Bottom Features Banner */}
+          <div className="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-on-scroll">
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 text-blue-600 mb-4">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
               </div>
-            ))}
+              <h4 className="text-lg font-bold text-gray-900 mb-2">Rápido</h4>
+              <p className="text-sm text-gray-600">Encontre um motoboy disponível em minutos.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 text-blue-600 mb-4">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">Negocie</h4>
+              <p className="text-sm text-gray-600">Escolha o melhor valor e período para você.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 text-blue-600 mb-4">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">Seguro</h4>
+              <p className="text-sm text-gray-600">Motoboys verificados.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 text-blue-600 mb-4">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">Econômico</h4>
+              <p className="text-sm text-gray-600">Mais controle e menos custos para seu negócio.</p>
+            </div>
           </div>
 
-          <div id="establishment-steps" className="hidden grid md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-0 translate-y-4 transition-all duration-300 ease-out">
-            {[
-              { title: "Baixe o App", desc: "Instale o app Motoka Driver no seu smartphone.", icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" },
-              { title: "Cadastre a Loja", desc: "Informe os dados do seu estabelecimento.", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" },
-              { title: "Configure Entregas", desc: "Defina área de atuação e taxas de entrega.", icon: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-1.447-.894L15 7m0 13V7" },
-              { title: "Solicite Motoboy", desc: "Peça um entregador com apenas alguns toques.", icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" },
-              { title: "Acompanhe", desc: "Rastreie a entrega em tempo real no mapa.", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" },
-              { title: "Avalie", desc: "Classifique o serviço para manter a qualidade.", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" }
-            ].map((step, i) => (
-              <div key={i} className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300">
-                <div className="w-14 h-14 rounded-2xl bg-purple-600 text-white flex items-center justify-center mb-6 shadow-lg shadow-purple-600/20 group-hover:scale-110 transition-transform">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={step.icon}></path></svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.desc}</p>
-              </div>
-            ))}
-          </div>
+
         </div>
       </section>
 
