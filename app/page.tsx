@@ -469,7 +469,7 @@ export default function Home() {
                   className="object-contain object-left"
                 />
               </div>
-              <p className="text-gray-500 text-sm">© 2025 Motoka Driver</p>
+              <p className="text-gray-500 text-sm">57.562.666/0001-50 Motoka Driver</p>
             </div>
 
             {/* Center: Links */}
