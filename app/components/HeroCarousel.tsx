@@ -2,12 +2,25 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import app1 from "../../public/images/app_1.webp";
-import app2 from "../../public/images/app2.webp";
-import app3 from "../../public/images/app3.webp";
-import app4 from "../../public/images/app4.webp";
+import telaTrabalheQuandoQuiser from "../../public/images/app/01-trabalhe-quando-quiser.png";
+import telaAcheServicos from "../../public/images/app/02-ache-servicos.png";
+import telaNegocieAntesDeAceitar from "../../public/images/app/03-negocie-antes-de-aceitar.png";
+import telaDetalheDoServico from "../../public/images/app/04-detalhe-do-servico.png";
+import telaPecaMotoboys from "../../public/images/app/05-peca-motoboys.png";
+import telaMotoboysQueAceitaram from "../../public/images/app/06-motoboys-que-aceitaram.png";
+import telaPixOuCartao from "../../public/images/app/07-pix-ou-cartao.png";
+import telaAvisos from "../../public/images/app/08-avisos.png";
 
-const images = [app1, app2, app3, app4];
+const images = [
+    { src: telaTrabalheQuandoQuiser, alt: "Tela inicial com os serviços em andamento" },
+    { src: telaAcheServicos, alt: "Tela de busca de serviços disponíveis" },
+    { src: telaNegocieAntesDeAceitar, alt: "Tela de negociação de valores antes de aceitar" },
+    { src: telaDetalheDoServico, alt: "Tela com os detalhes do serviço" },
+    { src: telaPecaMotoboys, alt: "Tela de solicitação de motoboys" },
+    { src: telaMotoboysQueAceitaram, alt: "Tela com os motoboys que aceitaram o serviço" },
+    { src: telaPixOuCartao, alt: "Tela de pagamento por Pix ou cartão" },
+    { src: telaAvisos, alt: "Tela de avisos e notificações" },
+];
 
 export default function HeroCarousel() {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -50,35 +63,19 @@ export default function HeroCarousel() {
                     className={`absolute transition-all duration-700 ease-out will-change-transform ${getStyles(index)}`}
                     style={{
                         transformStyle: 'preserve-3d',
-                        width: '300px',
+                        width: '285px',
                         height: '600px',
                     }}
                 >
-                    {/* Phone Frame */}
-                    <div className="relative w-full h-full bg-gray-900 rounded-[3rem] shadow-2xl border-[8px] border-gray-800 overflow-hidden ring-1 ring-white/20">
-                        {/* Notch/Dynamic Island */}
-                        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-[30%] h-7 bg-black rounded-full z-20 flex items-center justify-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-gray-800/50"></div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-900/20"></div>
-                        </div>
-
-                        {/* Screen */}
-                        <div className="relative w-full h-full bg-black">
-                            <Image
-                                src={img}
-                                alt={`App Screen ${index + 1}`}
-                                fill
-                                className="object-contain" // Changed from object-cover to prevent cropping
-                                priority={index === 0}
-                            />
-
-                            {/* Home Bar Indicator */}
-                            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-1/3 h-1 bg-white/20 rounded-full z-20"></div>
-
-                            {/* Screen Glare/Reflection */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none z-10"></div>
-                        </div>
-                    </div>
+                    {/* As telas já vêm com a moldura do celular e fundo transparente */}
+                    <Image
+                        src={img.src}
+                        alt={img.alt}
+                        fill
+                        className="object-contain drop-shadow-2xl"
+                        sizes="285px"
+                        priority={index === 0}
+                    />
 
                     {/* Shadow below phone */}
                     <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-3/4 h-4 bg-black/40 blur-xl rounded-full"></div>
