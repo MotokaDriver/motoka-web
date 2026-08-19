@@ -157,11 +157,11 @@ export default function Home() {
             {/* Step 1 */}
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-32 group animate-on-scroll">
               <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
-                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                <div className="relative w-full max-w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
                   <Image src={step1Img} alt="Urgência no estabelecimento" fill className="object-cover" />
                 </div>
                 {/* Speech Bubble */}
-                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                <div className="absolute right-2 -top-4 lg:-right-8 lg:-top-8 bg-white p-3 sm:p-4 rounded-2xl shadow-xl max-w-[160px] sm:max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
                   <p className="text-sm font-medium text-gray-800">&quot;Poxa, meu motoboy precisou se ausentar, preciso de outro!&quot;</p>
                 </div>
               </div>
@@ -187,11 +187,11 @@ export default function Home() {
             {/* Step 2 */}
             <div className="relative z-10 flex flex-col lg:flex-row-reverse items-center justify-between mb-32 group animate-on-scroll">
               <div className="w-full lg:w-5/12 flex justify-center lg:justify-start mb-8 lg:mb-0 relative">
-                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                <div className="relative w-full max-w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
                   <Image src={step2Img} alt="Solicitação criada" fill className="object-cover" />
                 </div>
                 {/* Speech Bubble */}
-                <div className="absolute -left-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                <div className="absolute left-2 -top-4 lg:-left-8 lg:-top-8 bg-white p-3 sm:p-4 rounded-2xl shadow-xl max-w-[160px] sm:max-w-[200px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
                   <p className="text-sm font-medium text-gray-800">&quot;Vou solicitar um motoboy no Motoka Driver.&quot;</p>
                 </div>
               </div>
@@ -217,10 +217,10 @@ export default function Home() {
             {/* Step 3 */}
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-32 group animate-on-scroll">
               <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
-                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                <div className="relative w-full max-w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
                   <Image src={step3Img} alt="Motoboys próximos" fill className="object-cover" />
                 </div>
-                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                <div className="absolute right-2 -top-4 lg:-right-8 lg:-top-8 bg-white p-3 sm:p-4 rounded-2xl shadow-xl max-w-[160px] sm:max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
                   <p className="text-sm font-medium text-gray-800">&quot;Sua solicitação foi enviada para motoboys próximos.&quot;</p>
                 </div>
               </div>
@@ -246,10 +246,10 @@ export default function Home() {
             {/* Step 4 */}
             <div className="relative z-10 flex flex-col lg:flex-row-reverse items-center justify-between mb-32 group animate-on-scroll">
               <div className="w-full lg:w-5/12 flex justify-center lg:justify-start mb-8 lg:mb-0 relative">
-                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                <div className="relative w-full max-w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
                   <Image src={step4Img} alt="Contraproposta" fill className="object-cover" />
                 </div>
-                <div className="absolute -left-12 -top-12 bg-white p-4 rounded-2xl shadow-xl max-w-[220px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                <div className="absolute left-2 -top-4 lg:-left-12 lg:-top-12 bg-white p-3 sm:p-4 rounded-2xl shadow-xl max-w-[160px] sm:max-w-[220px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
                   <p className="text-sm font-medium text-gray-800">&quot;Posso ficar no local por R$ 80,00 no período + R$ 5,00 por entrega ou fazer uma contraproposta.&quot;</p>
                 </div>
               </div>
@@ -275,10 +275,10 @@ export default function Home() {
             {/* Step 5 */}
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-32 group animate-on-scroll">
               <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
-                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                <div className="relative w-full max-w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
                   <Image src={step2Img} alt="Negociação" fill className="object-cover" />
                 </div>
-                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                <div className="absolute right-2 -top-4 lg:-right-8 lg:-top-8 bg-white p-3 sm:p-4 rounded-2xl shadow-xl max-w-[160px] sm:max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
                   <p className="text-sm font-medium text-gray-800">&quot;Ótima proposta! Vamos confirmar.&quot;</p>
                 </div>
               </div>
@@ -304,10 +304,10 @@ export default function Home() {
             {/* Step 6 */}
             <div className="relative z-10 flex flex-col lg:flex-row-reverse items-center justify-between mb-32 group animate-on-scroll">
               <div className="w-full lg:w-5/12 flex justify-center lg:justify-start mb-8 lg:mb-0 relative">
-                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                <div className="relative w-full max-w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
                   <Image src={step6Img} alt="Motoboy no local" fill className="object-cover" />
                 </div>
-                <div className="absolute -left-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                <div className="absolute left-2 -top-4 lg:-left-8 lg:-top-8 bg-white p-3 sm:p-4 rounded-2xl shadow-xl max-w-[160px] sm:max-w-[200px] rounded-br-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
                   <p className="text-sm font-medium text-gray-800">&quot;Combinado! Estou no local e pronto para ajudar.&quot;</p>
                 </div>
               </div>
@@ -333,10 +333,10 @@ export default function Home() {
             {/* Step 7 */}
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between mb-16 group animate-on-scroll">
               <div className="w-full lg:w-5/12 flex justify-center lg:justify-end mb-8 lg:mb-0 relative">
-                <div className="relative w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
+                <div className="relative w-full max-w-[340px] h-[240px] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105 group-hover:shadow-blue-500/20">
                   <Image src={step7Img} alt="Pagamento" fill className="object-cover" />
                 </div>
-                <div className="absolute -right-8 -top-8 bg-white p-4 rounded-2xl shadow-xl max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
+                <div className="absolute right-2 -top-4 lg:-right-8 lg:-top-8 bg-white p-3 sm:p-4 rounded-2xl shadow-xl max-w-[160px] sm:max-w-[200px] rounded-bl-none border border-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl z-20">
                   <p className="text-sm font-medium text-gray-800">&quot;Período concluído! Aqui está o pagamento. Obrigado pelo apoio!&quot;</p>
                 </div>
               </div>
