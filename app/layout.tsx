@@ -29,6 +29,11 @@ export default function RootLayout({
         <GoogleAnalytics />
       </head>
       <body
+        // Extensões de navegador (ColorZilla, Grammarly, etc.) injetam
+        // atributos no <body> antes do React hidratar (ex.: cz-shortcut-listen),
+        // gerando um aviso de hidratação falso. suppressHydrationWarning cobre
+        // só os atributos deste elemento — não afeta os filhos.
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
