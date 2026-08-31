@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import {
   APP_STORE_URL,
   PLAY_STORE_URL,
@@ -58,6 +60,19 @@ function formatDuration(startIso: string, endIso: string): string {
   if (h === 0) return `${m} min`;
   if (m === 0) return `${h} ${h === 1 ? "hora" : "horas"}`;
   return `${h}h${String(m).padStart(2, "0")}`;
+}
+
+/** Envolve o conteúdo do pedido com a navegação padrão do site (header + footer),
+ *  para o motoboy conseguir navegar para as demais telas. Mantém o fundo slate
+ *  característico da página de pedido. */
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <Header />
+      <main className="flex flex-1 flex-col">{children}</main>
+      <Footer />
+    </div>
+  );
 }
 
 export default function PedidoClient() {
@@ -120,8 +135,9 @@ export default function PedidoClient() {
   const handleAction = (action: OrderAction) => openInApp(order.id, action, () => setShowStores(true));
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-gray-900 px-4 py-8 sm:py-12">
-      <div className="mx-auto w-full max-w-2xl">
+    <Shell>
+      <div className="font-sans text-gray-900 px-4 py-8 sm:py-12">
+        <div className="mx-auto w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-orange-300 bg-orange-50 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-orange-600">
@@ -251,8 +267,9 @@ export default function PedidoClient() {
           <Badge icon={<UsersIcon />} title="Direto" text="O pagamento é feito diretamente por eles." />
           <Badge icon={<BoltIcon />} title="Rápido" text="Mais oportunidades, mais entregas, mais ganhos." />
         </div>
+        </div>
       </div>
-    </div>
+    </Shell>
   );
 }
 
@@ -340,8 +357,9 @@ function StoreLinks() {
 
 function LoadingState() {
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-12">
-      <div className="mx-auto w-full max-w-2xl animate-pulse">
+    <Shell>
+      <div className="px-4 py-12">
+        <div className="mx-auto w-full max-w-2xl animate-pulse">
         <div className="mx-auto h-6 w-40 rounded-full bg-gray-200" />
         <div className="mx-auto mt-5 h-9 w-3/4 rounded-lg bg-gray-200" />
         <div className="mt-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-xl">
@@ -362,15 +380,17 @@ function LoadingState() {
             <div className="h-20 rounded-2xl bg-gray-100" />
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </Shell>
   );
 }
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-xl">
+    <Shell>
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-xl">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
           <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -384,8 +404,9 @@ function ErrorState({ message }: { message: string }) {
         >
           Conhecer o Motoka Driver
         </a>
+        </div>
       </div>
-    </div>
+    </Shell>
   );
 }
 
