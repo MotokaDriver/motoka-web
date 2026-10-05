@@ -13,6 +13,8 @@ import step7Img from "../public/images/step7.png";
 import motokaLogo from "../public/images/motoka-logo.png";
 import primeLogo from "../public/images/prime.png";
 import verificadaLogo from "../public/images/verificada-dark.png";
+import EntrarButton from "./components/EntrarButton";
+import { PAINEL_URL } from "./lib/painel";
 import HeroCarousel from "./components/HeroCarousel";
 import { inView } from "motion";
 
@@ -50,7 +52,7 @@ export default function Home() {
               priority
             />
           </div>
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             <a href="#how-it-works" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm uppercase tracking-wide">
               Como Funciona
             </a>
@@ -63,7 +65,11 @@ export default function Home() {
             >
               Contato
             </a>
+            <EntrarButton />
           </nav>
+          <div className="md:hidden">
+            <EntrarButton />
+          </div>
         </div>
       </header>
 
@@ -117,6 +123,8 @@ export default function Home() {
                 </div>
               </a>
             </div>
+
+            <p className="text-sm text-gray-500 text-center lg:text-left">Motoboy? Seu acesso é pelo app: baixe nas lojas acima.</p>
 
             <div className="pt-8 flex items-center justify-center lg:justify-start gap-6 text-gray-500 text-sm font-medium">
               <div className="flex items-center gap-2">
@@ -485,6 +493,7 @@ export default function Home() {
               <Link href="/termos-de-uso" className="hover:text-white transition-colors">Termos de Uso</Link>
               <Link href="/politica-de-privacidade" className="hover:text-white transition-colors">Privacidade</Link>
               <Link href="/excluir-conta" className="hover:text-white transition-colors">Excluir Conta</Link>
+              <a href={PAINEL_URL} className="hover:text-white transition-colors">Área do estabelecimento</a>
             </div>
 
             {/* Right Side: Startup Logos */}
