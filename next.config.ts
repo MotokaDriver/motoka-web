@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
-// URL do painel web do estabelecimento (Flutter web, hospedado fora da landing).
+// URL do painel web do estabelecimento (app Next em painel/, hospedado fora da landing, no
+// Cloudflare Workers; ver painel/README.md).
 // O domínio definitivo ainda não existe: o default é um placeholder documentado no README.
 const DEFAULT_PAINEL_URL = "https://painel.motokadriver.com";
 const BASE_ALLOWED_DOMAINS = ["motokadriver.com"];

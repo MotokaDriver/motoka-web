@@ -1,4 +1,10 @@
 @import "tailwindcss";
+/* painel/ é outro app Next (DN-01): o Tailwind da landing não varre as classes dele. Nem os
+   workflows, a documentação e o README, que não são UI (o texto deles virava classe por engano). */
+@source not "../painel";
+@source not "../.github";
+@source not "../docs";
+@source not "../README.md";
 
 :root {
   --background: #ffffff;

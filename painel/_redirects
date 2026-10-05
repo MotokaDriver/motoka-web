@@ -1,0 +1,4 @@
+# Só duas regras, nesta ordem (§7.1). Sem catch-all de SPA: as rotas do painel são arquivos
+# reais (trailingSlash) e o resto cai no out/404.html (not_found_handling "404-page").
+/convite/*  /convite/  200
+/r/*  /r/  200

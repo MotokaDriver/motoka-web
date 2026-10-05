@@ -1,0 +1,177 @@
+# CI de PR da landing e do painel (WN-plano §8.0). Os jobs que falam com a Cloudflare só rodam com
+# a variável de repositório CLOUDFLARE_ENABLED=true (H-1); sem ela aparecem como skipped e o resto
+# fica verde.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      landing: ${{ steps.filter.outputs.landing }}
+      painel: ${{ steps.filter.outputs.painel }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          predicate-quantifier: every
+          filters: |
+            landing:
+              - '**'
+              - '!painel/**'
+              - '!docs/**'
+            painel:
+              - 'painel/**'
+
+  landing-check:
+    needs: changes
+    if: needs.changes.outputs.landing == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - name: Build da landing (o mesmo comando do deploy)
+        run: npx next build
+      - name: Inventário do out/ (sem o diretório do buildId, N2-3)
+        run: |
+          find out -type f | sed -E 's#_next/static/[^/]+/(_buildManifest|_ssgManifest|_clientMiddlewareManifest)#_next/static/BUILDID/\1#' | sort > "$RUNNER_TEMP/files-pr.txt"
+          find out -name '*.css' -printf '%s\n' | awk '{s+=$1} END {print s+0}' > "$RUNNER_TEMP/css-pr.txt"
+      - name: Build da landing no main (base de comparação)
+        run: |
+          git worktree add "$RUNNER_TEMP/base" origin/main
+          cd "$RUNNER_TEMP/base"
+          yarn install --frozen-lockfile
+          npx next build
+          find out -name '*.css' -printf '%s\n' | awk '{s+=$1} END {print s+0}' > "$RUNNER_TEMP/css-main.txt"
+      - name: O CSS da landing não cresce (Tailwind sem varrer o painel)
+        run: |
+          main=$(cat "$RUNNER_TEMP/css-main.txt"); pr=$(cat "$RUNNER_TEMP/css-pr.txt")
+          echo "CSS da landing: main=${main} bytes, PR=${pr} bytes"
+          if [ "$pr" -gt "$main" ]; then
+            echo "::error::O CSS da landing cresceu (${main} -> ${pr}). O Tailwind está varrendo o painel?"
+            exit 1
+          fi
+
+  painel-check:
+    needs: changes
+    if: needs.changes.outputs.painel == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: painel
+    env:
+      # Build do E2E: API mockada pelo servidor de teste na 8790 (test/e2e/mockApi.ts).
+      NEXT_PUBLIC_APP_ENV: e2e
+      NEXT_PUBLIC_API_URL: http://localhost:8790
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: painel/yarn.lock
+      # Só o painel: sem o node_modules da raiz, para pegar dependência resolvida por engano (DN-01).
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - name: Typecheck (app + páginas estáticas com checkJs)
+        run: yarn typecheck
+      - run: yarn test
+      - name: Auditoria das dependências de produção (bloqueia high/critical)
+        run: yarn audit --groups dependencies --level high
+      - name: Auditoria das dependências de desenvolvimento (informativa)
+        run: yarn audit --groups devDependencies --level high
+        continue-on-error: true
+      - name: Build (variante e2e) com a checagem de zero scripts inline
+        run: yarn build
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Playwright contra o wrangler dev (8787)
+        run: yarn e2e
+      - name: Build (variante prod) e headers de prod
+        env:
+          NEXT_PUBLIC_APP_ENV: prod
+          NEXT_PUBLIC_API_URL: https://api.motokadriver.com
+          E2E_VARIANT: prod
+        run: |
+          yarn build
+          npx playwright test --project=chromium -g "página /|Referrer-Policy no-referrer|well-known|assets do convite"
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: painel-e2e
+          path: |
+            painel/playwright-report
+            painel/test-results
+            painel/out
+          retention-days: 7
+
+  painel-preview:
+    needs: painel-check
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      vars.CLOUDFLARE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: painel
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: painel/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - name: Build (variante preview)
+        env:
+          NEXT_PUBLIC_APP_ENV: preview
+          NEXT_PUBLIC_API_URL: ${{ vars.PAINEL_PREVIEW_API_URL }}
+        run: yarn build
+      - id: upload
+        name: Preview sem promover a versão (wrangler versions upload)
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: painel
+          command: versions upload --preview-alias pr-${{ github.event.pull_request.number }}
+      - name: Comenta a URL do preview no PR
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          OUTPUT: ${{ steps.upload.outputs.command-output }}
+        with:
+          script: |
+            const urls = (process.env.OUTPUT || "").match(/https:\/\/\S+\.workers\.dev\S*/g) || [];
+            const alias = urls.find((u) => u.includes("pr-")) || urls[0] || "(URL não encontrada na saída do wrangler)";
+            const body = [
+              `Preview do painel: ${alias}`,
+              "",
+              "O login não funciona no preview (a origem não é o mesmo site da API, DN-04).",
+              "Serve para revisar visual, headers, CSP, 404, /.well-known, /r/ e /convite/.",
+            ].join("\n");
+            await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });

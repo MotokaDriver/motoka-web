@@ -1,0 +1,301 @@
+@import "tailwindcss";
+
+/*
+ * Tokens do design (Claude Design 04c80fdb, tokens/*.css), portados 1:1.
+ * Escuro é o padrão (:root); `data-theme="light"` no <html> troca para o claro.
+ * O `data-theme` é aplicado por /theme-init.js antes da primeira pintura (DN-05).
+ */
+:root {
+  color-scheme: dark;
+
+  /* Marca */
+  --primary: #4a6fc5;
+  --primary-light: #6b8cd9;
+  --primary-dark: #3756a9;
+  --on-primary: #ffffff;
+
+  /* Fundos */
+  --background: #0a0a0a;
+  --surface-lowest: #050505;
+  --surface: #141414;
+  --surface-variant: #262626;
+  --surface-elevated: #2e2e2e;
+
+  /* Texto */
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1a1;
+  /* O design usa #737373, que fica abaixo de 4.5:1 sobre o fundo e a superfície. Para texto
+     corrido o painel clareia o terciário até o mínimo do WCAG AA (critério 9 do WN-0). */
+  --text-tertiary: #8c8c8c;
+  --text-disabled: #525252;
+  --text-inverse: #0a0a0a;
+
+  /* Bordas */
+  --border: #404040;
+  --border-light: #525252;
+  --divider: #1f1f1f;
+
+  /* Semânticas */
+  --success: #34c759;
+  --error: #ff453a;
+  --warning: #d4922a;
+  --info: #5ac8fa;
+
+  --disabled: #1f1f1f;
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  /* Texto na cor da marca (item ativo, links, iniciais): o tom que passa 4.5:1 em cada tema. */
+  --primary-text: #6b8cd9;
+
+  --primary-tint: rgba(74, 111, 197, 0.1);
+  --primary-tint-border: rgba(74, 111, 197, 0.3);
+  --error-tint-soft: rgba(255, 69, 58, 0.08);
+  --error-tint-border: rgba(255, 69, 58, 0.24);
+
+  /* Tipografia (typography.css). `--font-mono` não existe no design: pilha do sistema. */
+  --font-sans-stack: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Movimento (motion.css) */
+  --duration-fast: 180ms;
+  --duration-base: 200ms;
+  --duration-page: 250ms;
+  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --primary: #3756a9;
+  --primary-light: #4a6fc5;
+  --primary-dark: #2a4388;
+
+  --background: #f8f8fa;
+  --surface-lowest: #f2f2f7;
+  --surface: #ffffff;
+  --surface-variant: #f0f0f5;
+  --surface-elevated: #ffffff;
+
+  --text-primary: #0e0e10;
+  --text-secondary: #6e6e7a;
+  /* O design usa #A0A0AB, que não passa 4.5:1 sobre o branco. Para texto corrido o painel
+     escurece o terciário até o mínimo do WCAG AA (critério 9 do WN-0). */
+  --text-tertiary: #6e6e7a;
+  --text-disabled: #c5c5cd;
+  --text-inverse: #f5f5f7;
+
+  --border: #e0e0e7;
+  --border-light: #ececf1;
+  --divider: #f0f0f5;
+
+  --success: #28a745;
+  --error: #dc3545;
+  --warning: #cb822c;
+  --info: #007aff;
+
+  --disabled: #f0f0f5;
+  --overlay: rgba(0, 0, 0, 0.2);
+
+  --primary-text: #3756a9;
+
+  --primary-tint: rgba(55, 86, 169, 0.1);
+  --primary-tint-border: rgba(55, 86, 169, 0.3);
+  --error-tint-soft: rgba(220, 53, 69, 0.08);
+  --error-tint-border: rgba(220, 53, 69, 0.24);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-text: var(--primary-text);
+  --color-on-primary: var(--on-primary);
+  --color-background: var(--background);
+  --color-surface-lowest: var(--surface-lowest);
+  --color-surface: var(--surface);
+  --color-surface-variant: var(--surface-variant);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-divider: var(--divider);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-overlay: var(--overlay);
+  --color-primary-tint: var(--primary-tint);
+  --color-primary-tint-border: var(--primary-tint-border);
+  --color-error-tint-soft: var(--error-tint-soft);
+  --color-error-tint-border: var(--error-tint-border);
+
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
+
+  /* radius.css */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-xxl: 20px;
+  --radius-xxxl: 24px;
+
+  /* spacing.css (grade de 4 px): o `--spacing` do Tailwind já é 0.25rem = 4 px. */
+
+  --ease-standard: var(--ease-in-out);
+}
+
+/* Tipografia do design (shorthands `font:` do typography.css) como utilitários. O peso lê
+   --tw-font-weight: assim `font-bold`/`font-semibold` ao lado de `type-*` vencem em qualquer ordem
+   (como o `fontWeight` que os mocks põem por cima do `font`). */
+@utility type-display-sm {
+  font-family: var(--font-sans-stack);
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: var(--tw-font-weight, 600);
+  letter-spacing: -0.6px;
+}
+@utility type-heading-lg {
+  font-family: var(--font-sans-stack);
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: var(--tw-font-weight, 600);
+  letter-spacing: -0.4px;
+}
+@utility type-heading-md {
+  font-family: var(--font-sans-stack);
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: var(--tw-font-weight, 600);
+  letter-spacing: -0.3px;
+}
+@utility type-heading-sm {
+  font-family: var(--font-sans-stack);
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: var(--tw-font-weight, 600);
+  letter-spacing: -0.2px;
+}
+@utility type-title-lg {
+  font-family: var(--font-sans-stack);
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: var(--tw-font-weight, 600);
+  letter-spacing: -0.1px;
+}
+@utility type-title-md {
+  font-family: var(--font-sans-stack);
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: var(--tw-font-weight, 500);
+  letter-spacing: -0.05px;
+}
+@utility type-title-sm {
+  font-family: var(--font-sans-stack);
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: var(--tw-font-weight, 500);
+}
+@utility type-body-lg {
+  font-family: var(--font-sans-stack);
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: var(--tw-font-weight, 400);
+}
+@utility type-body-md {
+  font-family: var(--font-sans-stack);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: var(--tw-font-weight, 400);
+}
+@utility type-body-sm {
+  font-family: var(--font-sans-stack);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: var(--tw-font-weight, 400);
+  letter-spacing: 0.05px;
+}
+@utility type-label-lg {
+  font-family: var(--font-sans-stack);
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: var(--tw-font-weight, 600);
+}
+@utility type-label-md {
+  font-family: var(--font-sans-stack);
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: var(--tw-font-weight, 500);
+  letter-spacing: 0.1px;
+}
+@utility type-label-sm {
+  font-family: var(--font-sans-stack);
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: var(--tw-font-weight, 500);
+  letter-spacing: 0.2px;
+}
+@utility type-caption {
+  font-family: var(--font-sans-stack);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: var(--tw-font-weight, 400);
+  letter-spacing: 0.15px;
+}
+
+/* Barra de rolagem nativa escondida, no lugar do <style> que a Base UI injetaria (DN-06). */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: var(--font-sans-stack);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Foco sempre visível no teclado (critério 9 do WN-0). */
+  :focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Classe que a Base UI aplica no lugar do <style> que ela injetaria, desligado pelo
+   CSPProvider disableStyleElements (DN-06). */
+.base-ui-disable-scrollbar {
+  scrollbar-width: none;
+}
+.base-ui-disable-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Logo por tema, trocado por CSS (sem JS e sem flash). */
+.logo-light {
+  display: none;
+}
+:root[data-theme="light"] .logo-light {
+  display: block;
+}
+:root[data-theme="light"] .logo-dark {
+  display: none;
+}

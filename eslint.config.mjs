@@ -5,5 +5,6 @@ import nextTs from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  // painel/ é outro app Next, com lint próprio (painel/eslint.config.mjs).
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "painel/**"]),
 ]);

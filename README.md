@@ -37,7 +37,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Botão "Entrar" (painel do estabelecimento)
 
-O botão "Entrar" leva ao painel web (Flutter web, hospedado fora da landing). A URL vem de variáveis de **build**:
+O botão "Entrar" leva ao painel web (app Next em `painel/`, publicado no Cloudflare Workers, fora da landing; ver `painel/README.md`). A URL vem de variáveis de **build**:
 
 | Variável | Uso | Default |
 |---|---|---|

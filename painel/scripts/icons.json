@@ -1,0 +1,4 @@
+{
+  "outline": ["map", "groups", "receipt_long", "payments", "two_wheeler", "hub", "notifications", "person", "menu", "close", "logout", "error", "keyboard", "wifi_off", "refresh", "construction", "schedule", "arrow_forward", "visibility", "visibility_off", "storefront", "progress_activity"],
+  "filled": ["map", "groups", "receipt_long", "payments", "two_wheeler", "hub", "notifications", "person"]
+}

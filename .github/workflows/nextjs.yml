@@ -8,6 +8,8 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
+    # O painel (painel/) tem deploy próprio (painel-deploy.yml): mexer só nele não republica a landing.
+    paths-ignore: ["painel/**", "docs/**"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["9D92T4ZS2F.com.app.motoka"],
+        "components": [
+          { "/": "/convite/*", "comment": "Convite de equipe do motoboy (WS-06)" }
+        ]
+      }
+    ]
+  }
+}
