@@ -7,7 +7,6 @@ import step1Img from "../public/images/step1.jpg";
 import step2Img from "../public/images/step2.jpg";
 import step3Img from "../public/images/step3.png";
 import step4Img from "../public/images/step4.png";
-import step5Img from "../public/images/step5.png";
 import step6Img from "../public/images/step6.png";
 import step7Img from "../public/images/step7.png";
 import motokaLogo from "../public/images/motoka-logo.png";
@@ -39,7 +38,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-500 selection:text-white">''
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-500 selection:text-white">&apos;&apos;
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
         <div className="container mx-auto px-4 md:px-6 h-20 flex justify-between items-center">

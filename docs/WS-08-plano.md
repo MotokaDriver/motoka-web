@@ -60,3 +60,16 @@ As skills são prompts de roteiro, sem subagente próprio: a revisão equivalent
 ## Pendências adicionais
 - Subir `next` para >=16.3.6.
 - Consertar o lint (migrar para `eslint.config.mjs` / `eslint .`).
+
+## Revisão independente (devil's advocate, 2ª opinião)
+Veredito: **APROVADO COM RESSALVAS** (ressalvas corrigidas nesta revisão).
+
+Achados:
+- RESSALVA: a verificação anterior (`yarn build`, `out/`) rodou com `node_modules` desatualizado (Next 15.2.3 instalado, enquanto `package.json`/`yarn.lock` pediam Next 16). Refeito após `yarn install`: build com Next 16.3.6 OK, `href="https://painel.motokadriver.com/"` em `out/index.html`, `out/pedido.html` e `out/termos-de-uso.html`; `tsc --noEmit` limpo; builds com host `motokadriver.com.evil.com` e `http://` continuam falhando.
+- RESSALVA: `yarn audit` (produção) com RCE crítico em `next/og`. `next` fixado em `16.3.6` (menor versão corrigida) e `eslint-config-next` em `16.3.6`; `yarn audit --groups dependencies`: 0 vulnerabilidades.
+- RESSALVA: `yarn lint` não rodava (`next lint` removido + `.eslintrc.json` legado). Migrado para `eslint.config.mjs` (flat config, `eslint-config-next` core-web-vitals + typescript, ignora `.next/`, `out/`); script `lint` = `eslint .`. Correções de código sem desligar regras: `'` e `"` escapados em `app/page.tsx` e `app/termos-de-uso/page.tsx`, import `step5Img` não usado removido. Dois `eslint-disable-next-line` pontuais e justificados: `set-state-in-effect` em `app/pedido/PedidoClient.tsx` (leitura de query string só no cliente, padrão intencional do export estático) e `no-require-imports` em `tailwind.config.js` (config CJS). `yarn lint` passa.
+- NOTA: o plano previa link da nota do motoboy para `#download`; a implementação deixou só texto (aceitável, nota fica ao lado dos botões de loja).
+- NOTA: `package-lock.json` está versionado junto de `yarn.lock` e defasado (Next 16.3.1); o CI usa yarn (detecta `yarn.lock`). Não alterado; sugerido remover o lockfile do npm.
+- Sem bloqueadores na lógica do botão: validação em build cobre https, credenciais, sufixo enganoso e variável vazia (cai no default).
+
+Não verificado: renderização visual em navegador (320px/desktop), valor real da variável de repositório no GitHub, domínio definitivo do painel.
