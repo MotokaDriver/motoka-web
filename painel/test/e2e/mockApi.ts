@@ -1,4 +1,5 @@
 import http from "node:http";
+import { MockDeliveries } from "./mockDeliveries";
 import { MockTeam } from "./mockTeam";
 
 /**
@@ -45,6 +46,7 @@ function token(sub: string, id: number): string {
 
 export class MockApi {
   team = new MockTeam();
+  deliveries = new MockDeliveries();
   refreshes: Interval[] = [];
   logoutCalls = 0;
   loginCalls = 0;
@@ -82,6 +84,7 @@ export class MockApi {
     this.invite = { status: 404, body: { error_code: "TEAM_INVITE_NOT_FOUND", detail: "x" } };
     this.inviteRequests = [];
     this.team = new MockTeam();
+    this.deliveries = new MockDeliveries();
     this.cookies = new Map();
     this.tokens = new Map();
   }
@@ -248,6 +251,13 @@ export class MockApi {
       const raw = req.method === "GET" || req.method === "DELETE" ? "" : await readBody();
       const json = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
       const result = this.team.route(path.slice("/teams/me/".length), req.method ?? "GET", url.searchParams.get("week_start"), json);
+      if (result) return send(result[0], result[1]);
+    }
+
+    if (path === "/deliveries" || path.startsWith("/deliveries/")) {
+      const raw = req.method === "GET" || req.method === "DELETE" ? "" : await readBody();
+      const json = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      const result = this.deliveries.route(path.slice("/deliveries".length), req.method ?? "GET", url.searchParams, json);
       if (result) return send(result[0], result[1]);
     }
 

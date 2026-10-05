@@ -12,11 +12,13 @@ export function Switch({
   onCheckedChange,
   label,
   description,
+  disabled = false,
 }: {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   label: string;
   description?: string;
+  disabled?: boolean;
 }) {
   const id = useId();
   const descriptionId = `${id}-description`;
@@ -35,9 +37,10 @@ export function Switch({
       <BaseSwitch.Root
         id={id}
         checked={checked}
+        disabled={disabled}
         onCheckedChange={(next) => onCheckedChange(next)}
         aria-describedby={description ? descriptionId : undefined}
-        className="relative h-7 w-[46px] shrink-0 cursor-pointer rounded-full border border-border bg-surface-variant transition-colors data-[checked]:bg-success"
+        className="relative h-7 w-[46px] shrink-0 cursor-pointer rounded-full border border-border bg-surface-variant transition-colors data-[checked]:bg-success data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60"
       >
         <BaseSwitch.Thumb className="absolute left-[3px] top-[3px] size-5 rounded-full bg-white transition-transform data-[checked]:translate-x-[18px]" />
       </BaseSwitch.Root>

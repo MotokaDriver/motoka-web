@@ -16,7 +16,8 @@
     "e2e": "playwright test",
     "icons": "node scripts/gen-icons.mjs",
     "check-error-codes": "node scripts/check-error-codes.mjs",
-    "e2e:devenv": "playwright test -c playwright.devenv.config.ts"
+    "e2e:devenv": "playwright test -c playwright.devenv.config.ts",
+    "size:login": "node scripts/size-login.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",

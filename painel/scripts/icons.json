@@ -58,7 +58,17 @@
     "light_mode",
     "info",
     "person_off",
-    "schedule_send"
+    "schedule_send",
+    "priority_high",
+    "mobile",
+    "open_in_new",
+    "assignment_return",
+    "replay",
+    "add_task",
+    "swap_horiz",
+    "cancel",
+    "report",
+    "sync"
   ],
   "extraFilled": [
     "dark_mode",

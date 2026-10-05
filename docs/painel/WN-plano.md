@@ -65,7 +65,7 @@ Fontes lidas (o código é a fonte da verdade):
 |---|---|---|
 | WN-0 | Fundação, login/sessão, pipeline, convite e `.well-known` | agora |
 | WN-1 | Minha equipe | implementado, sem commit (§16) |
-| WN-2 | Pedidos | depois do commit da WS-02b |
+| WN-2 | Pedidos | implementado, sem commit (§17) |
 | WN-6 | "Acompanhar pedido" | depois do commit da WS-02b |
 | WN-3 | Mapa ao vivo | depois da WS-03b |
 | WN-5 | Acertos | depois da WS-11 |
@@ -1467,6 +1467,46 @@ Data: 2026-10-05. Sem commit (a pedido). Código em `painel/src/features/team/`;
 - Rodar `hm-designer`/`hm-qa`/`devil-advocate` de verdade antes do commit do WN-1, e o lado a lado com o design.
 - Mapa "Ver no mapa ›" aponta para `/ao-vivo/` (placeholder até o WN-3). A faixa "Agora" não mostra "Entregando" (sem posição).
 - `panelAnnounce` do Flutter virou o `aria-live` do Toast; sem região viva extra.
+
+## 17. Execução WN-2 (Pedidos)
+
+Data: 2026-10-05. Sem commit (a pedido). Código em `painel/src/features/deliveries/`; rota `/pedidos/` com `Suspense` por causa do `?pedido=` e do `?filtro=`. Contrato lido de `motoka-api/src/apps/deliveries/presentation/{routers,schemas}.py` e `application/dto.py` (WS-02a/b commitadas).
+
+### 17.1 O que foi feito
+
+- Lista: filtros "Em aberto" (`scope=open`, nunca manda `date`: o pedido que atravessa a meia-noite fica) e "Todos" (`scope=all&date=<dia SP>`), contadores do `counts`, "Mostrar mais" por `offset`, polling de 10 s, `?pedido=` passa por `isUuid` (inválido mostra "Pedido não encontrado." sem chamar a API), `?filtro=`.
+- Tabela: "ontem 23:50" só para pedido de outro dia (fuso de SP), `TrackCell` com os 5 estados, `priority_high` âmbar em `needs_attention`, mapa de status → tom (desconhecido vira "Status desconhecido").
+- Painel de 380 px: alertas (cancelado antes e depois da retirada, problema com descrição como texto puro, `late_pickup`, código bloqueado, geocode `failed`), cartão "Houve cobrança?" (E15, com "Corrigir"), motoboy (atribuir e trocar só em `preparing`/`ready`, sugestão primeiro, "turno não iniciado", "Remover motoboy", link para Minha equipe sem ninguém em turno), pagamento, código por origem, rastreio, histórico e barra de ações.
+- Rastreio: iFood nunca tem WhatsApp (teste de unidade e E2E); link do cliente passa por `checkedOwnUrl` (host do painel); WhatsApp só com celular válido; a mensagem muda antes e depois da retirada; o clique chama o E11 (`tracking-link/sent`).
+- Matriz de ações (`availableActions`): "Cancelar" e "Pronto" só em pedido manual, nota "Cancele no {origem}; o Motoka atualiza sozinho." nas outras, `late_pickup` torna o retorno a ação principal. `action_id` novo por toque, reaproveitado só depois de falha de rede e só na mesma ação (chave `pedido:ação`). Os 3 overrides de texto de entrega aplicados.
+- Drawer "Novo pedido" (460 px): Canal → Celular → Cliente → Rua → Número → Complemento → Pagamento; lookup `customers/lookup` com debounce de 300 ms, até 3 endereços, 429 e erro em silêncio; escolher endereço leva `lat`/`lng`, editar o endereço (ou o complemento) as descarta; "Curitiba · PR · alterar" (da loja); ViaCEP reverso (400 ms) e CEP opcional; balcão sem celular desliga o link; `client_request_id` por abertura (repetir com 200 não duplica); erros por campo; toast "Pedido #n criado." e o pedido fica selecionado.
+- Badge da sidebar (E3, `needs_attention`), em módulo leve (`badge.ts`) para não pesar no login. Atalhos N, J/K, 1/2.
+- `geocode_status = not_configured` não conta como erro (só `failed` alerta).
+
+### 17.2 Desvios e pendências
+
+| Item | Motivo |
+|---|---|
+| Sem o banner de aceite (`awaiting_acceptance`) e sem "Corrigir endereço" (E10) | fora do escopo pedido para o WN-2; o alerta de geocode `failed` fica sem o botão |
+| Telefone vai à API como DDD + número, sem o 55 | o `phoneDigits` do painel prefixa 55; a normalização do país é da API |
+| Bairro sempre visível no drawer | a API exige bairro e o ViaCEP nem sempre o devolve |
+| Lista de sugestões de rua com botões (Tab), não combobox com setas | pendência de acessibilidade para o hm-designer do WN-7 |
+| Sem mini-mapa | slot do WN-3 |
+
+### 17.3 Validação
+
+- Vitest: 39 testes novos em `test/unit/deliveries/` (matriz de ações por estado e origem, `TrackCell`, mensagem do WhatsApp, alertas, dia SP, regras do drawer, lookup com debounce, 429 silencioso, `action_id` reaproveitado, "Mostrar mais", iFood sem WhatsApp, E15). Lint e typecheck limpos.
+- Playwright mockado (`orders.spec.ts` + `mockDeliveries.ts`): criar, atribuir, marcar pronto e cancelar; iFood sem WhatsApp; `?pedido=` inválido; E11; repetir `client_request_id`. Suíte inteira passa.
+- Playwright real no dev-env (`test/e2e-devenv/orders.spec.ts`, painel na 3001), com o motoboy do seed na equipe e em turno com sessão aberta: criar, atribuir, pronto e cancelar passaram. O vínculo e o turno são recriados por API (`seed.ts`); o convite nominal exige o telefone do seed verificado (`UPDATE users SET phone_verified_at = now()` no `motoka_pg`, feito nesta rodada). O `team.spec.ts` do WN-1 passou a usar o mesmo preparo e não se pula mais.
+- Login: 220,5 KB gz (HEAD do WN-1: 220,4). `/pedidos/`: 270 KB gz.
+- Revisão pelas skills `hm-engineer`, `hm-designer` (comparado com o `render_preview` de `ui_kits/team_schedule`, tela de Pedidos, 1440 px) e `hm-qa`. Ajustes do design: cabeçalho na coluna da lista com o painel em altura total, drawer a 460 px, mensagem sem ponto duplicado.
+
+### 17.4 Correções da revisão (`WN-2-revisao-implementacao.md`)
+
+- R1: "Corrigir endereço" (E10): o alerta de geocode `failed` ganhou o botão, só antes da retirada (`preparing`/`ready`); o diálogo nasce do endereço atual e envia `PUT /deliveries/{id}/address` com `action_id`. Dois testes novos (com e sem retirada).
+- R2: o `action_id` agora só é descartado numa resposta definitiva (4xx de negócio). Rede, 5xx (502/504 da Cloudflare incluídos) e 429 mantêm o id do toque. Teste novo com 502, 429 e 409.
+- `yarn size:login` (`scripts/size-login.mjs`): soma gzip dos `/_next/*.js` do `out/<rota>/index.html` sem `noModule`, em KiB e kB, com teto de 220 KiB no login. Medida atual: login 217,6 KiB, equipe 283,3, pedidos 268,0 (a diferença para o "220,5" do §17.3 é que aquele somava também `theme-init.js` e `/_csp/*`).
+- E2E real do dev-env: o `orders.spec.ts` é com estado. O motoboy do seed não reabre a sessão de um turno já usado e a API não apaga turno em andamento, então, depois de uma rodada, a janela fica ocupada e o teste se pula com o motivo. Passou na rodada anterior (criar, atribuir, pronto e cancelar).
 
 ## Fontes (pesquisa web, out/2026)
 

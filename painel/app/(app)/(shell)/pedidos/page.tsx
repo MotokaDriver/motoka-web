@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { PlaceholderScreen } from "@/features/shell/PlaceholderScreen";
-import { Paths } from "@/lib/routing/routes";
+import { Suspense } from "react";
+import { DeliveriesScreen } from "@/features/deliveries/DeliveriesScreen";
 
 export const metadata: Metadata = { title: "Pedidos" };
 
 export default function Page() {
-  return <PlaceholderScreen path={Paths.deliveries} />;
+  // useSearchParams (?pedido= e ?filtro=) exige a fronteira de Suspense no export estatico.
+  return (
+    <Suspense fallback={null}>
+      <DeliveriesScreen />
+    </Suspense>
+  );
 }

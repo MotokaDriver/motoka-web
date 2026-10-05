@@ -31,6 +31,8 @@ const mondayOf = (day: string) => addDay(day, -((new Date(`${day}T00:00:00Z`).ge
 
 export class MockTeam {
   memberStatus = "active";
+  /** `true`: o motoboy aparece em `/on-shift` (atribuição de pedido). */
+  onShiftNow = false;
   shifts: TeamShift[] = [];
   invites: TeamInvite[] = [];
   linkVersion = 1;
@@ -151,7 +153,12 @@ export class MockTeam {
   route(rest: string, method: string, searchWeek: string | null, json: Record<string, unknown>): [number, unknown] | null {
     this.calls.push(`${method} ${rest}`);
     if (rest === "schedule") return [200, this.schedule(searchWeek)];
-    if (rest === "on-shift") return [200, { count: 0, items: [] }];
+    if (rest === "on-shift") {
+      const items = this.onShiftNow
+        ? [{ membership_id: TEAM_IDS.diego, driver: this.member().driver, shift_id: "d0000000-0000-4000-8000-000000000000", occurrence_date: spDayOf(new Date()), starts_at: new Date().toISOString(), ends_at: new Date(Date.now() + 3_600_000).toISOString(), session_started: true }]
+        : [];
+      return [200, { count: items.length, items }];
+    }
     if (rest === "invite-link") return [200, this.link()];
     if (rest === "invite-link/rotate") {
       this.linkVersion += 1;

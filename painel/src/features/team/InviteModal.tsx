@@ -4,8 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { isApiError } from "@/lib/api/errors";
 import { UNKNOWN_MESSAGE } from "@/lib/errors/messages";
-import { APP_ENV } from "@/lib/env";
-import { trustedUrl, whatsappLink } from "@/lib/links/links";
+import { whatsappLink } from "@/lib/links/links";
+import { checkedOwnUrl } from "@/lib/links/ownUrl";
 import { spDay } from "@/lib/time/saoPaulo";
 import { addDays } from "@/lib/time/saoPaulo";
 import { Avatar } from "@/ui/Avatar";
@@ -38,14 +38,7 @@ export const COPIED_VISIBLE_MS = 2_000;
 
 export const LINK_UNAVAILABLE = "Não foi possível gerar o link agora.";
 
-/**
- * O link do convite vem da API e vira texto, QR, área de transferência e mensagem de WhatsApp: só vale
- * se for https (ou http://localhost fora de prod) e do host do próprio painel, que serve /convite/ (§6.2).
- * Inválido vira `""`, e a tela mostra que o link não está disponível.
- */
-export function checkedInviteUrl(url: string): string {
-  return trustedUrl(url, window.location.host, { allowLocalhost: APP_ENV !== "prod" }) ?? "";
-}
+export const checkedInviteUrl = checkedOwnUrl;
 
 const withoutScheme = (url: string) => url.replace(/^https?:\/\//, "");
 const errorOf = (error: unknown) => (isApiError(error) ? error.text() : UNKNOWN_MESSAGE);

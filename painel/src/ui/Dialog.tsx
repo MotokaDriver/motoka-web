@@ -62,7 +62,7 @@ export function Dialog({
                 SIZE[size],
               ),
             variant === "side" && "inset-y-0 left-0 w-[min(280px,85vw)] border-y-0 border-l-0",
-            variant === "right" && "inset-y-0 right-0 w-[min(420px,100vw)] border-y-0 border-r-0",
+            variant === "right" && cn("inset-y-0 right-0 border-y-0 border-r-0", size === "lg" ? "w-[min(460px,100vw)]" : "w-[min(420px,100vw)]"),
             className,
           )}
         >

@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { DESTINATIONS, destinationFor } from "@/lib/routing/routes";
+import { useAttentionBadge } from "@/features/deliveries/badge";
+import { DESTINATIONS, Paths, destinationFor } from "@/lib/routing/routes";
+import { isAvailable, useCapabilities } from "./capabilities";
 import { initials, storeAddress, storeName, type PanelUser } from "@/lib/session/user";
 import { Avatar } from "@/ui/Avatar";
 import { cn } from "@/ui/cn";
@@ -21,6 +23,8 @@ export function Sidebar({
   onNavigate?: () => void;
 }) {
   const active = destinationFor(pathname);
+  // Badge de Pedidos (E3): quantos precisam de atenção; zero ou erro, sem badge.
+  const attention = useAttentionBadge(isAvailable(useCapabilities(), "deliveries"));
   const name = storeName(user);
   const address = storeAddress(user);
 
@@ -40,6 +44,7 @@ export function Sidebar({
               href={destination.path}
               onClick={onNavigate}
               aria-current={on ? "page" : undefined}
+              aria-label={destination.path === Paths.deliveries && attention > 0 ? `Pedidos, ${attention} ${attention === 1 ? "precisa" : "precisam"} de atenção` : undefined}
               className={cn(
                 "type-body-md flex min-h-10 items-center gap-2.5 rounded-md px-2.5 py-[9px] transition-colors",
                 on
@@ -51,6 +56,11 @@ export function Sidebar({
                 <Icon name={destination.icon} size={20} filled={on} />
               </span>
               {destination.label}
+              {destination.path === Paths.deliveries && attention > 0 && (
+                <span aria-hidden className="type-label-sm ml-auto grid min-w-5 place-items-center rounded-full bg-warning px-1.5 font-bold text-black">
+                  {attention}
+                </span>
+              )}
             </Link>
           );
         })}
