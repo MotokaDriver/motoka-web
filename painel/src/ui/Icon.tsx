@@ -1,4 +1,4 @@
-import { FILLED_ICONS, ICONS, type IconName } from "@/icons/registry";
+import { iconPaths, type IconName } from "@/icons/store";
 
 export type { IconName };
 
@@ -13,7 +13,7 @@ interface IconProps {
 
 /** Ícone Material Symbols Rounded em SVG (DN-10), na cor do texto (`currentColor`). */
 export function Icon({ name, size = 20, filled = false, className, label }: IconProps) {
-  const paths = (filled ? FILLED_ICONS[name] : undefined) ?? ICONS[name];
+  const paths = iconPaths(name, filled);
   return (
     <svg
       viewBox="0 -960 960 960"

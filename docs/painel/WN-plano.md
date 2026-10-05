@@ -64,7 +64,7 @@ Fontes lidas (o código é a fonte da verdade):
 | ID | Escopo | Quando |
 |---|---|---|
 | WN-0 | Fundação, login/sessão, pipeline, convite e `.well-known` | agora |
-| WN-1 | Minha equipe | agora |
+| WN-1 | Minha equipe | implementado, sem commit (§16) |
 | WN-2 | Pedidos | depois do commit da WS-02b |
 | WN-6 | "Acompanhar pedido" | depois do commit da WS-02b |
 | WN-3 | Mapa ao vivo | depois da WS-03b |
@@ -1421,6 +1421,52 @@ Veredito: APROVADO COM RESSALVAS (0 bloqueadores, 3 ressalvas, 7 notas). Corrigi
 Revalidação: lint, typecheck, Vitest **163/163**, build nas três variantes com zero script inline, Playwright mock **51/51**, headers de prod **10/10**, dev-env real **4/4**, auditoria de produção sem vulnerabilidade.
 
 ---
+
+## 16. Execução WN-1 (Minha equipe)
+
+Data: 2026-10-05. Sem commit (a pedido). Código em `painel/src/features/team/`; rota `/equipe/` com `Suspense` por causa do `?semana=`.
+
+### 16.1 O que foi feito
+
+- Contrato `/teams/me/*` (E1–E16) lido de `motoka-api/src/apps/teams`: parsers tolerantes em `model.ts` (enum em qualquer caixa, desconhecido cai no mais restrito), dinheiro como string, `series_id` para remover turno, todo id passa por `isUuid` antes de virar caminho.
+- Tela: cabeçalho com semana na URL (`?semana=` inválido vira a semana atual) e `[` `]`; faixa "Agora" (E16, 30 s); grade (E15, 60 s) com chips de acesso, "+1 equipe", pílula suspensa (D-12), "Ocupado" listrado, convite pendente, cobertura em duas linhas sem truncar e sem vermelho em dia passado; menu do turno; Pausar/Retomar/Remover e "Combinado padrão"; drawer "Adicionar turno" (dias, atalhos de horário, "Termina no dia seguinte.", 16 h, Outro valor, Repetir, Lembrar, "Salvar n turnos", dias marcados por `TEAM_SHIFT_DRIVER_BUSY`/`IN_PAST`, "Descartar as alterações?", Ctrl+Enter); modal "Convidar" (link, Copiar/Copiado 2 s, WhatsApp, QR 168 px, novo link com confirmação, convite nominal com link visível por 1 min, lista com 6 estados, Reenviar e Cancelar).
+- B-1 (atalho com overlay aberto): todo `Dialog`, drawer e menu conta no contador de overlays; testado com drawer aberto e com atalhos desligados. B-2 (cobertura): "sem ninguém" em linha própria, testado.
+- Dois ticks iguais: `memo(WeekGrid)` mais compartilhamento estrutural do Query; teste com `Profiler` (zero commits da grade).
+- `ShortcutsProvider.useShortcut` passou a guardar a ação em ref: com ação inline o registro era refeito a cada render e notificava a ajuda em loop (achado nos testes).
+- `FieldError` ganhou `detail` (a `message` do backend lida só como dado: o número do dia em `weekdays`; nunca vai à tela).
+- Ícones da tela ficam em `icons/extra.ts`, registrados por `features/team/icons.ts` (fora do primeiro carregamento do login).
+- Dependência nova: `qrcode@1.5.4` (+ `@types/qrcode`), carregada só ao abrir o modal. O QR é um `<path>` SVG montado a partir de `create()`: sem canvas, sem `data:`, sem `dangerouslySetInnerHTML`.
+
+### 16.2 Desvios (com motivo)
+
+| Desvio | Motivo |
+|---|---|
+| Lista suspensa nativa (`SelectField`) para motoboy, remuneração e chuva, em vez de Base UI Select | teclado e leitor de tela de graça, zero CSS injetado (DN-06) |
+| Formulários com estado controlado e regras puras (`addShift.ts`), sem react-hook-form | a validação depende do relógio de SP e do membro; o RHF só traria `isDirty` |
+| WhatsApp do convite nominal é um link no cartão, não abre sozinho | `window.open` após `await` é bloqueado e a regra de lint o proíbe |
+| Linha do membro mostra o nome completo (R-4 do WS-05a); só as células de dia ficam a 60% quando pausado | contraste do nome e do chip "Pausado" |
+| `Reenviar`/`Cancelar` convite como botões de ícone com `aria-label` | alvo de 40 px (R-7) |
+
+### 16.3 Validação
+
+- `yarn lint`, `yarn typecheck`: limpos. `yarn test`: 198 passaram (35 novos em `test/unit/team/`: modelo, datas, regras do drawer, grade, B-1/B-2, ações, convite, 429, semana passada, 403). `check-error-codes`: 204 na API, 205 no catálogo.
+- `yarn build` (e2e, API 8790): "28 scripts inline externalizados em 14 páginas; 16 HTML verificados", zero script inline.
+- Playwright (API mockada, `test/e2e/team.spec.ts` + `mockTeam.ts`): 53 passaram, 0 `securitypolicyviolation`. `session.spec.ts` usava `/equipe/` só para forçar o refetch de capabilities; passou a usar `/pedidos/`.
+- Playwright contra o dev-env real (`test/e2e-devenv/team.spec.ts`, painel na 3001): convidar, adicionar turno (motoboy sem combinado cai em Outro valor), pausar com turno suspenso, retomar, remover turno e remover membro passaram na 1ª execução. Na repetição o motoboy do seed já foi removido (`TEAM_REJOIN_REQUIRES_INVITE`) e o telefone do seed não é verificado, então o teste se pula com o motivo; recriar o seed do dev-env habilita de novo.
+- Número de aceite do login: **220,4 KB gz** (sem `noModule`, soma dos scripts do `entrar/index.html`). Medido também no HEAD do WN-0 com o mesmo método: **220,4 KB**, ou seja, o WN-1 não adiciona nada ao login. O vazamento que existia (+4 KB de ícones) foi corrigido movendo os ícones da tela para `icons/extra.ts`; o `qrcode` já era `import()` dinâmico. O "218" do §15 vinha de outro método de medição, e o teto de 220 passa a valer sobre os 220,4 do HEAD (ressalva para o WN-2: medir sempre pelo mesmo script).
+- Etapa 5 (skills `hm-engineer`, `hm-designer`, `hm-qa`) aplicada sobre o diff: engenharia (timer do "Copiado" passou a ter cleanup), design (comparado com o `render_preview` de `ui_kits/team_schedule` no 1440 px: cartões da faixa "Agora" passaram a ocupar a largura como no design; rótulos do drawer em caixa alta) e QA (35 testes novos, E2E mockado e real). `/devil-advocate` não rodou.
+
+### 16.3.1 Correções da revisão (`WN-1-revisao-implementacao.md`)
+
+- Ressalva 1: o link do convite (lista, criação, reenvio e novo link) passa por `trustedUrl` com o host do próprio painel (`window.location.host`, `http://localhost` só fora de prod). Inválido vira "Não foi possível gerar o link agora.", sem copiar, sem QR e sem WhatsApp. Dois testes novos.
+- Ressalva 2: "Remover turno" fica desabilitado em turno "só nesta semana" que já passou ("Este turno já aconteceu.", no texto e no `title`). Um teste novo.
+- Nota 1: o `import("qrcode")` ganhou `.catch` ("QR indisponível. Use o link."). As notas 2 a 4 ficam como pendência.
+
+### 16.4 Pendências
+
+- Rodar `hm-designer`/`hm-qa`/`devil-advocate` de verdade antes do commit do WN-1, e o lado a lado com o design.
+- Mapa "Ver no mapa ›" aponta para `/ao-vivo/` (placeholder até o WN-3). A faixa "Agora" não mostra "Entregando" (sem posição).
+- `panelAnnounce` do Flutter virou o `aria-live` do Toast; sem região viva extra.
 
 ## Fontes (pesquisa web, out/2026)
 

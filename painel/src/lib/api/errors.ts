@@ -1,8 +1,12 @@
 import { errorText, type ErrorLike } from "@/lib/errors/messages";
 
-/** Campo recusado pela API. A `message` do backend (Pydantic, em inglês) não é guardada. */
+/**
+ * Campo recusado pela API. `detail` é a `message` do backend lida **só como dado** (por exemplo,
+ * o número do dia da semana em `weekdays`): nunca vai para a tela como texto.
+ */
 export interface FieldError {
   readonly field: string;
+  readonly detail: string;
 }
 
 /**
@@ -93,10 +97,8 @@ export async function apiErrorFromResponse(response: Response): Promise<ApiError
       if (Array.isArray(errors)) {
         fieldErrors = errors.flatMap((item: unknown) => {
           if (!item || typeof item !== "object") return [];
-          const field = (item as Record<string, unknown>).field;
-          return typeof field === "string"
-            ? [{ field }]
-            : [];
+          const { field, message } = item as Record<string, unknown>;
+          return typeof field === "string" ? [{ field, detail: typeof message === "string" ? message : "" }] : [];
         });
       }
     }

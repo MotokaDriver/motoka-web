@@ -1,4 +1,5 @@
 import http from "node:http";
+import { MockTeam } from "./mockTeam";
 
 /**
  * API de dev mockada (DN-12) como um servidor HTTP de verdade na 8790, e não `page.route`: o
@@ -43,6 +44,7 @@ function token(sub: string, id: number): string {
 }
 
 export class MockApi {
+  team = new MockTeam();
   refreshes: Interval[] = [];
   logoutCalls = 0;
   loginCalls = 0;
@@ -79,6 +81,7 @@ export class MockApi {
     this.capabilities = { teams: true, deliveries: true, tracking: false };
     this.invite = { status: 404, body: { error_code: "TEAM_INVITE_NOT_FOUND", detail: "x" } };
     this.inviteRequests = [];
+    this.team = new MockTeam();
     this.cookies = new Map();
     this.tokens = new Map();
   }
@@ -143,7 +146,7 @@ export class MockApi {
     if (req.method === "OPTIONS") {
       res.writeHead(200, {
         ...cors,
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "authorization, content-type, x-motoka-client, accept",
         "Access-Control-Max-Age": "0",
       });
@@ -239,6 +242,13 @@ export class MockApi {
         corporate_reason: data.name,
         address: { street: data.street, number: 200, neighborhood: "Centro", city: "Curitiba", state: "PR" },
       });
+    }
+
+    if (path.startsWith("/teams/me/")) {
+      const raw = req.method === "GET" || req.method === "DELETE" ? "" : await readBody();
+      const json = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      const result = this.team.route(path.slice("/teams/me/".length), req.method ?? "GET", url.searchParams.get("week_start"), json);
+      if (result) return send(result[0], result[1]);
     }
 
     return send(404, { error_code: "ROUTE_NOT_FOUND", detail: "x" });

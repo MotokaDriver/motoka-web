@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { PlaceholderScreen } from "@/features/shell/PlaceholderScreen";
-import { Paths } from "@/lib/routing/routes";
+import { Suspense } from "react";
+import { TeamScreen } from "@/features/team/TeamScreen";
 
 export const metadata: Metadata = { title: "Minha equipe" };
 
 export default function Page() {
-  return <PlaceholderScreen path={Paths.team} />;
+  // useSearchParams (semana na URL) exige a fronteira de Suspense no export estatico.
+  return (
+    <Suspense fallback={null}>
+      <TeamScreen />
+    </Suspense>
+  );
 }

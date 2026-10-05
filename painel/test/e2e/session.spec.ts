@@ -25,7 +25,7 @@ async function expectShell(page: Page, store = "Padaria Teste LTDA") {
  * Adianta o relógio da página e navega pela sidebar: a tela nova monta a query de capabilities
  * já vencida (staleTime de 5 min), e o Query refaz o pedido com o access atual.
  */
-async function refetchAfter(page: Page, minutes: number, link = "Minha equipe") {
+async function refetchAfter(page: Page, minutes: number, link = "Pedidos") {
   await page.clock.fastForward(minutes * 60_000);
   await page.getByRole("link", { name: link }).first().click();
   await page.waitForURL((url) => url.pathname !== "/ao-vivo/");
@@ -130,7 +130,7 @@ test.describe("sessão (API mockada)", () => {
     api.staleUpTo = api.tokensIssued;
     api.nextRefreshError = { status: 401, code: "AUTH_SESSION_EXPIRED" };
     await refetchAfter(page, 6);
-    await expect(page).toHaveURL(/\/entrar\/\?de=%2Fequipe%2F$/);
+    await expect(page).toHaveURL(/\/entrar\/\?de=%2Fpedidos%2F$/);
     await expect(alertOf(page)).toHaveText("Sua sessão expirou. Entre novamente.");
   });
 });

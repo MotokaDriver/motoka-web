@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
@@ -25,10 +26,16 @@ export function useShortcutsEnabled(): boolean {
 /** Registra um atalho enquanto o componente estiver montado. */
 export function useShortcut(key: string, description: string, action: () => void): void {
   const registry = useContext(RegistryContext);
+  // A ação mais recente vai por ref: registrar de novo a cada render (ação inline) notificaria a
+  // ajuda em loop. O registro só depende da tecla e da descrição.
+  const latest = useRef(action);
+  useEffect(() => {
+    latest.current = action;
+  });
   useEffect(() => {
     if (!registry) return;
-    return registry.register({ key, description, action });
-  }, [registry, key, description, action]);
+    return registry.register({ key, description, action: () => latest.current() });
+  }, [registry, key, description]);
 }
 
 /** Atalhos do shell: um listener só, `?` abre a ajuda, e a ajuda desliga os atalhos. */

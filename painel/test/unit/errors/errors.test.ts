@@ -52,7 +52,7 @@ describe("ApiError", () => {
     const error = await apiErrorFromResponse(response);
     expect(error.status).toBe(422);
     expect(error.code).toBe("VALIDATION_ERROR");
-    expect(error.fieldErrors).toEqual([{ field: "username" }]);
+    expect(error.fieldErrors).toEqual([{ field: "username", detail: "Field required" }]);
     expect(error.retryAfter).toBe(30);
     expect(JSON.stringify(error)).not.toContain("texto interno");
     expect(error.text()).toBe("Confira os dados preenchidos e tente novamente.");

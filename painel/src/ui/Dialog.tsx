@@ -15,14 +15,22 @@ export function useOverlayRegistration(open: boolean): void {
   }, [open]);
 }
 
+const SIZE = {
+  sm: "w-[min(400px,calc(100vw-32px))]",
+  md: "w-[min(460px,calc(100vw-32px))]",
+  lg: "w-[min(620px,calc(100vw-32px))]",
+} as const;
+
 interface DialogProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly title: string;
   readonly description?: string;
   readonly children: ReactNode;
-  /** `side`: painel lateral (drawer da navegação abaixo de 1024 px). */
-  readonly variant?: "center" | "side";
+  /** `side`: menu lateral (navegação abaixo de 1024 px). `right`: drawer de formulário. */
+  readonly variant?: "center" | "side" | "right";
+  /** Largura do diálogo centralizado. */
+  readonly size?: "sm" | "md" | "lg";
   readonly className?: string;
 }
 
@@ -37,6 +45,7 @@ export function Dialog({
   description,
   children,
   variant = "center",
+  size = "md",
   className,
 }: DialogProps) {
   useOverlayRegistration(open);
@@ -47,13 +56,23 @@ export function Dialog({
         <BaseDialog.Popup
           className={cn(
             "fixed z-50 flex flex-col border border-border bg-background text-text-primary outline-none",
-            variant === "center"
-              ? "left-1/2 top-1/2 max-h-[92vh] w-[min(460px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xxl p-7"
-              : "inset-y-0 left-0 w-[min(280px,85vw)] border-y-0 border-l-0",
+            variant === "center" &&
+              cn(
+                "left-1/2 top-1/2 max-h-[92vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xxl p-7",
+                SIZE[size],
+              ),
+            variant === "side" && "inset-y-0 left-0 w-[min(280px,85vw)] border-y-0 border-l-0",
+            variant === "right" && "inset-y-0 right-0 w-[min(420px,100vw)] border-y-0 border-r-0",
             className,
           )}
         >
-          <div className={cn("flex items-start gap-3", variant === "side" && "sr-only")}>
+          <div
+            className={cn(
+              "flex items-start gap-3",
+              variant === "side" && "sr-only",
+              variant === "right" && "border-b border-divider px-6 py-5",
+            )}
+          >
             <div className="min-w-0 flex-1">
               <BaseDialog.Title className="type-title-lg font-bold">{title}</BaseDialog.Title>
               {description && (
@@ -62,7 +81,7 @@ export function Dialog({
                 </BaseDialog.Description>
               )}
             </div>
-            {variant === "center" && (
+            {variant !== "side" && (
               <BaseDialog.Close
                 aria-label="Fechar"
                 className="-mr-2 -mt-2 grid size-10 cursor-pointer place-items-center rounded-md text-text-secondary hover:bg-surface-variant"
