@@ -27,12 +27,13 @@ export const STATE_CHIP: Record<DriverState, { label: string; tone: Tone; icon: 
   delivering: { label: "Entregando", tone: "info", icon: "two_wheeler" },
   returning: { label: "Voltando", tone: "warning", icon: "u_turn_left" },
   at_store: { label: "Na loja", tone: "success", icon: "storefront" },
+  idle: { label: "Em turno, livre", tone: "neutral", icon: "two_wheeler" },
   no_signal: { label: "Sem sinal", tone: "error", icon: "location_off" },
   not_started: { label: "Sem sinal", tone: "error", icon: "location_off" },
   unknown: { label: "Em turno", tone: "neutral", icon: "two_wheeler" },
 };
 
-export type Filter = "all" | "delivering" | "returning" | "no_signal";
+export type Filter = "all" | "delivering" | "returning" | "idle" | "no_signal";
 
 export function matchesFilter(view: DriverView, filter: Filter): boolean {
   if (filter === "all") return true;
@@ -86,6 +87,8 @@ function headline(view: DriverView): { head: string; sub: string } {
       return { head: "Voltando para a loja", sub: d.lastDeliveredAt ? `Última entregue às ${spTime(new Date(d.lastDeliveredAt))}` : "" };
     case "at_store":
       return { head: "Na loja", sub: "" };
+    case "idle":
+      return { head: "Em turno, livre", sub: "" };
     case "not_started":
       return { head: "Localização desligada", sub: d.shift ? `Turno começou às ${spTime(new Date(d.shift.startsAt))}` : "" };
     case "no_signal":
@@ -213,6 +216,7 @@ export function FilterChips({ filter, onChange, counts, total }: { filter: Filte
     ["all", `Todos ${total}`],
     ["delivering", `Entregando ${counts.delivering}`],
     ["returning", `Voltando ${counts.returning}`],
+    ["idle", `Livres ${counts.idle}`],
     ["no_signal", `Sem sinal ${counts.noSignal}`],
   ];
   return (

@@ -97,7 +97,7 @@ function Screen({ tracking }: { tracking: boolean }) {
               {pill.time && <span aria-hidden>{`· ${pill.time}`}</span>}
             </div>
             <div className="type-label-md pointer-events-auto rounded-full border border-border bg-surface-lowest/85 px-3.5 py-2 text-text-secondary">
-              {`${live.counts.onShift} em turno · ${live.counts.delivering} ${live.counts.delivering === 1 ? "entrega" : "entregas"} na rua · ${live.counts.doneToday} ${live.counts.doneToday === 1 ? "feita" : "feitas"} hoje`}
+              {`${live.counts.onShift} em turno · ${live.counts.delivering} ${live.counts.delivering === 1 ? "entrega" : "entregas"} na rua · ${live.counts.idle} livre${live.counts.idle === 1 ? "" : "s"} · ${live.counts.doneToday} ${live.counts.doneToday === 1 ? "feita" : "feitas"} hoje`}
             </div>
           </div>
         )}

@@ -101,7 +101,17 @@ describe("contagens e ordem", () => {
       SERVER,
     );
     const views = viewsOf(s, SERVER);
-    expect(countsOf(views, 7)).toEqual({ onShift: 5, delivering: 1, returning: 1, atStore: 1, noSignal: 2, notStarted: 1, doneToday: 7 });
+    expect(countsOf(views, 7)).toEqual({ onShift: 5, delivering: 1, returning: 1, atStore: 1, idle: 0, noSignal: 2, notStarted: 1, doneToday: 7 });
     expect(sortViews(views).map((v) => v.driver.driverId)).toEqual(["d", "e", "a", "b", "c"]);
+  });
+});
+
+describe("estado idle (DW-43)", () => {
+  it("idle conta, filtra e fica no mapa; estado desconhecido cai em unknown", () => {
+    const s = applySnapshot(snapshot([rawDriver("a", { state: "idle" }), rawDriver("b", { state: "futuro_novo" })]), SERVER);
+    const views = viewsOf(s, SERVER);
+    expect(views.map((v) => v.display)).toEqual(["idle", "unknown"]);
+    expect(countsOf(views, 0).idle).toBe(1);
+    expect(sortViews(views).map((v) => v.driver.driverId)).toEqual(["a", "b"]);
   });
 });

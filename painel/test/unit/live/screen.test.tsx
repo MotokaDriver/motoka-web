@@ -109,7 +109,7 @@ describe("mapa ao vivo", () => {
     const names = within(side).getAllByRole("button", { name: /, (Entregando|Voltando|Sem sinal),/ }).map((b) => b.getAttribute("aria-label")?.split(",")[0]);
     expect(names).toEqual(["Paulo Nunes", "Diego Ramos", "Rafa Lima"]);
     // Contagens do topo derivadas do estado local.
-    expect(screen.getByText("3 em turno · 1 entrega na rua · 7 feitas hoje")).toBeInTheDocument();
+    expect(screen.getByText("3 em turno · 1 entrega na rua · 0 livres · 7 feitas hoje")).toBeInTheDocument();
     // Filtros e contagens batem com os cartões.
     await user.click(within(side).getByRole("button", { name: "Voltando 1" }));
     expect(within(side).getAllByRole("button", { name: /, (Entregando|Voltando|Sem sinal),/ })).toHaveLength(1);

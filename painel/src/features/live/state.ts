@@ -63,7 +63,7 @@ export interface DriverView {
   readonly pin: PinKind;
 }
 
-const ON_MAP: ReadonlySet<DriverState> = new Set(["delivering", "returning", "at_store", "unknown"]);
+const ON_MAP: ReadonlySet<DriverState> = new Set(["delivering", "returning", "at_store", "idle", "unknown"]);
 
 export function viewOf(state: LiveState, driver: LiveDriver, localNow: number): DriverView {
   const noSignalMs = (state.snapshot?.noSignalAfterSeconds ?? 180) * 1000;
@@ -84,6 +84,8 @@ export interface LiveCounts {
   readonly delivering: number;
   readonly returning: number;
   readonly atStore: number;
+  /** Em turno e livre (`idle`, DW-43). */
+  readonly idle: number;
   /** Inclui `not_started`: a pílula do WS-10 conta "Sem sinal" assim (cada estado também tem a sua conta). */
   readonly noSignal: number;
   readonly notStarted: number;
@@ -98,6 +100,7 @@ export function countsOf(views: readonly DriverView[], doneToday: number): LiveC
     delivering: by("delivering"),
     returning: by("returning"),
     atStore: by("at_store"),
+    idle: by("idle"),
     noSignal: by("no_signal") + by("not_started"),
     notStarted: by("not_started"),
     doneToday,
@@ -120,7 +123,7 @@ export function fineAge(ageMs: number | null): string {
   return `há ${Math.floor(seconds / 60)} min`;
 }
 
-const ORDER: Record<DriverState, number> = { no_signal: 0, not_started: 0, delivering: 1, returning: 2, at_store: 3, unknown: 4 };
+const ORDER: Record<DriverState, number> = { no_signal: 0, not_started: 0, delivering: 1, returning: 2, at_store: 3, idle: 4, unknown: 5 };
 
 /** Ordem da lateral: sem sinal, entregando, voltando, na loja. */
 export const sortViews = (views: readonly DriverView[]): DriverView[] =>

@@ -37,7 +37,7 @@ function paintPin(el: HTMLElement, view: DriverView, selected: boolean): void {
   const color = entityColor(view.driver.driverId);
   const stale = view.pin === "stale";
   el.textContent = view.driver.initials;
-  el.style.background = stale ? "#6e6e7a" : color;
+  el.style.background = stale ? "#6e6e7a" : view.display === "idle" ? "#7f8596" : color;
   el.style.opacity = stale ? "0.7" : "1";
   el.style.borderStyle = stale ? "dashed" : "solid";
   el.style.boxShadow = selected ? `0 0 0 4px ${color}` : "0 1px 4px rgba(0,0,0,.5)";

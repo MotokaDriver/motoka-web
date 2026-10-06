@@ -5,7 +5,7 @@ import { ApiError } from "@/lib/api/errors";
  * `tracking/application/dto.py`. Tolerante a campo novo e a estado desconhecido.
  */
 
-export type DriverState = "not_started" | "no_signal" | "delivering" | "returning" | "at_store" | "unknown";
+export type DriverState = "not_started" | "no_signal" | "delivering" | "returning" | "at_store" | "idle" | "unknown";
 
 export interface LivePosition {
   readonly lat: number;
@@ -65,7 +65,7 @@ const strOrNull = (value: unknown): string | null => (typeof value === "string" 
 const num = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
 const numOrNull = (value: unknown): number | null => (typeof value === "number" && Number.isFinite(value) ? value : null);
 
-const STATES: readonly DriverState[] = ["not_started", "no_signal", "delivering", "returning", "at_store"];
+const STATES: readonly DriverState[] = ["not_started", "no_signal", "delivering", "returning", "at_store", "idle"];
 export const parseDriverState = (value: unknown): DriverState => {
   const text = str(value).toLowerCase();
   return (STATES as readonly string[]).includes(text) ? (text as DriverState) : "unknown";
