@@ -19,7 +19,7 @@ test.describe("Cardápio Web (WN-4c, API mockada)", () => {
     await page.goto("/integracoes/");
     const grid = page.getByRole("list", { name: "Conectores" });
     // iFood e Nuvemshop: em breve.
-    await expect(grid.getByText("Em breve")).toHaveCount(2);
+    await expect(grid.getByText("Em breve")).toHaveCount(1); // só o iFood
     await grid.getByRole("button", { name: "Cardápio Web, Conectar" }).click();
     await page.getByRole("button", { name: "Conectar ao Cardápio Web" }).click();
 
@@ -56,9 +56,10 @@ test.describe("Cardápio Web (WN-4c, API mockada)", () => {
     await expect(panel.getByRole("button", { name: "Conectar ao Cardápio Web" })).toBeVisible();
   });
 
-  test("volta do portal com state diferente é recusada sem chamar a API", async ({ page, guard, api }) => {
+  test("volta do portal com state diferente do guardado é recusada sem chamar a API", async ({ page, guard, api }) => {
     guard.expectResponse(REFRESH, 401);
     await login(page);
+    await page.evaluate(() => sessionStorage.setItem("motoka.panel.oauth-pending", JSON.stringify({ type: "cardapio_web", state: "o-que-o-painel-guardou", at: Date.now() })));
     await page.goto("/integracoes/cardapio-web/retorno/?code=x&state=de-outra-pessoa");
     await expect(page.getByText("Não foi possível confirmar a conexão. Comece de novo pelo painel.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Voltar para Integrações" })).toBeVisible();

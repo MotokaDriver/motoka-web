@@ -69,7 +69,7 @@ Fontes lidas (o código é a fonte da verdade):
 | WN-6 | Acompanhar pedido | implementado, sem commit (§19) |
 | WN-3 | Mapa ao vivo | implementado, sem commit (§18) |
 | WN-5 | Acertos | implementado (§20) |
-| WN-4 | Integrações | WN-4a e WN-4b commitados (§22); WN-4c (Cardápio Web) commitado (§23); WN-4d (Nuvemshop) depende da WS-16 |
+| WN-4 | Integrações | WN-4a, WN-4b e WN-4c commitados (§22, §23); WN-4d (Nuvemshop) commitado (§24) |
 | WN-7 | Telas que hoje só existem no app | implementado (§21) |
 | WN-L | Limpeza do painel Flutter no `motoka_app` (WS-17) | hand-off, depois do `.well-known` em prod |
 
@@ -1614,6 +1614,21 @@ Contrato: working tree da API (WS-15, `provider_panel.py`, `routers.py`) e §4.7
 - Notas da revisão para depois: allowlist do host do portal (defesa em profundidade); `CARDAPIO_WEB_REDIRECT_URI` precisa ser `https://painel.motokadriver.com/integracoes/cardapio-web/retorno/` (com a barra final), a registrar no README e na H-1.
 - Catálogo: 7 códigos novos (`INTEGRATION_AUTH_*`, `REAUTH_REQUIRED`, `RATE_LIMITED`, `EXTERNAL_DRIVER_*`).
 - Testes: vitest `test/unit/integrations/cardapioweb.test.tsx` (31, incluindo `incomplete`, state vencido, uso único e órfãos), Playwright mockado `test/e2e/cardapioweb.spec.ts` (5, com portal de mentira que redireciona de volta). Login 219,4 KiB gz (teto 220).
+
+## 24. Execução WN-4d (Nuvemshop)
+
+Contrato: WS-16 (commit de69675 da API, `provider_panel.py`, `routers.py`, `nuvemshop.py`). Código em `painel/src/features/integrations` (`OauthPanel`, `NuvemshopSettings`, `OauthReturn` por parceiro) e `app/(app)/(shell)/integracoes/nuvemshop/retorno/`.
+
+- **Conectar**: a Nuvemshop **não usa PKCE**: a API monta `…/apps/{app_id}/authorize?state=` e troca o `code` no servidor com o `NUVEMSHOP_CLIENT_SECRET` (cliente confidencial). O painel guarda o `state` na aba (uso único, 10 min) e o retorno confere o `state` e o parceiro antes de chamar `authorize/complete` (o PKCE é só do Cardápio Web, §23), com a página `/integracoes/nuvemshop/retorno/`. O state guardado de outro parceiro não vale. A volta lê a resposta: `connected` diz "Nuvemshop conectado."; `incomplete` diz que o cadastro da entrega não terminou.
+- **Configurar a cotação** (`GET/PUT …/shipping-settings`): preço (até R$ 9.999,99), prazo (1 a 600 min), faixas de CEP (8 dígitos, início ≤ fim, até 200), cidades (uma por linha, até 200), horário de São Paulo (início e fim juntos, ou os dois em branco) e "Oferecer a entrega por motoboy". Ligado sem faixa nem cidade, avisa que ninguém é atendido. O aviso do cache de 15 min é texto do Motoka (a API manda o dela, que não vai para a tela). "Gerar novo endereço de cotação" (`POST …/shipping-settings/route-token`) com confirmação. O `route_token` nunca aparece: a API o gira e recadastra o endereço na Nuvemshop.
+- **Estado `incomplete`**: na Nuvemshop o card fica conectado e incompleto quando carrier, opção ou webhooks falham (`provider_config.incomplete = "setup"`). O painel mostra "Configuração incompleta: o cadastro da entrega na Nuvemshop não terminou, e o checkout ainda não oferece o motoboy" e "Refazer cadastro" (`POST …/setup`); o resultado vem da resposta (`connected` mostra "Cadastro refeito."; `incomplete` mantém o aviso). Sem "Sincronizar agora" e sem vínculos de entregador (não existem na Nuvemshop). Aviso `setup_failed` do log tem texto fixo.
+- **Status**: `soon` na Nuvemshop (ambiente sem a configuração do parceiro) vira "Indisponível neste ambiente", como o Cardápio Web; só o iFood fica "Em breve". `connected` agora é `state === "connected"` do card.
+- **LGPD**: os três webhooks (`store/redact`, `customers/redact`, `customers/data_request`) são da API e não têm tela.
+- **Conexão só pelo painel (decisão da revisão)**: quem instala o app pela loja de apps da Nuvemshop volta para o retorno sem o `state` do Motoka (e, muitas vezes, sem sessão). As páginas de retorno (Nuvemshop e Cardápio Web) saíram da moldura do painel e mostram "Para concluir, entre no painel Motoka e conecte em Integrações.", com "Entrar no painel" (volta a `/integracoes/`) quando não há sessão e "Ir para Integrações" quando há. O `code` do parceiro não é usado nem guardado e sai do endereço. Um `state` guardado que diverge, ou de outro parceiro, continua recusado ("Não foi possível confirmar a conexão"). **Pendência humana:** a descrição do app na Nuvemshop (e no Cardápio Web) deve dizer "Depois de instalar, entre no painel Motoka e conecte em Integrações."
+- **`redirect_uri` sem a barra final**: o E2E contra o `wrangler dev` confere que `/integracoes/<parceiro>/retorno?code=…&state=…` redireciona para a URL com barra preservando a query (`nuvemshop.spec.ts`). O `redirect_uri` registrado no app continua precisando da barra final.
+- **Preço**: o texto vira sempre 2 casas antes da máscara ("15" é R$ 15,00, nunca R$ 0,15), na cotação da Nuvemshop e no preço do Open Delivery; com teste.
+- **Pendências humanas**: H-N1 a H-N4 da API (cadastro do app, URLs LGPD, loja de teste, conferências). O `redirect_uri` do app Nuvemshop precisa ser `https://painel.motokadriver.com/integracoes/nuvemshop/retorno/` (com a barra final), a registrar no README e na H-1.
+- Testes: vitest `test/unit/integrations/nuvemshop.test.tsx` (16), Playwright mockado `test/e2e/nuvemshop.spec.ts` (6, com portal de mentira, instalação sem sessão e o redirect sem barra). Login 219,4 KiB gz (teto 220). Sem E2E real.
 
 ## Fontes (pesquisa web, out/2026)
 

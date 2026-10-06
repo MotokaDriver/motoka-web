@@ -124,14 +124,14 @@ describe("regras e textos", () => {
 });
 
 describe("tela de Integrações (WN-4b)", () => {
-  it("lista os conectores: Nuvemshop em breve e sem botão; Saipos escondida", async () => {
+  it("lista os conectores: iFood em breve e sem botão; Nuvemshop indisponível no ambiente; Saipos escondida", async () => {
     serve({ "GET /integrations/open_delivery": () => new ApiError({ status: 404, code: "INTEGRATION_NOT_FOUND" }) });
     mount();
     const grid = await screen.findByRole("list", { name: "Conectores" });
     expect(within(grid).getByRole("button", { name: "Open Delivery, Conectar" })).toBeInTheDocument();
     expect(within(grid).getByText("Nuvemshop")).toBeInTheDocument();
-    expect(within(grid).getAllByText("Em breve")).toHaveLength(2);
-    expect(within(grid).queryByRole("button", { name: /Nuvemshop/ })).toBeNull();
+    expect(within(grid).getAllByText("Em breve")).toHaveLength(1); // só o iFood
+    expect(within(grid).getByRole("button", { name: "Nuvemshop, Indisponível neste ambiente" })).toBeInTheDocument();
     expect(within(grid).queryByText("Saipos")).toBeNull();
   });
 

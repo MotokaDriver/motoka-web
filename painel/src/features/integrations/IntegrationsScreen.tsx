@@ -27,8 +27,8 @@ import type { Card as IntegrationCard, IntegrationType } from "./model";
 
 function CardTile({ card, selected, attention, onSelect }: { card: IntegrationCard; selected: boolean; attention: boolean; onSelect: () => void }) {
   const info = TYPE_INFO[card.type];
-  // O Cardápio Web sem configuração no ambiente continua clicável: o painel explica o que falta.
-  const soon = card.status === "soon" && card.type !== "cardapio_web";
+  // O Cardápio Web e a Nuvemshop sem configuração no ambiente continuam clicáveis: o painel explica o que falta.
+  const soon = card.status === "soon" && card.type !== "cardapio_web" && card.type !== "nuvemshop";
   const tone = cardTone(card);
   const color = (ORIGIN_INFO[card.type as Origin] ?? ORIGIN_INFO.unknown).color;
   const body = (

@@ -10,6 +10,7 @@ export const Paths = {
   newService: "/servicos/novo/",
   integrations: "/integracoes/",
   integrationsReturn: "/integracoes/cardapio-web/retorno/",
+  integrationsReturnNuvemshop: "/integracoes/nuvemshop/retorno/",
   notices: "/avisos/",
   account: "/conta/",
 } as const;

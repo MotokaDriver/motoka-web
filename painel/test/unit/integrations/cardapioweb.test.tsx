@@ -111,6 +111,7 @@ describe("cards e textos (WN-4c)", () => {
     expect(cardTone(list.find((c) => c.type === "cardapio_web")!).label).toBe("Indisponível neste ambiente");
     expect(cardTone(parseCards(cards({ status: "incomplete", state: "disconnected" })).find((c) => c.type === "cardapio_web")!).label).toBe("Configuração incompleta");
     expect(cardTone(list.find((c) => c.type === "ifood")!).label).toBe("Em breve");
+    expect(cardTone(list.find((c) => c.type === "nuvemshop")!).label).toBe("Indisponível neste ambiente");
     expect(cardTone(parseCards(cards({ status: "connected", state: "connected" })).find((c) => c.type === "cardapio_web")!).label).toBe("Conectado");
     expect(cardTone(parseCards(cards({ state: "error" })).find((c) => c.type === "cardapio_web")!).label).toBe("Reconectar");
   });
@@ -152,7 +153,8 @@ describe("conectar o Cardápio Web (PKCE)", () => {
     const panel = screen.getByRole("complementary", { name: "Detalhe da integração" });
     expect(within(panel).getByText(/ainda não foi configurada neste ambiente/)).toBeInTheDocument();
     expect(within(panel).queryByRole("button", { name: /Conectar/ })).toBeNull();
-    expect(within(grid).getAllByText("Em breve")).toHaveLength(2);
+    expect(within(grid).getAllByText("Em breve")).toHaveLength(1); // só o iFood
+    expect(within(grid).getByRole("button", { name: "Nuvemshop, Indisponível neste ambiente" })).toBeInTheDocument();
   });
 
   it("Conectar guarda só o state na aba e leva ao portal", async () => {
@@ -226,10 +228,11 @@ describe("volta do portal (callback)", () => {
     expect(window.sessionStorage.length).toBe(0);
   });
 
-  it("sem state guardado (outra aba, aba nova ou venceu): recusa", async () => {
+  it("sem state guardado (instalou pela loja do parceiro, outra aba ou venceu): explica o caminho, sem chamar a API", async () => {
     nav.search = `code=codigo123&state=${STATE}`;
     mount(<OauthReturn />);
-    expect(await screen.findByText("Não foi possível confirmar a conexão. Comece de novo pelo painel.")).toBeInTheDocument();
+    expect(await screen.findByText("Para concluir, entre no painel Motoka e conecte em Integrações.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ir para Integrações" })).toBeInTheDocument();
     expect(http.fetch).not.toHaveBeenCalled();
   });
 
@@ -259,7 +262,7 @@ describe("volta do portal (callback)", () => {
     vi.useFakeTimers({ now: Date.now() + 11 * 60_000, shouldAdvanceTime: true });
     try {
       mount(<OauthReturn />);
-      expect(await screen.findByText("Não foi possível confirmar a conexão. Comece de novo pelo painel.")).toBeInTheDocument();
+      expect(await screen.findByText("Para concluir, entre no painel Motoka e conecte em Integrações.")).toBeInTheDocument();
       expect(http.fetch).not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
@@ -276,7 +279,7 @@ describe("volta do portal (callback)", () => {
     cleanup();
     http.fetch.mockClear();
     mount(<OauthReturn />);
-    expect(await screen.findByText("Não foi possível confirmar a conexão. Comece de novo pelo painel.")).toBeInTheDocument();
+    expect(await screen.findByText("Para concluir, entre no painel Motoka e conecte em Integrações.")).toBeInTheDocument();
     expect(http.fetch).not.toHaveBeenCalled();
   });
 

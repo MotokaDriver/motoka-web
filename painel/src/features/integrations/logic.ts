@@ -33,7 +33,13 @@ export const TYPE_INFO: Partial<Record<IntegrationType, TypeInfo>> = {
     how: "O Motoka recebe os pedidos de delivery do Cardápio Web e devolve o entregador, a saída e a entrega. Cada motoboy precisa estar vinculado a um entregador cadastrado no Cardápio Web.",
   },
   ifood: { name: "iFood", kind: "Marketplace · entrega própria", operator: false, how: "" },
-  nuvemshop: { name: "Nuvemshop", kind: "Loja virtual", operator: false, how: "" },
+  nuvemshop: {
+    name: "Nuvemshop",
+    kind: "Loja virtual",
+    operator: false,
+    oauth: true,
+    how: "A loja virtual oferece a entrega por motoboy no checkout, com o preço, o prazo e a área que você definir aqui. Pedido pago vira entrega no Motoka, e cada status volta para a Nuvemshop.",
+  },
 };
 
 /**
@@ -48,7 +54,7 @@ export function cardTone(card: Card): { label: string; tone: Tone } {
   // `incomplete` é desta loja (a conexão ficou sem um dado): ela reconecta. `soon` no Cardápio Web é do ambiente (sem a
   // configuração do parceiro): a loja não resolve, e também não é "em breve".
   if (card.status === "incomplete") return { label: "Configuração incompleta", tone: "warning" };
-  if (card.type === "cardapio_web" && card.status === "soon") return { label: "Indisponível neste ambiente", tone: "neutral" };
+  if ((card.type === "cardapio_web" || card.type === "nuvemshop") && card.status === "soon") return { label: "Indisponível neste ambiente", tone: "neutral" };
   if (card.state === "error") return { label: "Reconectar", tone: "error" };
   if (card.status === "connected") return { label: "Conectado", tone: "success" };
   if (card.status === "soon") return { label: "Em breve", tone: "neutral" };
@@ -119,6 +125,7 @@ const at = (n: number | null): string => (n === null ? "" : ` #${n}`);
 /** Texto fixo por motivo conhecido; o `meta` do servidor não é lido além disso. */
 export function attentionText(n: number | null, origin: string, reason: AttentionReason | null): string {
   if (reason === "driver_not_linked") return `Pedido${at(n)}: sem entregador vinculado. Vincule o motoboy a um entregador do ${origin}.`;
+  if (reason === "setup_failed") return `A conexão do ${origin} não terminou o cadastro da entrega. Use "Refazer cadastro".`;
   if (reason === "merchant_missing") return `A conexão do ${origin} ficou sem a loja. Conecte de novo.`;
   if (reason === "finished_before_pickup") return `Pedido${at(n)} foi finalizado no ${origin} antes da retirada. Confira.`;
   return `Pedido${at(n)} precisa da sua atenção`;

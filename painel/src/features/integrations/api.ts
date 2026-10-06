@@ -3,7 +3,7 @@ import { ApiError, isUuid } from "@/lib/api/errors";
 import { parseActivity, parseCards, parseDetail, parseIssued, parseTest, type ActivityPage, type Card, type Detail, type IntegrationType, type Issued, type TestResult } from "./model";
 
 /** `/v1/integrations`. O tipo vem de uma lista fechada, nunca de texto livre (vira caminho). */
-const CONNECTABLE: readonly IntegrationType[] = ["open_delivery", "saipos", "cardapio_web"];
+const CONNECTABLE: readonly IntegrationType[] = ["open_delivery", "saipos", "cardapio_web", "nuvemshop"];
 
 function path(type: IntegrationType, rest = ""): string {
   if (!CONNECTABLE.includes(type)) throw new ApiError({ status: 404, code: "ROUTE_NOT_FOUND" });
@@ -122,4 +122,79 @@ export async function putDriverLink(type: IntegrationType, driverId: string, ext
 
 export async function deleteDriverLink(type: IntegrationType, driverId: string): Promise<void> {
   await apiFetch<unknown>(linkPath(type, driverId), { method: "DELETE" });
+}
+
+// --- Nuvemshop: cotação de frete e cadastro (WS-16) -----------------------------------------
+
+export interface ShippingSettings {
+  /** String decimal ("12.50"). */
+  readonly price: string;
+  readonly etaMinutes: number;
+  /** Faixas de CEP só com dígitos: [início, fim]. */
+  readonly cepRanges: ReadonlyArray<readonly [string, string]>;
+  readonly cities: readonly string[];
+  readonly active: boolean;
+  /** "HH:mm" ou `null` (sem janela de horário). */
+  readonly openFrom: string | null;
+  readonly openUntil: string | null;
+}
+
+/** "15" e "15.5" viram "15.00" e "15.50": a máscara do campo lê dígitos como centavos, então o texto precisa ter 2 casas. */
+export function normalizeDecimal(value: string): string {
+  return /^\d+(\.\d+)?$/.test(value) ? Number(value).toFixed(2) : "0.00";
+}
+
+export function parseShippingSettings(body: unknown): ShippingSettings {
+  const raw = body !== null && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const text = (value: unknown): string => (typeof value === "string" ? value : value == null ? "" : String(value));
+  const price = typeof raw.price === "number" ? raw.price.toFixed(2) : text(raw.price);
+  const ranges = (Array.isArray(raw.cep_ranges) ? raw.cep_ranges : []).filter((r): r is unknown[] => Array.isArray(r) && r.length === 2).map((r) => [text(r[0]), text(r[1])] as const);
+  return {
+    price: normalizeDecimal(price),
+    etaMinutes: typeof raw.eta_minutes === "number" ? Math.trunc(raw.eta_minutes) : 60,
+    cepRanges: ranges,
+    cities: (Array.isArray(raw.cities) ? raw.cities : []).map(text).filter((c) => c !== ""),
+    active: raw.active === true,
+    openFrom: text(raw.open_from) || null,
+    openUntil: text(raw.open_until) || null,
+  };
+}
+
+/** `null` quando a configuração ainda não existe (404 `INTEGRATION_NOT_FOUND`): o cadastro não terminou. */
+export async function fetchShippingSettings(signal?: AbortSignal): Promise<ShippingSettings | null> {
+  try {
+    return parseShippingSettings(await apiFetch<unknown>(path("nuvemshop", "/shipping-settings"), { signal }));
+  } catch (failure) {
+    if (failure instanceof ApiError && failure.code === "INTEGRATION_NOT_FOUND") return null;
+    throw failure;
+  }
+}
+
+export async function putShippingSettings(settings: ShippingSettings): Promise<ShippingSettings> {
+  return parseShippingSettings(
+    await apiFetch<unknown>(path("nuvemshop", "/shipping-settings"), {
+      method: "PUT",
+      body: {
+        price: settings.price,
+        eta_minutes: settings.etaMinutes,
+        cep_ranges: settings.cepRanges.map(([from, to]) => [from, to]),
+        cities: settings.cities,
+        active: settings.active,
+        open_from: settings.openFrom,
+        open_until: settings.openUntil,
+      },
+    }),
+  );
+}
+
+/** "Gerar novo endereço de cotação": a API gira o `route_token` e recadastra o endereço na Nuvemshop. */
+export async function rotateRouteToken(): Promise<void> {
+  await apiFetch<unknown>(path("nuvemshop", "/shipping-settings/route-token"), { method: "POST" });
+}
+
+/** "Refazer cadastro" (carrier, opção e webhooks). `incomplete` se ainda faltou algum passo. */
+export async function retrySetup(): Promise<"connected" | "incomplete" | "other"> {
+  const body = await apiFetch<unknown>(path("nuvemshop", "/setup"), { method: "POST" });
+  const state = body !== null && typeof body === "object" ? (body as { state?: unknown }).state : null;
+  return state === "connected" ? "connected" : state === "incomplete" ? "incomplete" : "other";
 }

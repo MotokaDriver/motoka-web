@@ -87,7 +87,7 @@ export interface Activity {
   readonly createdAt: string;
 }
 
-export type AttentionReason = "driver_not_linked" | "finished_before_pickup" | "merchant_missing";
+export type AttentionReason = "driver_not_linked" | "finished_before_pickup" | "merchant_missing" | "setup_failed";
 
 export interface ActivityPage {
   readonly items: readonly Activity[];
@@ -130,7 +130,7 @@ export function parseDetail(value: unknown): Detail {
     state: parseState(value.state),
     externalMerchantId: strOrNull(value.external_merchant_id),
     webhookUrl: strOrNull(value.webhook_url),
-    deliveryPrice: /^\d+(\.\d+)?$/.test(price) ? price : "0.00",
+    deliveryPrice: /^\d+(\.\d+)?$/.test(price) ? Number(price).toFixed(2) : "0.00",
     operatorBaseUrl: str(value.operator_base_url),
     tokenUrl: str(value.token_url),
     clientId: strOrNull(value.client_id),
@@ -166,7 +166,7 @@ export function parseTest(value: unknown): TestResult {
 const KINDS: readonly string[] = ["received", "sent", "error", "dead_letter", "credential_rotated", "connected", "disconnected", "accepted", "rejected", "origin_unconfirmed", "driver_removed", "origin_discarded", "reauth_required", "reauth_expired", "attention"];
 
 function parseReason(value: unknown): AttentionReason | null {
-  return value === "driver_not_linked" || value === "finished_before_pickup" || value === "merchant_missing" ? value : null;
+  return value === "driver_not_linked" || value === "finished_before_pickup" || value === "merchant_missing" || value === "setup_failed" ? value : null;
 }
 
 export function parseActivity(value: unknown): ActivityPage {

@@ -79,6 +79,15 @@ export class MockServices {
   cwConfigured = true;
   /** A volta do OAuth termina sem a loja do parceiro (`incomplete`). */
   cwIncomplete = false;
+  /** Nuvemshop (WN-4d). */
+  nvConfigured = true;
+  /** O cadastro da entrega (carrier, opção e webhooks) falha na volta do OAuth: card `incomplete`. */
+  nvSetupFails = false;
+  nvIncomplete = false;
+  nvPendingState: string | null = null;
+  nvRouteRotations = 0;
+  nvSetupCalls = 0;
+  nvSettings = { price: "9.90", eta_minutes: 60, cep_ranges: [["80000000", "82999999"]] as string[][], cities: ["Curitiba"], active: false, open_from: null as string | null, open_until: null as string | null, notice: "x" };
   cwPendingState: string | null = null;
   cwLinks = new Map<string, string>();
   cwCompleteCalls = 0;
@@ -161,6 +170,38 @@ export class MockServices {
       return [200, { ...found, status: decision[2] === "accept" ? "preparing" : "rejected" }];
     }
 
+    // --- Nuvemshop: OAuth, cadastro e cotação (WN-4d) ---
+    if (path === "/integrations/nuvemshop/authorize" && method === "POST") {
+      this.nvPendingState = `state-${this.uuid("6")}`;
+      if (!this.integrations.has("nuvemshop")) this.integrations.set("nuvemshop", { merchant: null, webhook: null, price: "0.00", connected: false, clientId: null, secret: null });
+      return [200, { authorize_url: `http://localhost:8790/mock-portal?target=nuvemshop&return=http://localhost:8787&state=${this.nvPendingState}`, expires_in: 600 }];
+    }
+    if (path === "/integrations/nuvemshop/authorize/complete" && method === "POST") {
+      if (!this.nvPendingState || json.state !== this.nvPendingState) return [400, { error_code: "INTEGRATION_AUTH_STATE_INVALID", detail: "x" }];
+      this.nvPendingState = null;
+      const state = this.integrations.get("nuvemshop");
+      if (state) {
+        state.connected = true;
+        state.merchant = "1234567";
+      }
+      this.nvIncomplete = this.nvSetupFails;
+      return [200, { state: this.nvIncomplete ? "incomplete" : "connected", external_merchant_id: "1234567" }];
+    }
+    if (path === "/integrations/nuvemshop/setup" && method === "POST") {
+      this.nvSetupCalls += 1;
+      if (!this.nvSetupFails) this.nvIncomplete = false;
+      return [200, { state: this.nvIncomplete ? "incomplete" : "connected" }];
+    }
+    if (path === "/integrations/nuvemshop/shipping-settings" && method === "GET") return [200, this.nvSettings];
+    if (path === "/integrations/nuvemshop/shipping-settings" && method === "PUT") {
+      this.nvSettings = { ...this.nvSettings, price: String(json.price), eta_minutes: Number(json.eta_minutes), cep_ranges: json.cep_ranges as string[][], cities: json.cities as string[], active: json.active === true, open_from: (json.open_from as string | null) ?? null, open_until: (json.open_until as string | null) ?? null };
+      return [200, this.nvSettings];
+    }
+    if (path === "/integrations/nuvemshop/shipping-settings/route-token" && method === "POST") {
+      this.nvRouteRotations += 1;
+      return [200, { rotated: true }];
+    }
+
     // --- Cardápio Web: OAuth, vínculo e sincronização (WN-4c) ---
     if (path === "/integrations/cardapio_web/authorize" && method === "POST") {
       this.cwPendingState = `state-${this.uuid("5")}`;
@@ -218,22 +259,23 @@ export class MockServices {
           [
             card("open_delivery", this.integrations.get("open_delivery")?.connected ? "connected" : "available"),
             card("cardapio_web", !this.cwConfigured ? "soon" : this.cwIncomplete && this.integrations.has("cardapio_web") ? "incomplete" : this.integrations.get("cardapio_web")?.connected ? "connected" : "available"),
+            card("nuvemshop", !this.nvConfigured ? "soon" : this.nvIncomplete && this.integrations.has("nuvemshop") ? "incomplete" : this.integrations.get("nuvemshop")?.connected ? "connected" : "available"),
             card("saipos", this.saiposAvailable ? (this.integrations.get("saipos")?.connected ? "connected" : "available") : "soon"),
             card("ifood", "soon"),
-            card("nuvemshop", "soon"),
           ],
         ];
       }
       if (type === "activity" && method === "GET") return [200, { items: this.integrationActivity, next_cursor: null }];
-      if (type === "cardapio_web" && method === "GET" && !action) {
-        const state = this.integrations.get("cardapio_web");
+      if ((type === "cardapio_web" || type === "nuvemshop") && method === "GET" && !action) {
+        const state = this.integrations.get(type);
         if (!state) return notFound("INTEGRATION_NOT_FOUND");
         return [200, { type, status: state.connected ? "connected" : "available", state: state.connected ? "connected" : "disconnected", external_merchant_id: state.merchant, webhook_url: null, delivery_price: "0.00", operator_base_url: "", token_url: "", client_id: null, secret_hint: null, credential_version: 0, credential_rotated_at: null, health: { last_token_at: null, last_inbound_at: null, last_outbound_ok_at: null, pending_events: 0, dead_events_24h: 0 } }];
       }
-      if (type === "cardapio_web" && method === "DELETE" && !action) {
-        const state = this.integrations.get("cardapio_web");
+      if ((type === "cardapio_web" || type === "nuvemshop") && method === "DELETE" && !action) {
+        const state = this.integrations.get(type);
         if (state) state.connected = false;
-        this.cwLinks.clear();
+        if (type === "cardapio_web") this.cwLinks.clear();
+        else this.nvIncomplete = false;
         return [204, null];
       }
       if (type === "open_delivery" || type === "saipos") {

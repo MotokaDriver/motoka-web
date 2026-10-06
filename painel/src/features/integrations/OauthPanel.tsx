@@ -14,7 +14,8 @@ import { Icon } from "@/ui/Icon";
 import { InlineError } from "@/ui/InlineError";
 import { Spinner } from "@/ui/Spinner";
 import { useToast } from "@/ui/Toast";
-import { deleteDriverLink, disconnectIntegration, fetchProviderDrivers, putDriverLink, startAuthorization, syncProvider, type TeamDriver } from "./api";
+import { deleteDriverLink, disconnectIntegration, fetchProviderDrivers, putDriverLink, retrySetup, startAuthorization, syncProvider, type TeamDriver } from "./api";
+import { ShippingSettingsSection } from "./NuvemshopSettings";
 import { integrationKeys, useDetail } from "./hooks";
 import { TYPE_INFO } from "./logic";
 import type { Card, IntegrationType } from "./model";
@@ -44,10 +45,14 @@ export function OauthPanel({ type, card }: { type: IntegrationType; card: Card |
   const toast = useToast();
   const saved = card?.state != null;
   const detail = useDetail(type, saved);
-  const [busy, setBusy] = useState<"connect" | "sync" | "disconnect" | null>(null);
+  const [busy, setBusy] = useState<"connect" | "sync" | "disconnect" | "setup" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
-  const connected = card?.status === "connected";
+  // Conectado = o parceiro autorizou. A Nuvemshop pode estar conectada e `incomplete` (o cadastro da entrega falhou);
+  // o Cardápio Web `incomplete` não está conectado (faltou a loja).
+  const connected = card?.state === "connected";
+  const nuvemshop = type === "nuvemshop";
+  const to = nuvemshop ? "à" : "ao";
   const broken = card?.state === "error";
   // `soon`: o ambiente não tem a configuração do parceiro (a loja não resolve). `incomplete`: a conexão desta loja ficou sem
   // a loja do parceiro (ela reconecta).
@@ -89,6 +94,21 @@ export function OauthPanel({ type, card }: { type: IntegrationType; card: Card |
     }
   };
 
+  const setup = async () => {
+    setBusy("setup");
+    setError(null);
+    try {
+      const result = await retrySetup();
+      if (result === "connected") toast({ title: "Cadastro refeito." });
+      else setError("O cadastro ainda não terminou na Nuvemshop. Tente de novo em instantes.");
+      await refresh();
+    } catch (failure) {
+      setError(errorText(failure));
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const disconnect = async () => {
     setBusy("disconnect");
     setError(null);
@@ -115,18 +135,20 @@ export function OauthPanel({ type, card }: { type: IntegrationType; card: Card |
       {unconfigured ? (
         <div role="status" className="rounded-md border border-warning/40 bg-warning/10 p-3">
           <p className="type-body-sm font-semibold text-text-primary">Indisponível neste ambiente</p>
-          <p className="type-body-sm text-text-secondary">A conexão com o {info.name} ainda não foi configurada neste ambiente. Assim que ela estiver pronta, o botão de conectar aparece aqui.</p>
+          <p className="type-body-sm text-text-secondary">A conexão {nuvemshop ? "com a" : "com o"} {info.name} ainda não foi configurada neste ambiente. Assim que ela estiver pronta, o botão de conectar aparece aqui.</p>
         </div>
       ) : (
         <>
           {incomplete && (
             <p role="alert" className="type-body-sm rounded-md border border-warning/40 bg-warning/10 p-3 font-semibold text-text-primary">
-              {`Configuração incompleta: o ${info.name} não informou a loja. Conecte de novo.`}
+              {nuvemshop
+                ? "Configuração incompleta: o cadastro da entrega na Nuvemshop não terminou, e o checkout ainda não oferece o motoboy. Use \"Refazer cadastro\"."
+                : `Configuração incompleta: o ${info.name} não informou a loja. Conecte de novo.`}
             </p>
           )}
           {broken && (
             <p role="alert" className="type-body-sm rounded-md border border-error/40 bg-error/10 p-3 font-semibold text-text-primary">
-              {`Reconecte o ${info.name}: a autorização caiu e os pedidos novos estão parados.`}
+              {`Reconecte ${nuvemshop ? "a" : "o"} ${info.name}: a autorização caiu e os pedidos novos estão parados.`}
             </p>
           )}
           {connected && (
@@ -138,29 +160,40 @@ export function OauthPanel({ type, card }: { type: IntegrationType; card: Card |
                 </span>
                 {detail.data?.externalMerchantId ? `Loja ${detail.data.externalMerchantId}` : "Autorizada no portal do parceiro"}
               </p>
-              <p className="type-caption text-text-tertiary">Autorizado no {info.name} pela loja. Renova sozinho.</p>
+              <p className="type-caption text-text-tertiary">{nuvemshop ? "Autorizado na Nuvemshop pela loja." : `Autorizado no ${info.name} pela loja. Renova sozinho.`}</p>
             </div>
           )}
-          {connected && <DriverLinks type={type} />}
+          {connected && !nuvemshop && <DriverLinks type={type} />}
+          {connected && nuvemshop && <ShippingSettingsSection />}
           {connected && (
             <p className="type-caption text-pretty text-text-tertiary">
-              Problema na entrega: o Motoka avisa a loja e não cancela o pedido no {info.name}. Quem decide cancelar é a loja.
+              Problema na entrega: o Motoka avisa a loja e não cancela o pedido {nuvemshop ? "na" : "no"} {info.name}. Quem decide cancelar é a loja.
             </p>
           )}
           <div className="flex flex-wrap gap-2">
             {connected ? (
               <>
-                <Btn kind="secondary" icon="sync" loading={busy === "sync"} disabled={busy !== null} onClick={() => void sync()}>
-                  Sincronizar agora
-                </Btn>
+                {nuvemshop ? (
+                  incomplete && (
+                    <Btn loading={busy === "setup"} disabled={busy !== null} onClick={() => void setup()}>
+                      Refazer cadastro
+                    </Btn>
+                  )
+                ) : (
+                  <Btn kind="secondary" icon="sync" loading={busy === "sync"} disabled={busy !== null} onClick={() => void sync()}>
+                    Sincronizar agora
+                  </Btn>
+                )}
                 <Btn
                   kind="danger"
                   icon="link"
                   disabled={busy !== null}
                   onClick={() =>
                     setConfirm({
-                      title: "Desconectar o Cardápio Web?",
-                      description: "Os pedidos novos param de entrar e o acesso do Motoka é revogado no parceiro. Reconectar pede uma nova autorização.",
+                      title: nuvemshop ? "Desconectar a Nuvemshop?" : "Desconectar o Cardápio Web?",
+                      description: nuvemshop
+                        ? "A entrega por motoboy some do checkout da loja virtual e o acesso do Motoka é encerrado. Reconectar pede uma nova autorização."
+                        : "Os pedidos novos param de entrar e o acesso do Motoka é revogado no parceiro. Reconectar pede uma nova autorização.",
                       confirmLabel: "Desconectar",
                       danger: true,
                       onConfirm: () => void disconnect(),
@@ -172,11 +205,11 @@ export function OauthPanel({ type, card }: { type: IntegrationType; card: Card |
               </>
             ) : (
               <Btn loading={busy === "connect"} disabled={busy !== null} onClick={() => void connect()}>
-                {broken ? `Reconectar o ${info.name}` : incomplete ? `Conectar de novo ao ${info.name}` : `Conectar ao ${info.name}`}
+                {broken ? `Reconectar ${nuvemshop ? "a" : "o"} ${info.name}` : incomplete ? `Conectar de novo ${to} ${info.name}` : `Conectar ${to} ${info.name}`}
               </Btn>
             )}
           </div>
-          {!connected && <p className="type-caption text-text-tertiary">Você será levado ao portal do {info.name} para autorizar e volta para cá em seguida.</p>}
+          {!connected && <p className="type-caption text-text-tertiary">Você será levado ao portal {nuvemshop ? "da" : "do"} {info.name} para autorizar e volta para cá em seguida.</p>}
         </>
       )}
       {detail.isError && saved && <InlineError message={errorText(detail.error)} onRetry={() => void detail.refetch()} />}

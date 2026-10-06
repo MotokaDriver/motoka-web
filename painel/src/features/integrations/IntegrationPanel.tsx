@@ -251,7 +251,7 @@ function ConfigForm({ type, detail }: { type: IntegrationType; detail: Detail | 
   const od = type === "open_delivery";
   const [merchant, setMerchant] = useState(detail?.externalMerchantId ?? "");
   const [webhook, setWebhook] = useState(detail?.webhookUrl ?? "");
-  const [price, setPrice] = useState(() => (detail && Number(detail.deliveryPrice) > 0 ? currencyInput(detail.deliveryPrice.replace(".", "")) : ""));
+  const [price, setPrice] = useState(() => (detail && Number(detail.deliveryPrice) > 0 ? currencyInput(Number(detail.deliveryPrice).toFixed(2).replace(".", "")) : ""));
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ field: "merchant" | "webhook" | null; message: string } | null>(null);

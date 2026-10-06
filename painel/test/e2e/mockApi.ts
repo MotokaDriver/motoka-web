@@ -197,7 +197,8 @@ export class MockApi {
     if (path === "/mock-portal") {
       const state = url.searchParams.get("state") ?? "";
       const back = url.searchParams.get("return") ?? "";
-      res.writeHead(302, { Location: `${back}/integracoes/cardapio-web/retorno/?code=codigo-de-teste&state=${encodeURIComponent(state)}` });
+      const target = url.searchParams.get("target") === "nuvemshop" ? "nuvemshop" : "cardapio-web";
+      res.writeHead(302, { Location: `${back}/integracoes/${target}/retorno/?code=codigo-de-teste&state=${encodeURIComponent(state)}` });
       return void res.end();
     }
 
