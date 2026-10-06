@@ -100,7 +100,8 @@ describe("regras e textos", () => {
     expect(validateWebhook("")).toBeNull();
     expect(validateWebhook("https://pdv.exemplo.com/eventos")).toBeNull();
     expect(validateWebhook("https://pdv.exemplo.com:8443/x")).toBeNull();
-    expect(validateWebhook("http://pdv.exemplo.com/x")).toBe("Use um endereço https.");
+    // Fora de produção o http passa no cliente (o dev-env recebe o webhook no odfake); a API decide.
+    expect(validateWebhook("http://odfake:9100/od")).toBeNull();
     expect(validateWebhook("https://pdv.exemplo.com:8080/x")).toBe("Use a porta 443 ou 8443.");
     expect(validateWebhook("https://usuario:senha@pdv.exemplo.com/x")).toBe("A URL não pode ter usuário e senha.");
     expect(validateWebhook("pdv.exemplo.com")).toMatch(/começando com https/);
@@ -148,9 +149,9 @@ describe("tela de Integrações (WN-4b)", () => {
     expect(http.fetch).not.toHaveBeenCalledWith("/integrations/open_delivery", expect.objectContaining({ method: "PUT" }));
     await user.clear(within(panel).getByLabelText("Merchant ID que o seu sistema mostrou"));
     await user.type(within(panel).getByLabelText("Merchant ID que o seu sistema mostrou"), MERCHANT);
-    await user.type(within(panel).getByLabelText("URL de eventos (webhook)"), "http://inseguro.com");
+    await user.type(within(panel).getByLabelText("URL de eventos (webhook)"), "https://usuario:senha@pdv.exemplo.com");
     await user.click(within(panel).getByRole("button", { name: "Salvar" }));
-    expect(await within(panel).findByText("Use um endereço https.")).toBeInTheDocument();
+    expect(await within(panel).findByText("A URL não pode ter usuário e senha.")).toBeInTheDocument();
     await user.clear(within(panel).getByLabelText("URL de eventos (webhook)"));
     await user.type(within(panel).getByLabelText("URL de eventos (webhook)"), "https://pdv.exemplo.com/eventos");
     await user.type(within(panel).getByLabelText("Preço da entrega informado ao sistema"), "250");

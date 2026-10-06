@@ -100,9 +100,9 @@ test.describe("Integrações (WN-4b, API mockada)", () => {
     await expect(panel.getByText("Este ID de loja já está ligado a outra conta do Motoka.")).toBeVisible();
 
     await panel.getByLabel("Merchant ID que o seu sistema mostrou").fill(MERCHANT);
-    await panel.getByLabel("URL de eventos (webhook)").fill("http://inseguro.com");
+    await panel.getByLabel("URL de eventos (webhook)").fill("https://usuario:senha@pdv.exemplo.com");
     await panel.getByRole("button", { name: "Salvar" }).click();
-    await expect(panel.getByText("Use um endereço https.")).toBeVisible();
+    await expect(panel.getByText("A URL não pode ter usuário e senha.")).toBeVisible();
     await panel.getByLabel("URL de eventos (webhook)").fill("https://pdv.exemplo.com/eventos");
     await panel.getByRole("button", { name: "Salvar" }).click();
     await expect(page.getByText("Integração salva.")).toBeVisible();

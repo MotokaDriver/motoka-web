@@ -74,8 +74,8 @@ export function validateMerchant(type: IntegrationType, value: string): string |
 }
 
 /**
- * URL de eventos (webhook): https público, porta 443 ou 8443, sem usuário e senha. Fora de produção aceita
- * `http://localhost` para o ambiente de teste. Vazio é válido (a integração pode não receber eventos). Quem decide é a API.
+ * URL de eventos (webhook): https público, porta 443 ou 8443, sem usuário e senha. Fora de produção aceita `http` (e
+ * qualquer porta) para o ambiente de teste. Vazio é válido (a integração pode não receber eventos). Quem decide é a API.
  */
 export function validateWebhook(value: string): string | null {
   const text = value.trim();
@@ -87,7 +87,9 @@ export function validateWebhook(value: string): string | null {
   } catch {
     return "Use um endereço completo, começando com https://.";
   }
-  const dev = APP_ENV !== "prod" && url.protocol === "http:" && url.hostname === "localhost";
+  // Fora de produção o http passa no cliente (o dev-env recebe webhook no `odfake`, em http): quem decide é a API, que só aceita
+  // http com `INTEGRATION_WEBHOOK_ALLOW_HTTP` e o host na allowlist. Em produção, só https.
+  const dev = APP_ENV !== "prod" && url.protocol === "http:";
   if (url.protocol !== "https:" && !dev) return "Use um endereço https.";
   if (url.username || url.password) return "A URL não pode ter usuário e senha.";
   if (!dev && url.port !== "" && url.port !== "443" && url.port !== "8443") return "Use a porta 443 ou 8443.";
