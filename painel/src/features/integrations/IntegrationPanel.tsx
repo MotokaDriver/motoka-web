@@ -14,6 +14,7 @@ import { Spinner } from "@/ui/Spinner";
 import { useToast } from "@/ui/Toast";
 import { disconnectIntegration, issueCredentials, saveIntegration, testConnection } from "./api";
 import { CopyField } from "./CopyField";
+import { APP_ENV } from "@/lib/env";
 import { integrationKeys, useDetail } from "./hooks";
 import { TYPE_INFO, testSummary, validateMerchant, validateWebhook } from "./logic";
 import type { Detail, IntegrationType, Issued, TestResult } from "./model";
@@ -298,7 +299,7 @@ function ConfigForm({ type, detail }: { type: IntegrationType; detail: Detail | 
             autoComplete="off"
             spellCheck={false}
             placeholder="https://"
-            hint="Para onde o Motoka manda cada status e a posição do motoboy. Só https, na porta 443 ou 8443."
+            hint={`Para onde o Motoka manda cada status e a posição do motoboy. ${APP_ENV === "prod" ? "Só https, na porta 443 ou 8443." : "Fora de produção também aceita http, em qualquer porta."}`}
             value={webhook}
             error={(touched ? (webhookError ?? undefined) : undefined) ?? (error?.field === "webhook" ? error.message : undefined)}
             onChange={(event) => setWebhook(event.target.value)}
