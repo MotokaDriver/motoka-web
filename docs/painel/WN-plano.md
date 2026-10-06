@@ -66,8 +66,8 @@ Fontes lidas (o código é a fonte da verdade):
 | WN-0 | Fundação, login/sessão, pipeline, convite e `.well-known` | agora |
 | WN-1 | Minha equipe | implementado, sem commit (§16) |
 | WN-2 | Pedidos | implementado, sem commit (§17) |
-| WN-6 | "Acompanhar pedido" | depois do commit da WS-02b |
-| WN-3 | Mapa ao vivo | depois da WS-03b |
+| WN-6 | Acompanhar pedido | implementado, sem commit (§19) |
+| WN-3 | Mapa ao vivo | implementado, sem commit (§18) |
 | WN-5 | Acertos | depois da WS-11 |
 | WN-4 | Integrações | depois das WS-12/13/15 |
 | WN-7 | Telas que hoje só existem no app | **última fase** |
@@ -1507,6 +1507,55 @@ Data: 2026-10-05. Sem commit (a pedido). Código em `painel/src/features/deliver
 - R2: o `action_id` agora só é descartado numa resposta definitiva (4xx de negócio). Rede, 5xx (502/504 da Cloudflare incluídos) e 429 mantêm o id do toque. Teste novo com 502, 429 e 409.
 - `yarn size:login` (`scripts/size-login.mjs`): soma gzip dos `/_next/*.js` do `out/<rota>/index.html` sem `noModule`, em KiB e kB, com teto de 220 KiB no login. Medida atual: login 217,6 KiB, equipe 283,3, pedidos 268,0 (a diferença para o "220,5" do §17.3 é que aquele somava também `theme-init.js` e `/_csp/*`).
 - E2E real do dev-env: o `orders.spec.ts` é com estado. O motoboy do seed não reabre a sessão de um turno já usado e a API não apaga turno em andamento, então, depois de uma rodada, a janela fica ocupada e o teste se pula com o motivo. Passou na rodada anterior (criar, atribuir, pronto e cancelar).
+
+## 18. Execução WN-3 (Mapa ao vivo)
+
+Data: 2026-10-05. Sem commit (a pedido). Código em `painel/src/features/live/`; contrato lido de `motoka-api/src/apps/tracking` (L1 `GET /v1/tracking/live`, L2 stream, WS-03b em `8be2ad2`) e conferido contra a API real (L1 e L2 do dev-env: mesmos campos e eventos).
+
+### 18.1 O que foi feito
+
+- **Mapa:** MapLibre 6.12.0 (versão exata), carregado por `next/dynamic` só em `/ao-vivo/`. O worker sai no mesmo site: o pós-build copia `maplibre-gl-worker.mjs` e `maplibre-gl-shared.mjs` para `out/_maplibre/<versão>/` e falha se a versão não bater com a do `package.json` (`scripts/map-assets.mjs`). `setWorkerUrl` aponta para lá, sem `blob:` em `worker-src`. O pós-build baixa o estilo e põe os hosts de tiles, glyphs e sprite na CSP (`{TILES}`). Sem `NEXT_PUBLIC_MAP_STYLE_URL`: "Mapa não configurado" e a lateral funciona. Sem WebGL2: "Seu navegador não mostra o mapa". Estilo que falha: "Não foi possível carregar o mapa".
+- **Cliente SSE** (`stream.ts`): `fetch` com `Authorization` e `eventsource-parser`; watchdog de 45 s sem byte (inclusive `: hb`); geração por conexão; token renovado antes de conectar se faltar menos de 300 s; `reauth` e fim natural renovam e reconectam sem contar como falha; 401 `AUTH_TOKEN_EXPIRING` renova uma vez; backoff 1 s ×2 até 30 s com jitter de ±25 %, zerado depois de 30 s em `streaming`; 429, 503, `ROUTE_NOT_FOUND` ou 3 falhas em 60 s caem no polling do L1 a cada 10 s (jitter ±20 %, backoff 10→60 s), com nova tentativa de stream a cada 60 s; 403 não reconecta; aba oculta por mais de 20 s fecha (`paused`) e ao voltar o `snapshot` substitui o estado; sair da tela fecha o stream (libera a vaga por loja).
+- **Estado** (`state.ts`, redutor puro): `position` coalescido a 1 por segundo por motoboy, fora de ordem não volta no tempo, motoboy desconhecido pede releitura do L1, `delivery`/`session`/`resync` relêem o L1 com debounce de 1 s. **Com o stream aberto o servidor não avisa quando os pontos param: o cliente decide.** O pin fica `stale` (esmaecido e tracejado) depois de 120 s sem `position` e some, com o cartão em "Sem sinal", depois de `no_signal_after_seconds` (180 s). O "há N s" usa o relógio do servidor (`server_time`), não o da máquina; o rótulo de leitor de tela muda por minuto.
+- **Tela:** pílula "Ao vivo" (verde só com stream vivo, âmbar em polling, cinza em pausa ou sem conexão, com `aria-live`), contagens derivadas do estado local, lateral "Equipe agora" com bloco de atenção (7 categorias do WS-10 §5, só `needs_attention`, mais de 5 vira "Ver todos"), filtros, cartões, painel do motoboy com fila de paradas, Ligar e WhatsApp, rodapé Escala e Novo pedido. Estados: carregando, vazio, 403 sem retry, `ROUTE_NOT_FOUND` e `tracking:false` como "O rastreio dos motoboys ainda não foi ativado para a sua conta." (não é erro).
+
+### 18.2 Desvios e pendências
+
+| Item | Motivo |
+|---|---|
+| Sem o botão "Lembrar de ativar localização" (E17) | o E17 vem com a WS-03d, que não está no código da API |
+| Sem ETA nas paradas e sem a frase "retira a #186" | ETA é da WS-03d; a frase exige o stop `ready` do próprio motoboy |
+| Sem rota tracejada no mapa | sem geometria na API (D-10-10); o pin e a fila bastam na v1 |
+| `http://localhost` aceito em `NEXT_PUBLIC_MAP_STYLE_URL` fora de prod | o E2E serve um estilo vazio local; prod só aceita https |
+| Minimapa do pedido (WN-2) e recuperação de chunk antigo em `/ao-vivo/` | o minimapa é reaproveitamento do WN-3 num WN seguinte; a recuperação da DN-24 já é do shell e não foi retestada aqui |
+| O E2E real do mapa se pula quando o motoboy do seed não consegue entrar em turno | o turno de rodada anterior ocupa a janela (sem SQL); o L1 e o L2 reais foram conferidos por requisição |
+
+### 18.3 Validação
+
+- Vitest: `stream.test.ts` com relógio falso (conexão, pedaços e CRLF, JSON inválido, watchdog, `reauth`, fim natural, `AUTH_TOKEN_EXPIRING`, 429/503/404/403, 3 falhas, backoff do polling, aba oculta, `detach` sem timer vivo), `state.test.ts` (relógio do servidor, stale 120 s, sem sinal 180 s, ordem de eventos, contagens), `attention.test.ts`, `screen.test.tsx` (Mapa não configurado, filtros, painel, 403, 404, atenção) e `build/map.test.ts` (origens do estilo, CSP sem `blob:` e sem `unsafe-eval`, worker copiado com a versão certa).
+- Playwright mockado (`live.spec.ts`, SSE de verdade no mock): mapa renderiza, worker carregado de `'self'` na versão do pacote, zero `securitypolicyviolation`, cartões e painel, pin `stale` e depois sem pin com o stream aberto e mudo, 429 no stream → polling âmbar, sem rastreio, saída da tela libera o stream.
+- O E2E do mock passa a exigir o build com `NEXT_PUBLIC_MAP_STYLE_URL=http://localhost:8790/style.json`; a CSP esperada do `public.spec.ts` inclui o host do estilo.
+
+### 18.4 Correções da revisão (`WN-3-6-revisao-implementacao.md`)
+
+- **B-1:** `connect()` com a aba oculta agora marca `paused` em vez de sair calado, e `setHidden(false)` reconecta sempre que não há transporte vivo (`streaming`, `connecting` ou `polling`). Teste com relógio falso: falha → aba oculta → o timer do backoff dispara → volta em menos de 20 s → um `fetch` novo.
+- **Fim natural:** um stream que fecha antes de 30 s, sem `reauth`, é falha (backoff, sem `renew`): sem laço de rotação do refresh. Dois testes novos.
+- **`aria-live`:** só o estado ("Ao vivo", "Atualização a cada 10 s", "Sem atualização") fica na região viva; a hora vai em `aria-hidden`.
+- **Fidelidade ao `WebLive.jsx`:** as paradas do motoboy selecionado ganham pins numerados (a primeira cheia, as outras em contorno, na cor dele); os controles do MapLibre (zoom e atribuição) ficam escuros, 36 px, com a borda e o raio do DS (`globals.css`). A rota tracejada segue como desvio (sem geometria na API).
+- **CSP do mapa:** o pós-build baixa cada TileJSON (fonte com `url`) e soma os hosts dos `tiles`; um TileJSON que não baixa falha o build. `MAP_EXTRA_ORIGINS` (README) cobre o que o build não enxerga.
+- **Perfil com 100 motoboys** (`pins.test.tsx`): 100 pins nascem uma vez, reler a lista não toca em nenhum, um evento mexe em um pin só (o `MapView` guarda a chave de cada pin), o estado reaproveita os 99 que não mudaram e a rajada de 100 eventos é barata.
+- **Pendência:** tiles reais no E2E. O mock serve um estilo vazio; só um build com um estilo de verdade prova os hosts em prod.
+
+## 19. Execução WN-6 (Acompanhar pedido, `/r/`)
+
+Data: 2026-10-05. Sem commit (a pedido). `painel/static-pages/r/{index.html,r.js,r.css}`, sem React e sem script inline.
+
+- **P1** (`GET /v1/public/deliveries/{token}`, a primeira chamada com `mark_opened=true`) e **P2** (stream por `EventSource`: `snapshot`, `stage`, `position`, `ended`; erro antes de abrir cai no polling do P1). Polling de `poll_after_seconds` (mínimo 5 s, 15 s por padrão), pausa na aba oculta, sem polling depois de 410 ou 404; 429 respeita o `Retry-After`.
+- Etapas Preparando / Saiu / A caminho / Chegou, "voltando para a loja", só o primeiro nome do motoboy, código só quando vem. **O pin envelhece sozinho:** a posição vira "Atualizando a posição…" depois de 120 s sem `position`, pelo relógio do servidor. Sem mapa na v1 (a posição aparece como texto aproximado).
+- Estados: 410 ("Acompanhamento encerrado"), 404, link incompleto (não chama a API), sem rede (avisa e tenta de novo, mantendo o dado), 429. `/r/<token>` vira `/r/#<token>` por `history.replaceState`. Fonte do sistema.
+- CSP e privacidade: a página herda a CSP do site (`script-src 'self'`), `Referrer-Policy: no-referrer` exato e `noindex` já vêm do `_headers`; a única requisição é para a API (o E2E confere os hosts).
+- Tamanho: **6,8 KiB gz** (HTML + JS + CSS), teto de 30 KiB, medido por `yarn size:login`. `r.js` com `// @ts-check` passa no `tsc -p static-pages`.
+- Testes: `test/unit/r/r.test.ts` (token, etapas, stale, erros, polling, aba oculta, 429, stream) e `test/e2e/r.spec.ts` (cabeçalhos, hosts, fragmento, 410, 404, stale pelo relógio, API fora). E2E real: P1 e P2 de um pedido criado na API real, 404 de token falso e o encerramento depois do cancelamento passaram no dev-env.
 
 ## Fontes (pesquisa web, out/2026)
 

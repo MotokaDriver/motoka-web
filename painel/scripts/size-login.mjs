@@ -24,6 +24,14 @@ function measure(route) {
   return { files, kib: bytes / 1024, kb: bytes / 1000 };
 }
 
+/** "Acompanhar pedido" (/r/): HTML + JS + CSS na primeira carga, teto de 30 KiB gz (WN-6). */
+const R_LIMIT_KIB = 30;
+function measureR() {
+  const files = [path.join(out, "r", "index.html"), path.join(out, "_static", "r", "r.js"), path.join(out, "_static", "r", "r.css")];
+  const bytes = files.reduce((sum, file) => sum + zlib.gzipSync(fs.readFileSync(file)).length, 0);
+  return bytes / 1024;
+}
+
 let failed = false;
 for (const route of ROUTES) {
   const { files, kib, kb } = measure(route);
@@ -31,7 +39,10 @@ for (const route of ROUTES) {
   console.log(`${route.padEnd(8)} ${kib.toFixed(1)} KiB gz (${kb.toFixed(1)} kB, ${files} scripts)${login ? ` · teto ${LIMIT_KIB} KiB` : ""}`);
   if (login && kib > LIMIT_KIB) failed = true;
 }
+const rKib = measureR();
+console.log(`r        ${rKib.toFixed(1)} KiB gz (HTML + JS + CSS) · teto ${R_LIMIT_KIB} KiB`);
+if (rKib > R_LIMIT_KIB) failed = true;
 if (failed) {
-  console.error(`O login passou de ${LIMIT_KIB} KiB gz.`);
+  console.error(`Um teto de bundle foi estourado (login ${LIMIT_KIB} KiB, /r/ ${R_LIMIT_KIB} KiB).`);
   process.exit(1);
 }

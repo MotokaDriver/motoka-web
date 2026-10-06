@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { resolveBuildEnv } from "./scripts/build-env.mjs";
+import { maplibreVersion } from "./scripts/map-assets.mjs";
 
 // Painel web do estabelecimento (DN-01, DN-02): app Next independente da landing, exportado como
 // site estático e servido pelo Cloudflare Workers Static Assets. Não há servidor Next nem BFF.
@@ -23,6 +24,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_API_URL: env.apiUrl,
     NEXT_PUBLIC_APP_ENV: env.appEnv,
     NEXT_PUBLIC_MAP_STYLE_URL: env.mapStyleUrl,
+    // O worker do MapLibre sai em /_maplibre/<versão>/ (pós-build); a versão vem do pacote instalado.
+    NEXT_PUBLIC_MAPLIBRE_VERSION: maplibreVersion(__dirname),
   },
 };
 

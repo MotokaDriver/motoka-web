@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { PlaceholderScreen } from "@/features/shell/PlaceholderScreen";
-import { Paths } from "@/lib/routing/routes";
+import { LiveScreen } from "@/features/live/LiveScreen";
 
 export const metadata: Metadata = { title: "Mapa ao vivo" };
 
 export default function Page() {
-  return <PlaceholderScreen path={Paths.live} />;
+  return <LiveScreen />;
 }

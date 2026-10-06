@@ -15,7 +15,8 @@ yarn serve        # wrangler dev na 8787, servindo out/ com os headers reais
 yarn lint
 yarn typecheck    # app + páginas estáticas (checkJs)
 yarn test         # Vitest
-yarn e2e          # Playwright contra o wrangler dev, API mockada na 8790
+yarn e2e          # Playwright contra o wrangler dev, API mockada na 8790 (build com NEXT_PUBLIC_MAP_STYLE_URL=http://localhost:8790/style.json)
+yarn size:login   # JS do login (teto 220 KiB gz) e da página /r/ (teto 30 KiB gz); rode depois do build
 yarn check-error-codes   # códigos da API (../../motoka-api) sem texto no catálogo
 ```
 
@@ -25,7 +26,8 @@ Variáveis de build (todas públicas, validadas no `next.config.ts`; nenhuma é 
 |---|---|
 | `NEXT_PUBLIC_APP_ENV` | `dev` (padrão), `e2e`, `preview` ou `prod`. Só `prod` emite HSTS e `upgrade-insecure-requests` |
 | `NEXT_PUBLIC_API_URL` | origem da API, sem `/v1`. Padrão `http://localhost:8000` fora de prod; obrigatória e https em `*.motokadriver.com` em prod |
-| `NEXT_PUBLIC_MAP_STYLE_URL` | estilo do mapa (WN-3), opcional |
+| `MAP_EXTRA_ORIGINS` | opcional, só no build: origens https extras para a CSP do mapa (lista separada por vírgula, sem caminho), para hosts que o build não enxerga. O pós-build já soma os hosts do estilo (tiles, glyphs, sprite) e os `tiles` de cada TileJSON |
+| `NEXT_PUBLIC_MAP_STYLE_URL` | estilo do mapa (WN-3), opcional. Sem ele, o mapa mostra "Mapa não configurado" e a lateral funciona. https sempre; `http://localhost` só fora de prod (E2E). O pós-build baixa o estilo e põe os hosts de tiles, glyphs e sprite na CSP |
 
 ## Portas de dev (DN-18)
 

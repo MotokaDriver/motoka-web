@@ -44,6 +44,8 @@ function token(sub: string, id: number): string {
   return `${encode({ alg: "HS256", typ: "JWT" })}.${encode(claims)}.mock`;
 }
 
+const LIVE_DRIVER = "a1111111-1111-4111-8111-111111111111";
+
 export class MockApi {
   team = new MockTeam();
   deliveries = new MockDeliveries();
@@ -60,6 +62,53 @@ export class MockApi {
   capabilities: Record<string, boolean> = { teams: true, deliveries: true, tracking: false };
   /** Resposta do preview do convite; `null` derruba a conexão. */
   invite: InviteReply | null = { status: 404, body: { error_code: "TEAM_INVITE_NOT_FOUND", detail: "x" } };
+  liveStatus = 200;
+  streamStatus = 200;
+  /** `true`: o stream abre mas não manda `position` (o pin envelhece pelo relógio do cliente). */
+  streamSilent = false;
+  liveStreams = 0;
+  /** Quando o motoboy do mapa mandou o último ponto no snapshot (ms atrás). */
+  livePositionAgeMs = 5000;
+
+  liveSnapshot() {
+    const now = Date.now();
+    return {
+      server_time: new Date(now).toISOString(),
+      no_signal_after_seconds: 180,
+      at_store_radius_m: 60,
+      establishment: { id: "5b6acbe2-9c52-4a61-945b-9aae70c59fdc", name: "Padaria Teste", location: { lat: -25.43, lng: -49.27 } },
+      counts: { on_shift: 1, delivering: 1, returning: 0, at_store: 0, no_signal: 0, not_started: 0, done_today: { deliveries: 3, returns: 0 } },
+      drivers: [
+        {
+          driver: { id: LIVE_DRIVER, full_name: "Diego Ramos", short_name: "Diego R.", initials: "DR", phone: "5541999990077" },
+          membership_id: "11111111-1111-4111-8111-111111111111",
+          shift: { shift_id: "s1", occurrence_date: "2026-10-05", starts_at: new Date(now - 3600_000).toISOString(), ends_at: new Date(now + 3600_000).toISOString() },
+          session: { id: "x1", started_at: new Date(now - 3600_000).toISOString() },
+          state: "delivering",
+          position: { lat: -25.43, lng: -49.27, accuracy_m: 6, heading: 90, speed_mps: 6, recorded_at: new Date(now - this.livePositionAgeMs).toISOString() },
+          done_today: { deliveries: 3, returns: 0 },
+          last_delivered_at: null,
+          current: { delivery_id: "e1", number: 184, status: "on_the_way" },
+          stops: [{ delivery_id: "e1", number: 184, origin: "manual", status: "on_the_way", destination: { lat: -25.44, lng: -49.26 }, customer: { name: "Marina Souza", address_line: "Rua Itupava, 1120" } }],
+        },
+      ],
+    };
+  }
+
+  /** Corpo do P1 (e do `snapshot` do P2) do link público do cliente. */
+  publicDelivery: Record<string, unknown> = {
+    number: 184,
+    stage: "on_the_way",
+    establishment: { name: "Padaria Teste", location: null },
+    driver: { first_name: "Diego" },
+    destination: null,
+    code: "4821",
+    expires_at: new Date(Date.now() + 3_600_000).toISOString(),
+    driver_position: null,
+    signal: "none",
+    poll_after_seconds: 15,
+  };
+  publicRequests: Array<{ url: string; referer: string | undefined; cookie: string | undefined }> = [];
   inviteRequests: Array<{ url: string; referer: string | undefined; cookie: string | undefined }> = [];
 
   private tokenCounter = 0;
@@ -83,6 +132,12 @@ export class MockApi {
     this.capabilities = { teams: true, deliveries: true, tracking: false };
     this.invite = { status: 404, body: { error_code: "TEAM_INVITE_NOT_FOUND", detail: "x" } };
     this.inviteRequests = [];
+    this.publicRequests = [];
+    this.liveStatus = 200;
+    this.streamStatus = 200;
+    this.streamSilent = false;
+    this.livePositionAgeMs = 5000;
+    this.liveStreams = 0;
     this.team = new MockTeam();
     this.deliveries = new MockDeliveries();
     this.cookies = new Map();
@@ -125,10 +180,17 @@ export class MockApi {
     const origin = req.headers.origin;
     const auth = path.startsWith("/web/auth/");
     const publicInvite = path.startsWith("/teams/invites/");
+    const publicDelivery = path.startsWith("/public/deliveries/");
+    if (path === "/style.json") {
+      const headers = { "Content-Type": "application/json", ...(origin === ORIGIN ? { "Access-Control-Allow-Origin": ORIGIN } : {}) };
+      res.writeHead(200, headers);
+      res.end(JSON.stringify({ version: 8, name: "vazio", sources: {}, layers: [{ id: "fundo", type: "background", paint: { "background-color": "#161a22" } }] }));
+      return;
+    }
     // Como a API: credenciada só para a origem do painel; o convite é público.
     const cors: Record<string, string> = {
       ...(origin === ORIGIN ? { "Access-Control-Allow-Origin": ORIGIN, "Access-Control-Allow-Credentials": "true" } : {}),
-      ...(publicInvite && origin ? { "Access-Control-Allow-Origin": origin } : {}),
+      ...((publicInvite || publicDelivery) && origin ? { "Access-Control-Allow-Origin": origin } : {}),
       "Access-Control-Expose-Headers": "Retry-After",
       Vary: "Origin",
     };
@@ -155,6 +217,24 @@ export class MockApi {
       });
       res.end();
       return;
+    }
+
+    if (publicDelivery) {
+      const [token = "", tail] = path.slice("/public/deliveries/".length).split("/");
+      this.publicRequests.push({ url: req.url ?? "", referer: req.headers.referer, cookie: req.headers.cookie });
+      const headers = { "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex" };
+      if (token.startsWith("gone")) return send(410, { error_code: "DELIVERY_TRACKING_EXPIRED", detail: "x" }, headers);
+      if (token.startsWith("none")) return send(404, { error_code: "DELIVERY_TRACKING_NOT_FOUND", detail: "x" }, headers);
+      const body = { ...this.publicDelivery, updated_at: new Date().toISOString() };
+      if (tail === "stream") {
+        res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-store, no-transform", ...cors, ...headers });
+        const sse = (event: string, data: unknown) => res.write(`event: ${event}`+String.fromCharCode(10)+`data: ${JSON.stringify(data)}`+String.fromCharCode(10,10));
+        sse("snapshot", body);
+        sse("position", { lat: -25.43, lng: -49.27, recorded_at: new Date().toISOString() });
+        req.on("close", () => res.end());
+        return;
+      }
+      return send(200, body, headers);
     }
 
     if (publicInvite) {
@@ -224,6 +304,29 @@ export class MockApi {
     const id = this.tokens.get(bearer);
     if (!id) return send(401, { error_code: "AUTH_TOKEN_INVALID", detail: "x" });
     const sub = JSON.parse(Buffer.from(bearer.split(".")[1]!, "base64url").toString()).sub as string;
+
+    if (path === "/tracking/live") {
+      if (this.liveStatus !== 200) return send(this.liveStatus, { error_code: "RATE_LIMIT_EXCEEDED", detail: "x" }, { "Retry-After": "1" });
+      return send(200, this.liveSnapshot());
+    }
+
+    if (path === "/tracking/live/stream") {
+      if (this.streamStatus !== 200) return send(this.streamStatus, { error_code: this.streamStatus === 429 ? "RATE_LIMIT_EXCEEDED" : "TRACKING_STREAM_UNAVAILABLE", detail: "x" });
+      this.liveStreams += 1;
+      res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-store, no-transform", ...cors });
+      const sse = (event: string, data: unknown) => res.write(`event: ${event}` + String.fromCharCode(10) + `data: ${JSON.stringify(data)}` + String.fromCharCode(10, 10));
+      sse("snapshot", this.liveSnapshot());
+      const timer = setInterval(() => {
+        if (this.streamSilent) return;
+        sse("position", { driver_id: LIVE_DRIVER, lat: -25.43 + Math.random() * 0.005, lng: -49.27, accuracy_m: 6, heading: 90, speed_mps: 6, recorded_at: new Date().toISOString(), state: "delivering" });
+      }, 1000);
+      req.on("close", () => {
+        clearInterval(timer);
+        this.liveStreams -= 1;
+        res.end();
+      });
+      return;
+    }
 
     if (path === "/web/capabilities") {
       if (id <= this.staleUpTo) return send(401, { error_code: "AUTH_TOKEN_EXPIRED", detail: "x" });

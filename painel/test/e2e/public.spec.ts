@@ -9,9 +9,12 @@ import { API } from "./mockApi";
 const PROD = process.env.E2E_VARIANT === "prod";
 const API_ORIGIN = process.env.E2E_API_ORIGIN ?? (PROD ? "https://api.motokadriver.com" : API);
 
+// Hosts do estilo do mapa no build do E2E (NEXT_PUBLIC_MAP_STYLE_URL na API mockada); prod sem estilo não tem.
+const TILES = process.env.E2E_TILES ?? (PROD ? "" : ` ${API}`);
+
 const CSP =
-  "default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:; " +
-  `font-src 'self'; connect-src 'self' ${API_ORIGIN} https://viacep.com.br; worker-src 'self'; manifest-src 'self'; ` +
+  `default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:${TILES}; ` +
+  `font-src 'self'; connect-src 'self' ${API_ORIGIN} https://viacep.com.br${TILES}; worker-src 'self'; manifest-src 'self'; ` +
   "base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'" +
   (PROD ? "; upgrade-insecure-requests" : "");
 

@@ -49,7 +49,7 @@ export async function ensureDriverInTeam(request: APIRequestContext, linkUrl: st
   return accepted.ok();
 }
 
-/** O motoboy em turno agora, com sessão aberta. Cria um turno que começa em 10 min (a API deixa abrir 30 min antes). */
+/** O motoboy em turno agora, com sessão aberta. Cria um turno que começa em 1 min (a API deixa abrir 30 min antes; sem SQL: se houver sobreposição, devolve false e o teste se pula). */
 export async function ensureDriverOnShift(request: APIRequestContext): Promise<boolean> {
   const store = await login(request, STORE);
   const driver = await login(request, DRIVER);
@@ -83,7 +83,7 @@ export async function ensureDriverOnShift(request: APIRequestContext): Promise<b
     const now = new Date();
     const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(now);
     const hm = (d: Date) => new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d);
-    const start = new Date(now.getTime() + 10 * 60_000);
+    const start = new Date(now.getTime() + 1 * 60_000);
     const end = new Date(now.getTime() + 100 * 60_000);
     if (hm(end) < hm(start)) return false; // perto da meia-noite: o turno cruzaria o dia
     const weekday = (new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7;
@@ -105,4 +105,45 @@ export async function ensureDriverOnShift(request: APIRequestContext): Promise<b
     data: { occurrence_date: entry.occurrence_date },
   });
   return started.ok();
+}
+
+/** O motoboy do seed manda um ponto (T1). O consentimento do seed já está aceito (T2); aceita se faltar. */
+export async function reportPosition(request: APIRequestContext, lat: number, lng: number): Promise<boolean> {
+  const driver = await login(request, DRIVER);
+  const headers = { Authorization: driver.bearer };
+  const consent = await json<{ current_version: string; accepted: boolean }>(await request.get(`${API}/v1/tracking/consent`, { headers }));
+  if (!consent.accepted) await request.post(`${API}/v1/tracking/consent`, { headers, data: { version: consent.current_version } });
+  const now = new Date();
+  const sent = await request.post(`${API}/v1/tracking/positions`, {
+    headers,
+    data: {
+      sent_at: now.toISOString(),
+      points: [{ recorded_at: now.toISOString(), lat, lng, accuracy_m: 8, speed_mps: 5, heading: 90, is_mocked: false }],
+    },
+  });
+  return sent.ok();
+}
+
+/** Cria um pedido manual na loja (sem motoboy) e devolve o id, o número e o link do cliente. */
+export async function createManualDelivery(request: APIRequestContext, name: string): Promise<{ id: string; number: number; trackingUrl: string | null; bearer: string }> {
+  const store = await login(request, STORE);
+  const response = await request.post(`${API}/v1/deliveries`, {
+    headers: { Authorization: store.bearer },
+    data: {
+      client_request_id: `e2e-${Date.now()}`,
+      channel: "whatsapp",
+      customer: { name, phone: "41999990077" },
+      address: { street: "Rua Chile", number: "1880", neighborhood: "Rebouças", city: "Curitiba", state: "PR" },
+      payment: { type: "online" },
+      driver: { mode: "none" },
+      send_tracking_link: true,
+    },
+  });
+  expect(response.ok(), "criar pedido").toBe(true);
+  const body = await json<{ id: string; number: number; tracking_url: string | null }>(response);
+  return { id: body.id, number: body.number, trackingUrl: body.tracking_url, bearer: store.bearer };
+}
+
+export async function cancelDeliveryApi(request: APIRequestContext, bearer: string, id: string): Promise<void> {
+  await request.post(`${API}/v1/deliveries/${id}/cancel`, { headers: { Authorization: bearer }, data: { action_id: crypto.randomUUID(), reason: "Teste E2E" } });
 }

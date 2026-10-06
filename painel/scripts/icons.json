@@ -68,7 +68,12 @@
     "swap_horiz",
     "cancel",
     "report",
-    "sync"
+    "sync",
+    "location_off",
+    "u_turn_left",
+    "call",
+    "calendar_month",
+    "my_location"
   ],
   "extraFilled": [
     "dark_mode",

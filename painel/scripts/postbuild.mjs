@@ -10,6 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveBuildEnv } from "./build-env.mjs";
 import { renderHeaders } from "./build-headers.mjs";
+import { copyMaplibreWorker, loadTileOrigins, parseExtraOrigins } from "./map-assets.mjs";
 import { copyStaticPages } from "./copy-static.mjs";
 import { externalizeOut } from "./csp-externalize.mjs";
 import { flattenSegments } from "./flatten-segments.mjs";
@@ -27,11 +28,15 @@ const env = resolveBuildEnv(process.env);
 const csp = externalizeOut(outDir);
 const segments = flattenSegments(outDir);
 copyStaticPages(path.join(root, "static-pages"), outDir, `${env.apiUrl}/v1`);
+// Mapa (WN-3): worker no mesmo site e hosts do estilo na CSP (tiles, glyphs, sprite).
+const mapVersion = copyMaplibreWorker(root, outDir);
+const tileOrigins = [...new Set([...(env.mapStyleUrl ? await loadTileOrigins(env.mapStyleUrl) : []), ...parseExtraOrigins(process.env.MAP_EXTRA_ORIGINS)])].sort();
 fs.writeFileSync(
   path.join(outDir, "_headers"),
   renderHeaders(fs.readFileSync(path.join(root, "headers.template"), "utf8"), {
     appEnv: env.appEnv,
     apiUrl: env.apiUrl,
+    tileOrigins,
   }),
 );
 fs.copyFileSync(path.join(root, "_redirects"), path.join(outDir, "_redirects"));
@@ -39,5 +44,6 @@ const checked = verifyOut(outDir);
 
 console.log(
   `pós-build (${env.appEnv}): ${csp.scripts} scripts inline externalizados em ${csp.pages} páginas; ` +
-    `${segments} payloads de segmento; ${checked.html} HTML verificados; API ${env.apiUrl}.`,
+    `${segments} payloads de segmento; ${checked.html} HTML verificados; API ${env.apiUrl}; MapLibre ${mapVersion}` +
+    `${tileOrigins.length ? `; tiles ${tileOrigins.join(", ")}` : "; sem estilo de mapa"}.`,
 );

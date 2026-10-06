@@ -299,3 +299,32 @@
 :root[data-theme="light"] .logo-dark {
   display: none;
 }
+
+/* Controles do MapLibre no tema escuro do design (WebLive.jsx: 36 px, fundo escuro, borda e raio do DS). */
+.maplibregl-map .maplibregl-ctrl-group {
+  background: rgb(5 5 5 / 0.82);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+.maplibregl-map .maplibregl-ctrl-group button {
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+}
+.maplibregl-map .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--border);
+}
+.maplibregl-map .maplibregl-ctrl-group button:hover {
+  background-color: var(--surface-variant);
+}
+.maplibregl-map .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(0.65);
+}
+.maplibregl-map .maplibregl-ctrl-attrib {
+  background: rgb(5 5 5 / 0.7);
+  color: var(--text-tertiary);
+}
+.maplibregl-map .maplibregl-ctrl-attrib a {
+  color: var(--text-secondary);
+}

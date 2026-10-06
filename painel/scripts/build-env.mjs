@@ -56,23 +56,26 @@ export function resolveBuildEnv(source) {
   }
   const rawMap = (source.NEXT_PUBLIC_MAP_STYLE_URL ?? "").trim();
   const mapStyleUrl = rawMap
-    ? validateMapStyleUrl(rawMap)
+    ? validateMapStyleUrl(rawMap, { allowLocalhost })
     : "";
   return { appEnv, apiUrl: new URL(apiUrl).origin, mapStyleUrl };
 }
 
 /**
- * O estilo do mapa vem de um provedor de tiles (WN-3): só https, sem credenciais.
+ * O estilo do mapa vem de um provedor de tiles (WN-3): só https, sem credenciais (http://localhost só
+ * fora de prod, para o E2E servir um estilo vazio).
  * @param {string} raw
+ * @param {{ allowLocalhost: boolean }} options
  */
-function validateMapStyleUrl(raw) {
+function validateMapStyleUrl(raw, { allowLocalhost }) {
   let url;
   try {
     url = new URL(raw);
   } catch {
     throw new Error(`NEXT_PUBLIC_MAP_STYLE_URL inválida: "${raw}"`);
   }
-  if (url.protocol !== "https:") throw new Error("NEXT_PUBLIC_MAP_STYLE_URL deve usar https.");
+  const local = allowLocalhost && url.protocol === "http:" && url.hostname === "localhost";
+  if (url.protocol !== "https:" && !local) throw new Error("NEXT_PUBLIC_MAP_STYLE_URL deve usar https.");
   if (url.username || url.password) {
     throw new Error("NEXT_PUBLIC_MAP_STYLE_URL não pode conter credenciais.");
   }

@@ -25,6 +25,8 @@ export interface ListParams {
   readonly date?: string;
   readonly offset?: number;
   readonly limit?: number;
+  /** Só os que precisam de atenção (bloco do mapa ao vivo). */
+  readonly needsAttention?: boolean;
 }
 
 export const fetchList = async (params: ListParams, signal?: AbortSignal): Promise<DeliveryList> =>
@@ -35,6 +37,7 @@ export const fetchList = async (params: ListParams, signal?: AbortSignal): Promi
         date: params.scope === "all" ? params.date : undefined,
         limit: params.limit ?? PAGE_SIZE,
         offset: params.offset ?? 0,
+        needs_attention: params.needsAttention ? true : undefined,
       },
       signal,
     }),
