@@ -75,6 +75,14 @@ export class MockServices {
   integrations = new Map<string, { merchant: string | null; webhook: string | null; price: string; connected: boolean; clientId: string | null; secret: string | null }>();
   integrationActivity: Array<Record<string, unknown>> = [];
   issuedSecrets: string[] = [];
+  /** Cardápio Web (WN-4c). `false`: o ambiente não tem a configuração do parceiro (card "Configuração incompleta"). */
+  cwConfigured = true;
+  /** A volta do OAuth termina sem a loja do parceiro (`incomplete`). */
+  cwIncomplete = false;
+  cwPendingState: string | null = null;
+  cwLinks = new Map<string, string>();
+  cwCompleteCalls = 0;
+  syncCalls = 0;
   calls: string[] = [];
   bodies: Array<{ route: string; body: Record<string, unknown> }> = [];
   private counter = 0;
@@ -153,6 +161,52 @@ export class MockServices {
       return [200, { ...found, status: decision[2] === "accept" ? "preparing" : "rejected" }];
     }
 
+    // --- Cardápio Web: OAuth, vínculo e sincronização (WN-4c) ---
+    if (path === "/integrations/cardapio_web/authorize" && method === "POST") {
+      this.cwPendingState = `state-${this.uuid("5")}`;
+      if (!this.integrations.has("cardapio_web")) this.integrations.set("cardapio_web", { merchant: null, webhook: null, price: "0.00", connected: false, clientId: null, secret: null });
+      return [200, { authorize_url: `http://localhost:8790/mock-portal?client_id=abc&return=http://localhost:8787&state=${this.cwPendingState}`, expires_in: 600 }];
+    }
+    if (path === "/integrations/cardapio_web/authorize/complete" && method === "POST") {
+      this.cwCompleteCalls += 1;
+      if (!this.cwPendingState || json.state !== this.cwPendingState) return [400, { error_code: "INTEGRATION_AUTH_STATE_INVALID", detail: "x" }];
+      if (json.code !== "codigo-de-teste") return [410, { error_code: "INTEGRATION_AUTH_EXPIRED", detail: "x" }];
+      this.cwPendingState = null;
+      if (this.cwIncomplete) return [200, { state: "incomplete", external_merchant_id: null }];
+      const state = this.integrations.get("cardapio_web");
+      if (state) {
+        state.connected = true;
+        state.merchant = "7731";
+      }
+      return [200, { state: "connected", external_merchant_id: "7731" }];
+    }
+    if (path === "/integrations/cardapio_web/sync" && method === "POST") {
+      this.syncCalls += 1;
+      return [200, { queued: 3 }];
+    }
+    if (path === "/integrations/cardapio_web/drivers" && method === "GET") {
+      const names = new Map([["d0000001-0000-4000-8000-000000000001", "Diego Ramos"], ["d0000002-0000-4000-8000-000000000002", "Rafa Lima"]]);
+      return [
+        200,
+        {
+          team: [...names].map(([id, name]) => ({ driver_id: id, name, external_driver_id: this.cwLinks.get(id) ?? null, external_driver_name: this.cwLinks.get(id) === "77" ? "Diego R." : this.cwLinks.get(id) ? "Rafael Lima" : null })),
+          external: [{ id: "77", name: "Diego R." }, { id: "55", name: "Rafael Lima" }],
+        },
+      ];
+    }
+    const link = /^\/integrations\/cardapio_web\/driver-links\/([^/]+)$/.exec(path);
+    if (link) {
+      if (method === "DELETE") {
+        this.cwLinks.delete(link[1] ?? "");
+        return [204, null];
+      }
+      const externalId = String(json.external_driver_id);
+      const owner = [...this.cwLinks].find(([, ext]) => ext === externalId)?.[0];
+      if (owner && owner !== link[1]) return [409, { error_code: "INTEGRATION_EXTERNAL_DRIVER_TAKEN", detail: "x" }];
+      this.cwLinks.set(link[1] ?? "", externalId);
+      return [200, { driver_id: link[1], external_driver_id: externalId }];
+    }
+
     // --- Integrações (WN-4b) ---
     const integration = /^\/integrations(?:\/([^/]+?)(?:\/(credentials|test))?)?$/.exec(path);
     if (integration) {
@@ -163,14 +217,25 @@ export class MockServices {
           200,
           [
             card("open_delivery", this.integrations.get("open_delivery")?.connected ? "connected" : "available"),
+            card("cardapio_web", !this.cwConfigured ? "soon" : this.cwIncomplete && this.integrations.has("cardapio_web") ? "incomplete" : this.integrations.get("cardapio_web")?.connected ? "connected" : "available"),
             card("saipos", this.saiposAvailable ? (this.integrations.get("saipos")?.connected ? "connected" : "available") : "soon"),
-            card("cardapio_web", "soon"),
             card("ifood", "soon"),
             card("nuvemshop", "soon"),
           ],
         ];
       }
       if (type === "activity" && method === "GET") return [200, { items: this.integrationActivity, next_cursor: null }];
+      if (type === "cardapio_web" && method === "GET" && !action) {
+        const state = this.integrations.get("cardapio_web");
+        if (!state) return notFound("INTEGRATION_NOT_FOUND");
+        return [200, { type, status: state.connected ? "connected" : "available", state: state.connected ? "connected" : "disconnected", external_merchant_id: state.merchant, webhook_url: null, delivery_price: "0.00", operator_base_url: "", token_url: "", client_id: null, secret_hint: null, credential_version: 0, credential_rotated_at: null, health: { last_token_at: null, last_inbound_at: null, last_outbound_ok_at: null, pending_events: 0, dead_events_24h: 0 } }];
+      }
+      if (type === "cardapio_web" && method === "DELETE" && !action) {
+        const state = this.integrations.get("cardapio_web");
+        if (state) state.connected = false;
+        this.cwLinks.clear();
+        return [204, null];
+      }
       if (type === "open_delivery" || type === "saipos") {
         const state = this.integrations.get(type);
         const detail = () => ({

@@ -88,7 +88,7 @@ test.describe("Integrações (WN-4b, API mockada)", () => {
     await expect(page).toHaveURL(/\/integracoes\/$/);
     const grid = page.getByRole("list", { name: "Conectores" });
     await expect(grid.getByRole("button", { name: "Open Delivery, Conectar" })).toBeVisible();
-    await expect(grid.getByText("Em breve")).toBeVisible();
+    await expect(grid.getByText("Em breve")).toHaveCount(2);
     await expect(grid.getByText("Saipos")).toHaveCount(0);
 
     const panel = page.getByRole("complementary", { name: "Detalhe da integração" });

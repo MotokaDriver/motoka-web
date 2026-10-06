@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ORIGIN_INFO, type Origin } from "@/features/deliveries/model";
 import { SourceBadge } from "@/features/deliveries/SourceBadge";
@@ -19,12 +20,15 @@ import { cn } from "@/ui/cn";
 import "@/features/team/icons";
 import { useActivity, useCards } from "./hooks";
 import { IntegrationPanel } from "./IntegrationPanel";
-import { ACTIVITY, TYPE_INFO, cardTone, visibleCards } from "./logic";
+import { OauthPanel } from "./OauthPanel";
+import { Paths } from "@/lib/routing/routes";
+import { ACTIVITY, TYPE_INFO, attentionText, cardTone, visibleCards } from "./logic";
 import type { Card as IntegrationCard, IntegrationType } from "./model";
 
 function CardTile({ card, selected, onSelect }: { card: IntegrationCard; selected: boolean; onSelect: () => void }) {
   const info = TYPE_INFO[card.type];
-  const soon = card.status === "soon";
+  // O Cardápio Web sem configuração no ambiente continua clicável: o painel explica o que falta.
+  const soon = card.status === "soon" && card.type !== "cardapio_web";
   const tone = cardTone(card);
   const color = (ORIGIN_INFO[card.type as Origin] ?? ORIGIN_INFO.unknown).color;
   const body = (
@@ -61,6 +65,34 @@ function CardTile({ card, selected, onSelect }: { card: IntegrationCard; selecte
   );
 }
 
+/** "Atenção": avisos das integrações que pedem a loja (sem entregador vinculado, finalizado na origem antes da retirada). */
+function AttentionCard() {
+  const activity = useActivity();
+  const seen = new Set<string>();
+  const items = (activity.data?.pages.flatMap((page) => page.items) ?? [])
+    .filter((item) => item.kind === "attention" && item.deliveryId !== null && !seen.has(`${item.deliveryId}:${item.reason}`) && seen.add(`${item.deliveryId}:${item.reason}`))
+    .slice(0, 5);
+  if (items.length === 0) return null;
+  return (
+    <section aria-label="Atenção" className="flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning/10 p-4">
+      <h2 className="type-title-md font-bold text-text-primary">Atenção</h2>
+      <ul className="flex flex-col gap-1.5">
+        {items.map((item) => {
+          const origin = ORIGIN_INFO[item.type as Origin]?.label ?? "sistema de origem";
+          return (
+            <li key={item.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="type-body-sm min-w-0 flex-1 text-text-primary">{attentionText(item.deliveryNumber, origin, item.reason)}</span>
+              <Link href={`${Paths.deliveries}?pedido=${item.deliveryId}`} className="type-label-md font-semibold text-primary-text hover:underline">
+                Abrir pedido
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 function ActivityCard() {
   const activity = useActivity();
   const items = activity.data?.pages.flatMap((page) => page.items) ?? [];
@@ -86,7 +118,7 @@ function ActivityCard() {
                   <span aria-hidden className={look.tone === "error" ? "text-error" : look.tone === "warning" ? "text-warning" : look.tone === "success" ? "text-success" : "text-text-tertiary"}>
                     <Icon name={look.tone === "error" ? "cancel" : look.tone === "warning" ? "sync" : "check"} size={16} />
                   </span>
-                  <span className="type-body-sm min-w-0 font-semibold text-text-primary">{look.text(item.deliveryNumber, origin)}</span>
+                  <span className="type-body-sm min-w-0 font-semibold text-text-primary">{look.text(item.deliveryNumber, origin, item.reason)}</span>
                   <SourceBadge origin={item.type as Origin} channel={null} />
                 </li>
               );
@@ -134,6 +166,7 @@ export function IntegrationsScreen() {
                   <CardTile key={card.type} card={card} selected={card.type === selected} onSelect={() => setPicked(card.type)} />
                 ))}
               </ul>
+              <AttentionCard />
               <Card className="flex flex-col gap-2 p-5">
                 <h2 className="type-title-md font-bold text-text-primary">Quando chega um pedido</h2>
                 <p className="type-body-sm text-pretty text-text-secondary">
@@ -147,7 +180,15 @@ export function IntegrationsScreen() {
         </div>
       </div>
       <aside aria-label="Detalhe da integração" className="w-full shrink-0 overflow-y-auto border-t border-border lg:w-[420px] lg:border-l lg:border-t-0">
-        {selected ? <IntegrationPanel key={selected} type={selected} saved={shown.find((c) => c.type === selected)?.state != null} /> : <p className="type-body-md p-6 text-text-tertiary">Escolha uma integração para ver os dados de conexão.</p>}
+        {selected ? (
+          TYPE_INFO[selected]?.oauth ? (
+            <OauthPanel key={selected} type={selected} card={shown.find((c) => c.type === selected)} />
+          ) : (
+            <IntegrationPanel key={selected} type={selected} saved={shown.find((c) => c.type === selected)?.state != null} />
+          )
+        ) : (
+          <p className="type-body-md p-6 text-text-tertiary">Escolha uma integração para ver os dados de conexão.</p>
+        )}
       </aside>
     </div>
   );

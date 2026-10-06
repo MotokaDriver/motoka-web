@@ -9,6 +9,7 @@ export const SHORTCUTS_KEY = "motoka.panel.shortcuts";
 export const THEME_KEY = "motoka.panel.theme";
 export const ACCEPT_SOUND_KEY = "motoka.panel.accept-sound";
 const RELOAD_MARK_KEY = "motoka.panel.chunk-reload";
+const OAUTH_PENDING_KEY = "motoka.panel.oauth-pending";
 
 export type ThemePreference = "dark" | "light" | "system";
 
@@ -54,6 +55,41 @@ export function setShortcutsEnabled(enabled: boolean): void {
 }
 
 /** Som quando chega pedido para aceitar: desligado até a pessoa ligar (autoplay e bom senso). */
+/**
+ * Conexão OAuth em andamento (WN-4c): o `state` que o painel mandou ao parceiro, para conferir na volta. Vive em
+ * `sessionStorage` (some ao fechar a aba), por no máximo 10 minutos, e é lido uma vez só. Nunca `localStorage`. O
+ * `code_verifier` do PKCE nem passa pelo navegador: fica no cofre da API.
+ */
+export interface PendingOauth {
+  readonly type: string;
+  readonly state: string;
+}
+
+const OAUTH_TTL_MS = 10 * 60_000;
+
+export function savePendingOauth(pending: PendingOauth): void {
+  try {
+    window.sessionStorage.setItem(OAUTH_PENDING_KEY, JSON.stringify({ ...pending, at: Date.now() }));
+  } catch {
+    // Sem storage: a volta não consegue conferir o state e recusa (a API também confere).
+  }
+}
+
+/** Lê e apaga (uso único). `null` se não há, se venceu ou se está ilegível. */
+export function takePendingOauth(): PendingOauth | null {
+  try {
+    const raw = window.sessionStorage.getItem(OAUTH_PENDING_KEY);
+    window.sessionStorage.removeItem(OAUTH_PENDING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { type?: unknown; state?: unknown; at?: unknown };
+    if (typeof parsed.type !== "string" || typeof parsed.state !== "string" || typeof parsed.at !== "number") return null;
+    if (Date.now() - parsed.at > OAUTH_TTL_MS) return null;
+    return { type: parsed.type, state: parsed.state };
+  } catch {
+    return null;
+  }
+}
+
 export function getAcceptSound(): boolean {
   if (memory.acceptSound !== undefined) return memory.acceptSound;
   return read(ACCEPT_SOUND_KEY) === "on";

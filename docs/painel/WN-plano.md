@@ -69,7 +69,7 @@ Fontes lidas (o código é a fonte da verdade):
 | WN-6 | Acompanhar pedido | implementado, sem commit (§19) |
 | WN-3 | Mapa ao vivo | implementado, sem commit (§18) |
 | WN-5 | Acertos | implementado (§20) |
-| WN-4 | Integrações | WN-4a e WN-4b implementados (§22); WN-4c/4d dependem das WS-15/16 |
+| WN-4 | Integrações | WN-4a e WN-4b commitados (§22); WN-4c (Cardápio Web) commitado (§23); WN-4d (Nuvemshop) depende da WS-16 |
 | WN-7 | Telas que hoje só existem no app | implementado (§21) |
 | WN-L | Limpeza do painel Flutter no `motoka_app` (WS-17) | hand-off, depois do `.well-known` em prod |
 
@@ -1598,6 +1598,22 @@ Contrato: commit 3fd9185 da API (WS-12/13) e o working tree da WS-14 (Saipos, `I
 - **Conexão nova**: salvar ou conectar invalida `["integrations"]` (inclui o `useOdConnected`, que também passou a 60 s); o secret some ao trocar de conector (teste).
 - **Bundle**: login 219,1 KiB gz (teto 220); o parser e as telas de Pedidos não entram no shell por causa do banner (`import()` no polling e drawer sob demanda).
 - Testes: vitest `test/unit/integrations` (24), Playwright mockado `test/e2e/integrations.spec.ts` (5). Sem E2E real (decisão do usuário).
+
+## 23. Execução WN-4c (Cardápio Web)
+
+Contrato: working tree da API (WS-15, `provider_panel.py`, `routers.py`) e §4.7/§5 do `WS-14-16-plano.md`. Código em `painel/src/features/integrations` (`OauthPanel`, `OauthReturn`) e `app/(app)/(shell)/integracoes/cardapio-web/retorno/`.
+
+- **Conectar (PKCE)**: "Conectar ao Cardápio Web" chama `POST /integrations/cardapio_web/authorize`, guarda o `state` (tirado da própria `authorize_url`) e leva ao portal. A URL do portal só abre se for https (ou `http://localhost` fora de prod) e sem usuário e senha. O `code_verifier` fica no cofre da API e nunca passa pelo navegador.
+- **State**: `sessionStorage` da aba (nunca `localStorage`), uso único, 10 minutos, via `prefs.ts` (único módulo que toca storage).
+- **Retorno** (`/integracoes/cardapio-web/retorno/?code=&state=`): tira `code` e `state` do endereço na hora, confere o `state` com o guardado (sem ele, ou diferente, ou vencido: "Não foi possível confirmar a conexão. Comece de novo pelo painel.", sem chamar a API), e só então chama `authorize/complete`; a API confere de novo `state`, prazo e uso único. Portal que recusou (`error=`) tem texto próprio. Erros da API viram o texto do catálogo.
+- **Status** (separados na revisão): `soon` no Cardápio Web = o ambiente não tem a configuração do parceiro, a loja não resolve: "Indisponível neste ambiente". `incomplete` (CardStatus da API) = autorizou, mas o parceiro não informou a loja: "Configuração incompleta", com "Conecte de novo". "Reconectar" no estado `error`. iFood e Nuvemshop: "Em breve". A volta do OAuth lê o `state` da resposta do `complete`: só `connected` mostra "Cardápio Web conectado."; `incomplete` mostra "A conexão ficou incompleta: o Cardápio Web não informou a loja. Conecte de novo." e não volta à lista.
+- **Vínculo motoboy ↔ entregador**: `GET …/drivers` (inclui os `orphans`, vínculos de quem saiu da equipe, listados com "Remover"), `PUT/DELETE …/driver-links/{id}` (select por motoboy; entregador já vinculado a outro fica desabilitado; 409 `EXTERNAL_DRIVER_TAKEN` vira texto fixo). "Sincronizar agora" e "Desconectar" (confirmação). Aviso fixo de que o Motoka não cancela no Cardápio Web.
+- **Atenção**: bloco no topo de Integrações com os avisos `attention` da atividade (`driver_not_linked`: "Pedido #n: sem entregador vinculado…", `finished_before_pickup`) e o link do pedido. Só o `meta.reason` conhecido é lido. Não entra na lista "precisa de atenção" do mapa, porque a API não marca a entrega com isso (só o log).
+- **Limite da API**: o DTO do detalhe não traz o rótulo da conta (`external_account_label`); a tela mostra "Loja {merchant}".
+- **Pendência (R4 da API, depois que ela commitar): consumir "sem entregador vinculado" no DTO da entrega.** (1) `deliveries/model.ts`: ler o campo novo de forma tolerante (lista e detalhe). (2) `deliveries/logic.ts`, `deliveryAlerts`: texto fixo "O Cardápio Web está sem o entregador deste pedido. Vincule o motoboy em Integrações." com link para `/integracoes/`. (3) `live/attention.ts`: categoria no bloco de atenção do mapa. (4) Badge da sidebar: conferir se o motivo entra no `summary.needs_attention`. (5) Integrações: trocar a fonte do bloco "Atenção" do log para o DTO, ou deduplicar, para o mesmo pedido não aparecer duas vezes. (6) Catálogo: rodar o `check-error-codes` se vier `error_code` novo. O motivo `merchant_missing` do log já tem texto fixo.
+- Notas da revisão para depois: allowlist do host do portal (defesa em profundidade); `CARDAPIO_WEB_REDIRECT_URI` precisa ser `https://painel.motokadriver.com/integracoes/cardapio-web/retorno/` (com a barra final), a registrar no README e na H-1.
+- Catálogo: 7 códigos novos (`INTEGRATION_AUTH_*`, `REAUTH_REQUIRED`, `RATE_LIMITED`, `EXTERNAL_DRIVER_*`).
+- Testes: vitest `test/unit/integrations/cardapioweb.test.tsx` (31, incluindo `incomplete`, state vencido, uso único e órfãos), Playwright mockado `test/e2e/cardapioweb.spec.ts` (5, com portal de mentira que redireciona de volta). Login 219,4 KiB gz (teto 220).
 
 ## Fontes (pesquisa web, out/2026)
 

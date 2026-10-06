@@ -6,7 +6,8 @@ import { ApiError } from "@/lib/api/errors";
  */
 
 export type IntegrationType = "open_delivery" | "saipos" | "cardapio_web" | "ifood" | "nuvemshop" | "unknown";
-export type CardStatus = "connected" | "available" | "soon";
+/** `incomplete`: autorizou no parceiro, mas faltou um dado para operar (o Cardápio Web sem a loja). */
+export type CardStatus = "connected" | "available" | "soon" | "incomplete";
 export type IntegrationState = "disconnected" | "connected" | "error";
 
 export interface Card {
@@ -70,15 +71,23 @@ export type ActivityKind =
   | "origin_unconfirmed"
   | "driver_removed"
   | "origin_discarded"
+  | "reauth_required"
+  | "reauth_expired"
+  | "attention"
   | "unknown";
 
 export interface Activity {
   readonly id: string;
   readonly type: IntegrationType;
   readonly kind: ActivityKind;
+  readonly deliveryId: string | null;
   readonly deliveryNumber: number | null;
+  /** Motivo de um aviso de atenção, só dos valores conhecidos (`meta.reason`); o resto do `meta` nunca é lido. */
+  readonly reason: AttentionReason | null;
   readonly createdAt: string;
 }
+
+export type AttentionReason = "driver_not_linked" | "finished_before_pickup" | "merchant_missing";
 
 export interface ActivityPage {
   readonly items: readonly Activity[];
@@ -97,7 +106,7 @@ function unreadable(): never {
 
 const TYPES: readonly string[] = ["open_delivery", "saipos", "cardapio_web", "ifood", "nuvemshop"];
 const parseType = (value: unknown): IntegrationType => (TYPES.includes(str(value)) ? (str(value) as IntegrationType) : "unknown");
-const parseStatus = (value: unknown): CardStatus => (value === "connected" ? "connected" : value === "available" ? "available" : "soon");
+const parseStatus = (value: unknown): CardStatus => (value === "connected" ? "connected" : value === "available" ? "available" : value === "incomplete" ? "incomplete" : "soon");
 const parseState = (value: unknown): IntegrationState => (value === "connected" ? "connected" : value === "error" ? "error" : "disconnected");
 
 export function parseCards(value: unknown): readonly Card[] {
@@ -154,7 +163,11 @@ export function parseTest(value: unknown): TestResult {
   };
 }
 
-const KINDS: readonly string[] = ["received", "sent", "error", "dead_letter", "credential_rotated", "connected", "disconnected", "accepted", "rejected", "origin_unconfirmed", "driver_removed", "origin_discarded"];
+const KINDS: readonly string[] = ["received", "sent", "error", "dead_letter", "credential_rotated", "connected", "disconnected", "accepted", "rejected", "origin_unconfirmed", "driver_removed", "origin_discarded", "reauth_required", "reauth_expired", "attention"];
+
+function parseReason(value: unknown): AttentionReason | null {
+  return value === "driver_not_linked" || value === "finished_before_pickup" || value === "merchant_missing" ? value : null;
+}
 
 export function parseActivity(value: unknown): ActivityPage {
   if (!isRaw(value)) return unreadable();
@@ -163,7 +176,9 @@ export function parseActivity(value: unknown): ActivityPage {
       id: str(raw.id),
       type: parseType(raw.type),
       kind: (KINDS.includes(str(raw.kind)) ? str(raw.kind) : "unknown") as ActivityKind,
+      deliveryId: strOrNull(raw.delivery_id),
       deliveryNumber: typeof raw.delivery_number === "number" ? raw.delivery_number : null,
+      reason: parseReason(isRaw(raw.meta) ? raw.meta.reason : null),
       createdAt: str(raw.created_at),
     }),
   );

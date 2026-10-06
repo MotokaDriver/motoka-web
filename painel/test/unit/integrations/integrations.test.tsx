@@ -111,9 +111,9 @@ describe("regras e textos", () => {
     expect(testSummary({ ok: false, error: "algo_novo", httpStatus: null, lastTokenAt: null, lastOutboundOkAt: null }).text).toBe("Não foi possível conectar nesse endereço.");
   });
   it("cards: Saipos só aparece se liberada; Nuvemshop em breve; Cardápio Web e iFood ficam de fora", () => {
-    expect(visibleCards(parseCards(cards)).map((c) => c.type)).toEqual(["open_delivery", "nuvemshop"]);
+    expect(visibleCards(parseCards(cards)).map((c) => c.type)).toEqual(["open_delivery", "cardapio_web", "ifood", "nuvemshop"]);
     const withSaipos = cards.map((c) => (c.type === "saipos" ? { ...c, status: "available" } : c));
-    expect(visibleCards(parseCards(withSaipos)).map((c) => c.type)).toEqual(["open_delivery", "saipos", "nuvemshop"]);
+    expect(visibleCards(parseCards(withSaipos)).map((c) => c.type)).toEqual(["open_delivery", "saipos", "cardapio_web", "ifood", "nuvemshop"]);
   });
   it("parsers: secret só na resposta de credenciais; atividade desconhecida não quebra", () => {
     expect(parseDetail(connected())).not.toHaveProperty("clientSecret");
@@ -130,7 +130,7 @@ describe("tela de Integrações (WN-4b)", () => {
     const grid = await screen.findByRole("list", { name: "Conectores" });
     expect(within(grid).getByRole("button", { name: "Open Delivery, Conectar" })).toBeInTheDocument();
     expect(within(grid).getByText("Nuvemshop")).toBeInTheDocument();
-    expect(within(grid).getByText("Em breve")).toBeInTheDocument();
+    expect(within(grid).getAllByText("Em breve")).toHaveLength(2);
     expect(within(grid).queryByRole("button", { name: /Nuvemshop/ })).toBeNull();
     expect(within(grid).queryByText("Saipos")).toBeNull();
   });

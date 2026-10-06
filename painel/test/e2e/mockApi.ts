@@ -193,6 +193,14 @@ export class MockApi {
       res.end(JSON.stringify({ version: 8, name: "vazio", sources: {}, layers: [{ id: "fundo", type: "background", paint: { "background-color": "#161a22" } }] }));
       return;
     }
+    // Portal do parceiro (Cardápio Web) de mentira: devolve o navegador ao painel com o code e o mesmo state.
+    if (path === "/mock-portal") {
+      const state = url.searchParams.get("state") ?? "";
+      const back = url.searchParams.get("return") ?? "";
+      res.writeHead(302, { Location: `${back}/integracoes/cardapio-web/retorno/?code=codigo-de-teste&state=${encodeURIComponent(state)}` });
+      return void res.end();
+    }
+
     // Como a API: credenciada só para a origem do painel; o convite é público.
     const cors: Record<string, string> = {
       ...(origin === ORIGIN ? { "Access-Control-Allow-Origin": ORIGIN, "Access-Control-Allow-Credentials": "true" } : {}),

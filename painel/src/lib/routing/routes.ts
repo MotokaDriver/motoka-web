@@ -9,6 +9,7 @@ export const Paths = {
   services: "/servicos/",
   newService: "/servicos/novo/",
   integrations: "/integracoes/",
+  integrationsReturn: "/integracoes/cardapio-web/retorno/",
   notices: "/avisos/",
   account: "/conta/",
 } as const;
