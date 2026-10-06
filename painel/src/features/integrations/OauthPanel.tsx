@@ -225,7 +225,7 @@ function DriverLinks({ type }: { type: IntegrationType }) {
   };
 
   return (
-    <section aria-label="Motoboys e entregadores" className="flex flex-col gap-2.5">
+    <section id="vinculos" tabIndex={-1} aria-label="Motoboys e entregadores" className="flex flex-col gap-2.5 outline-none">
       <div>
         <h3 className="type-label-md text-text-secondary">Motoboys ↔ entregadores</h3>
         <p className="type-caption text-pretty text-text-tertiary">O parceiro só aceita entregadores cadastrados nele. Sem vínculo, o pedido anda no Motoka, mas o painel do parceiro fica sem entregador.</p>

@@ -25,7 +25,7 @@ import { Paths } from "@/lib/routing/routes";
 import { ACTIVITY, TYPE_INFO, attentionText, cardTone, visibleCards } from "./logic";
 import type { Card as IntegrationCard, IntegrationType } from "./model";
 
-function CardTile({ card, selected, onSelect }: { card: IntegrationCard; selected: boolean; onSelect: () => void }) {
+function CardTile({ card, selected, attention, onSelect }: { card: IntegrationCard; selected: boolean; attention: boolean; onSelect: () => void }) {
   const info = TYPE_INFO[card.type];
   // O Cardápio Web sem configuração no ambiente continua clicável: o painel explica o que falta.
   const soon = card.status === "soon" && card.type !== "cardapio_web";
@@ -42,7 +42,7 @@ function CardTile({ card, selected, onSelect }: { card: IntegrationCard; selecte
         <Chip tone={tone.tone} icon={card.status === "connected" ? "check" : undefined}>
           {tone.label}
         </Chip>
-        {card.needsAttention && <Chip tone="error" icon="priority_high">Precisa de atenção</Chip>}
+        {attention && <Chip tone="error" icon="priority_high">Precisa de atenção</Chip>}
       </span>
       {card.lastOutboundOkAt && <span className="type-caption text-text-tertiary">{`último envio ${relativeTime(card.lastOutboundOkAt, new Date())}`}</span>}
     </>
@@ -55,7 +55,7 @@ function CardTile({ card, selected, onSelect }: { card: IntegrationCard; selecte
       <button
         type="button"
         aria-pressed={selected}
-        aria-label={`${info?.name ?? "Integração"}, ${tone.label}`}
+        aria-label={`${info?.name ?? "Integração"}, ${tone.label}${attention ? ", precisa de atenção" : ""}`}
         onClick={onSelect}
         className={cn(base, "w-full cursor-pointer", selected ? "border-primary-tint-border bg-primary-tint" : "border-border bg-surface hover:bg-surface-variant")}
       >
@@ -66,7 +66,7 @@ function CardTile({ card, selected, onSelect }: { card: IntegrationCard; selecte
 }
 
 /** "Atenção": avisos das integrações que pedem a loja (sem entregador vinculado, finalizado na origem antes da retirada). */
-function AttentionCard() {
+function AttentionCard({ onLink }: { onLink: (type: IntegrationType) => void }) {
   const activity = useActivity();
   const seen = new Set<string>();
   const items = (activity.data?.pages.flatMap((page) => page.items) ?? [])
@@ -82,6 +82,11 @@ function AttentionCard() {
           return (
             <li key={item.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="type-body-sm min-w-0 flex-1 text-text-primary">{attentionText(item.deliveryNumber, origin, item.reason)}</span>
+              {item.reason === "driver_not_linked" && (
+                <button type="button" onClick={() => onLink(item.type)} className="type-label-md cursor-pointer font-semibold text-primary-text hover:underline">
+                  Vincular motoboy
+                </button>
+              )}
               <Link href={`${Paths.deliveries}?pedido=${item.deliveryId}`} className="type-label-md font-semibold text-primary-text hover:underline">
                 Abrir pedido
               </Link>
@@ -143,6 +148,22 @@ export function IntegrationsScreen() {
   const [picked, setPicked] = useState<IntegrationType | null>(null);
   const shown = useMemo(() => visibleCards(cards.data ?? []), [cards.data]);
   const selected = picked ?? shown.find((c) => c.status !== "soon")?.type ?? null;
+  // O R4 da WS-15 registra "sem entregador vinculado" só no log: o selo do card nasce dele (o `needs_attention` do card
+  // da API conta só os eventos que falharam).
+  const log = useActivity();
+  const unlinked = useMemo(
+    () => new Set((log.data?.pages.flatMap((page) => page.items) ?? []).filter((item) => item.kind === "attention" && item.reason === "driver_not_linked").map((item) => item.type)),
+    [log.data],
+  );
+  const openLinks = (type: IntegrationType) => {
+    setPicked(type);
+    // O painel do conector troca no próximo quadro; a seção de vínculos ganha o foco quando existir.
+    setTimeout(() => {
+      const section = document.getElementById("vinculos");
+      section?.scrollIntoView?.({ block: "start" });
+      section?.focus();
+    }, 150);
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
@@ -163,10 +184,10 @@ export function IntegrationsScreen() {
             <>
               <ul aria-label="Conectores" className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
                 {shown.map((card) => (
-                  <CardTile key={card.type} card={card} selected={card.type === selected} onSelect={() => setPicked(card.type)} />
+                  <CardTile key={card.type} card={card} selected={card.type === selected} attention={card.needsAttention || unlinked.has(card.type)} onSelect={() => setPicked(card.type)} />
                 ))}
               </ul>
-              <AttentionCard />
+              <AttentionCard onLink={openLinks} />
               <Card className="flex flex-col gap-2 p-5">
                 <h2 className="type-title-md font-bold text-text-primary">Quando chega um pedido</h2>
                 <p className="type-body-sm text-pretty text-text-secondary">

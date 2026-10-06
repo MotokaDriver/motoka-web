@@ -85,6 +85,10 @@ test.describe("Cardápio Web (WN-4c, API mockada)", () => {
     const attention = page.getByRole("region", { name: "Atenção" });
     await expect(attention.getByText("Pedido #189: sem entregador vinculado. Vincule o motoboy a um entregador do Cardápio Web.")).toBeVisible();
     await expect(attention.getByRole("link", { name: "Abrir pedido" })).toHaveAttribute("href", /\/pedidos\/\?pedido=a0000009/);
+    // O card do Cardápio Web acende o selo e o link abre o painel dele.
+    await expect(page.getByRole("button", { name: "Cardápio Web, Conectar, precisa de atenção" })).toBeVisible();
+    await attention.getByRole("button", { name: "Vincular motoboy" }).click();
+    await expect(page.getByRole("complementary", { name: "Detalhe da integração" }).getByRole("button", { name: "Conectar ao Cardápio Web" })).toBeVisible();
   });
 
   test("a API diz incomplete na volta: nada de conectado, e o card fica em Configuração incompleta", async ({ page, guard, api }) => {

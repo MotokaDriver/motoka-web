@@ -394,9 +394,16 @@ describe("Cardápio Web conectado: vínculo, sincronizar e desconectar", () => {
         }),
       }),
     );
-    mount(<IntegrationsScreen />);
+    const { user } = mount(<IntegrationsScreen />);
     const attention = await screen.findByRole("region", { name: "Atenção" });
     expect(within(attention).getByText("Pedido #189: sem entregador vinculado. Vincule o motoboy a um entregador do Cardápio Web.")).toBeInTheDocument();
     expect(within(attention).getByRole("link", { name: "Abrir pedido" })).toHaveAttribute("href", expect.stringMatching(new RegExp(`^/pedidos/?\\?pedido=${DRIVER_A}$`)));
+    // O card do Cardápio Web acende o selo (o log é a única fonte do R4).
+    const grid = screen.getByRole("list", { name: "Conectores" });
+    expect(within(grid).getByRole("button", { name: "Cardápio Web, Conectado, precisa de atenção" })).toBeInTheDocument();
+    expect(within(grid).getByRole("button", { name: "Open Delivery, Conectar" })).toBeInTheDocument();
+    // E o link leva ao vínculo de entregadores.
+    await user.click(within(attention).getByRole("button", { name: "Vincular motoboy" }));
+    expect(await screen.findByRole("region", { name: "Motoboys e entregadores" })).toBeInTheDocument();
   });
 });
