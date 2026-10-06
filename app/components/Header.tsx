@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import EntrarButton from "./EntrarButton";
 import motokaLogo from "../../public/images/motoka-logo.png";
 
 export default function Header() {
@@ -15,7 +16,7 @@ export default function Header() {
           priority
         />
       </Link>
-      <nav className="hidden md:flex space-x-6">
+      <nav className="hidden md:flex items-center space-x-6">
         <Link href="/#how-it-works" className="text-gray-800 hover:text-primary transition-colors">
           Como Funciona
         </Link>
@@ -25,7 +26,11 @@ export default function Header() {
         <Link href="/#contact" className="text-gray-800 hover:text-primary transition-colors">
           Contato
         </Link>
+        <EntrarButton />
       </nav>
+      <div className="md:hidden">
+        <EntrarButton />
+      </div>
     </header>
   );
 }

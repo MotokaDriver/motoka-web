@@ -1,0 +1,124 @@
+# Deploy de prod do painel (WN-plano §8.0, DN-03). Só a partir do main, com aprovação no
+# environment painel-prod (o usuário como revisor obrigatório, H-1) e só com CLOUDFLARE_ENABLED.
+# O commit publicado passa antes pelo `verify` (lint, testes, build e E2E), porque um push direto
+# em main e o workflow_dispatch não passam pelo ci.yml. Depois do deploy, um smoke de prod; se
+# falhar, rollback para a versão anterior (no primeiro deploy não há para onde voltar: o job falha
+# e o painel fica fora até a correção).
+name: Painel deploy
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["painel/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: painel-deploy
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main' && vars.CLOUDFLARE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: painel
+    env:
+      NEXT_PUBLIC_APP_ENV: e2e
+      NEXT_PUBLIC_API_URL: http://localhost:8790
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: painel/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test
+      - name: Auditoria das dependências de produção (bloqueia high/critical)
+        run: yarn audit --groups dependencies --level high
+      - name: Build (variante e2e) com a checagem de zero scripts inline
+        run: yarn build
+      - run: npx playwright install --with-deps chromium webkit
+      - run: yarn e2e
+      - if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: painel-deploy-verify
+          path: |
+            painel/playwright-report
+            painel/test-results
+          retention-days: 7
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: painel-prod
+    defaults:
+      run:
+        working-directory: painel
+    env:
+      PAINEL_HOST: https://painel.motokadriver.com
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: painel/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - name: Build (variante prod)
+        env:
+          NEXT_PUBLIC_APP_ENV: prod
+          NEXT_PUBLIC_API_URL: ${{ vars.PAINEL_API_URL }}
+          NEXT_PUBLIC_MAP_STYLE_URL: ${{ vars.PAINEL_MAP_STYLE_URL }}
+        run: yarn build
+      - name: Há versão publicada para um rollback?
+        id: previous
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          count=$(npx wrangler deployments list --json 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const j=JSON.parse(s);console.log(Array.isArray(j)?j.length:0)}catch{console.log(0)}})" || echo 0)
+          echo "Deploys anteriores: ${count}"
+          echo "exists=$([ "${count:-0}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - name: Deploy
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: painel
+          command: deploy
+      - name: Smoke de prod (.well-known, convite, CSP)
+        id: smoke
+        run: |
+          set -euo pipefail
+          check_json() {
+            local path="$1"
+            local headers
+            headers=$(curl -sS -o /dev/null -D - --max-redirs 0 "$PAINEL_HOST$path")
+            echo "$headers" | head -1 | grep -q " 200" || { echo "::error::$path não respondeu 200"; exit 1; }
+            echo "$headers" | grep -iq "^content-type: application/json" || { echo "::error::$path sem application/json"; exit 1; }
+          }
+          check_json /.well-known/assetlinks.json
+          check_json /.well-known/apple-app-site-association
+          convite=$(curl -sS -o /dev/null -D - "$PAINEL_HOST/convite/smoke-token-0000000000")
+          echo "$convite" | head -1 | grep -q " 200" || { echo "::error::/convite/<token> não respondeu 200"; exit 1; }
+          [ "$(echo "$convite" | grep -ic '^referrer-policy: no-referrer')" = "1" ] || { echo "::error::Referrer-Policy do convite"; exit 1; }
+          curl -sS -o /dev/null -D - "$PAINEL_HOST/" | grep -iq "^content-security-policy: default-src 'none'; script-src 'self'" || { echo "::error::CSP ausente em /"; exit 1; }
+      - name: Rollback se o smoke falhar (só com versão anterior)
+        if: failure() && steps.smoke.conclusion == 'failure' && steps.previous.outputs.exists == 'true'
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: painel
+          command: rollback --yes --message "Smoke de prod falhou (run ${{ github.run_id }})"
+      - name: Primeiro deploy sem rollback possível
+        if: failure() && steps.smoke.conclusion == 'failure' && steps.previous.outputs.exists != 'true'
+        run: echo "::error::O smoke falhou no primeiro deploy, sem versão anterior para o rollback. Corrija e publique de novo."
