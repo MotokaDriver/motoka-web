@@ -8,7 +8,7 @@ import { API, STORE, ensureDriverInTeam, ensurePendingStoreSettlement } from "./
  */
 test("acerto real: confirmar e marcar como pago", async ({ page, request, guard }) => {
   guard.expectResponse(`${API}/v1/web/auth/refresh`, 401);
-  expect(await ensureDriverInTeam(request, null), "o motoboy do seed na equipe").toBe(true);
+  expect(await ensureDriverInTeam(request, null), "o motoboy do painel na equipe").toBe(true);
   const id = await ensurePendingStoreSettlement(request);
   test.skip(!id, "não deu para preparar o acerto: a janela do motoboy do seed está ocupada por um turno de outra rodada (espere uns 10 min) ou é quase meia-noite");
   if (!id) return;

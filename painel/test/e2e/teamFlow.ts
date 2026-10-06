@@ -47,11 +47,14 @@ export async function inviteFlow(page: Page, uniqueName: string): Promise<string
 const SHIFT_PILL = /turno das 23h às 23h30\. Abrir opções do turno\.$/;
 
 /** Adicionar turno de domingo 23:00–23:30 (repete) e vê a pílula na grade. */
-export async function addShiftFlow(page: Page): Promise<void> {
+export async function addShiftFlow(page: Page, memberName?: string): Promise<void> {
   await page.getByRole("button", { name: "Adicionar turno" }).first().click();
   const drawer = page.getByRole("dialog", { name: "Adicionar turno" });
   const select = drawer.getByLabel("Motoboy");
-  if ((await select.inputValue()) === "") await select.selectOption({ index: 1 });
+  if (memberName) {
+    const value = await select.locator("option", { hasText: memberName }).first().getAttribute("value");
+    await select.selectOption(value ?? { index: 1 });
+  } else if ((await select.inputValue()) === "") await select.selectOption({ index: 1 });
   await drawer.getByRole("button", { name: "Dom", exact: true }).click();
   await drawer.getByLabel("Início do turno").fill("2300");
   await drawer.getByLabel("Fim do turno").fill("2330");
@@ -67,18 +70,18 @@ export async function addShiftFlow(page: Page): Promise<void> {
   await expect(page.getByRole("button", { name: SHIFT_PILL })).toBeVisible();
 }
 
-const memberMenu = (page: Page) => page.getByRole("button", { name: /^Opções de / }).first();
+const memberMenu = (page: Page, name?: string) => (name ? page.getByRole("button", { name: new RegExp(`^Opções de ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`) }) : page.getByRole("button", { name: /^Opções de / }).first());
 
 /** Pausar (turno suspenso), retomar, remover o turno e remover o membro. */
-export async function pauseResumeRemoveFlow(page: Page): Promise<void> {
-  await memberMenu(page).click();
+export async function pauseResumeRemoveFlow(page: Page, memberName?: string): Promise<void> {
+  await memberMenu(page, memberName).click();
   await page.getByRole("menuitem", { name: "Pausar" }).click();
   await page.getByRole("dialog", { name: /^Pausar / }).getByRole("button", { name: "Pausar", exact: true }).click();
   await expect(page.getByText(/foi pausado\.$/)).toBeVisible();
   await expect(page.getByText("Pausado", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /turno suspenso enquanto .* está pausado, turno das 23h às 23h30/ })).toBeVisible();
 
-  await memberMenu(page).click();
+  await memberMenu(page, memberName).click();
   await page.getByRole("menuitem", { name: "Retomar" }).click();
   await expect(page.getByText(/voltou para a escala\./)).toBeVisible();
   await expect(page.getByText("Pausado", { exact: true })).toHaveCount(0);
@@ -92,7 +95,7 @@ export async function pauseResumeRemoveFlow(page: Page): Promise<void> {
   await expect(page.getByText("Turno removido.")).toBeVisible();
   await expect(page.getByRole("button", { name: SHIFT_PILL })).toHaveCount(0);
 
-  await memberMenu(page).click();
+  await memberMenu(page, memberName).click();
   await page.getByRole("menuitem", { name: "Remover da equipe" }).click();
   await page.getByRole("dialog", { name: /^Remover .* da equipe\?$/ }).getByRole("button", { name: "Remover", exact: true }).click();
   await expect(page.getByText(/foi removido da equipe\./)).toBeVisible();

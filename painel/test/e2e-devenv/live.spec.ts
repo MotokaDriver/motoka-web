@@ -1,5 +1,5 @@
 import { expect, test } from "../e2e/guard";
-import { API, STORE, cancelDeliveryApi, createManualDelivery, ensureDriverInTeam, ensureDriverOnShift, reportPosition } from "./seed";
+import { API, DRIVER_NAME, STORE, cancelDeliveryApi, createManualDelivery, ensureDriverInTeam, ensureDriverOnShift, reportPosition } from "./seed";
 
 /**
  * "Mapa ao vivo" e "Acompanhar pedido" contra a API REAL do dev-env (API em :8000, painel na 3001): o
@@ -9,7 +9,7 @@ import { API, STORE, cancelDeliveryApi, createManualDelivery, ensureDriverInTeam
  */
 test("mapa ao vivo: o motoboy em turno aparece e a posição chega pelo stream", async ({ page, request, guard }) => {
   guard.expectResponse(`${API}/v1/web/auth/refresh`, 401);
-  expect(await ensureDriverInTeam(request, null), "o motoboy do seed na equipe").toBe(true);
+  expect(await ensureDriverInTeam(request, null), "o motoboy do painel na equipe").toBe(true);
   test.skip(!(await ensureDriverOnShift(request)), "não deu para pôr o motoboy do seed em turno agora (janela ocupada por uma rodada anterior)");
   expect(await reportPosition(request, -25.4372, -49.27)).toBe(true);
 
@@ -20,10 +20,10 @@ test("mapa ao vivo: o motoboy em turno aparece e a posição chega pelo stream",
   await expect(page).toHaveURL(/\/ao-vivo\/$/);
 
   const side = page.getByRole("complementary", { name: "Equipe agora" });
-  const card = side.getByRole("button", { name: /^Joca Motoboy, /});
+  const card = side.getByRole("button", { name: new RegExp(`^${DRIVER_NAME}, `)});
   await expect(card).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: /^Ao vivo$/ })).toBeVisible({ timeout: 20_000 }); // stream aberto e com bytes
-  await expect(page.locator(".maplibregl-marker").filter({ hasText: "JM" })).toBeVisible();
+  await expect(page.locator(".maplibregl-marker").filter({ hasText: DRIVER_NAME.split(" ").map((w) => w[0]).filter((_, i, a) => i === 0 || i === a.length - 1).join("") })).toBeVisible();
 
   // Um ponto novo chega pelo stream: o "há N s" volta a ser pequeno.
   await reportPosition(request, -25.438, -49.271);
