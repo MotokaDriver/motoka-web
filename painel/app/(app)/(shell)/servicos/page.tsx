@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { PlaceholderScreen } from "@/features/shell/PlaceholderScreen";
-import { Paths } from "@/lib/routing/routes";
+import { Suspense } from "react";
+import { ServicesScreen } from "@/features/services/ServicesScreen";
 
 export const metadata: Metadata = { title: "Contratar motoboys" };
 
 export default function Page() {
-  return <PlaceholderScreen path={Paths.services} />;
+  return (
+    <Suspense fallback={null}>
+      <ServicesScreen />
+    </Suspense>
+  );
 }

@@ -9,6 +9,11 @@ import { Icon, type IconName } from "@/ui/Icon";
 import { Label } from "@/ui/Label";
 import { Paths } from "@/lib/routing/routes";
 import { cn } from "@/ui/cn";
+import { useState } from "react";
+import { isApiError } from "@/lib/api/errors";
+import { UNKNOWN_MESSAGE } from "@/lib/errors/messages";
+import { useToast } from "@/ui/Toast";
+import { remindLocation } from "./api";
 import { SourceBadge } from "@/features/deliveries/SourceBadge";
 import type { Origin } from "@/features/deliveries/model";
 import { nowLabel } from "@/features/team/dates";
@@ -88,6 +93,37 @@ function headline(view: DriverView): { head: string; sub: string } {
     default:
       return { head: "Em turno", sub: "" };
   }
+}
+
+/**
+ * E17: "Lembrar de ativar localização" (push `shift_reminder` ao motoboy). O servidor limita a um a cada 5 min por turno
+ * (429) e recusa quem não está em turno ou já está com a localização ligada (409): os dois viram texto do catálogo.
+ */
+export function ReminderButton({ membershipId, name }: { membershipId: string; name: string }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      aria-label={`Lembrar ${name} de ativar a localização`}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          await remindLocation(membershipId);
+          toast({ title: "Lembrete enviado.", description: `${name} recebeu o aviso para ligar a localização.` });
+        } catch (failure) {
+          toast({ title: isApiError(failure) ? failure.text() : UNKNOWN_MESSAGE });
+        } finally {
+          setBusy(false);
+        }
+      }}
+      className="type-label-md inline-flex min-h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-border px-3 font-semibold text-text-primary hover:bg-surface-variant disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <Icon name="notifications_active" size={16} />
+      Lembrar de ativar localização
+    </button>
+  );
 }
 
 /** Cartão do motoboy na lateral. Todo dado do pin está aqui (alternativa acessível do mapa). */

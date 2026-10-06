@@ -1,6 +1,8 @@
 "use client";
 
 import { useSyncExternalStore, type ReactNode } from "react";
+import { AddressEditor, CardsSection, PhoneEditor } from "./AccountEdit";
+import { DeleteAccount, EmailEditor, PasswordEditor } from "./AccountSecurity";
 import { useSession } from "@/features/session/useSession";
 import { LogoutButton } from "@/features/shell/Shell";
 import { useShortcutsEnabled } from "@/features/shell/ShortcutsProvider";
@@ -69,8 +71,8 @@ function KV({ k, v }: { k: string; v: string }) {
 }
 
 /**
- * Conta mínima do WN-0 (`AccountPage` do WebCoreScreens.jsx): dados da loja só leitura,
- * Preferências (tema e atalhos) e "Sair". Edição, cartões e exclusão de conta são do WN-7.
+ * Conta (`AccountPage`): cadastro (só leitura), contato e endereço (editáveis), cartões salvos (listar e excluir),
+ * preferências (tema e atalhos) e a zona de perigo (Sair; excluir a conta leva ao fluxo da landing).
  */
 export function AccountScreen() {
   const session = useSession();
@@ -85,17 +87,31 @@ export function AccountScreen() {
       <PageHead title="Conta" sub="Dados da loja, preferências e sessão" />
       <div className="grid items-start gap-4 px-5 pb-7 lg:grid-cols-2 lg:px-7">
         <div className="flex flex-col gap-4">
-          <Section title="Cadastro" sub="Para alterar, use o app Motoka.">
+          <Section title="Cadastro" sub="Nome e CPF/CNPJ não mudam por aqui.">
             <dl className="flex flex-col gap-2.5">
               <KV k="Nome da loja" v={storeName(user)} />
               {user.document_number && <KV k="CPF/CNPJ" v={formatDocument(user.document_number)} />}
-              {user.email && <KV k="E-mail" v={user.email} />}
               {user.phone && <KV k="Telefone" v={formatPhone(user.phone)} />}
               {address && <KV k="Endereço" v={address} />}
             </dl>
           </Section>
+          <Section title="Contato" sub="O telefone que os motoboys e o Motoka usam para falar com a loja.">
+            <PhoneEditor key={user.phone ?? ""} userId={user.id} current={user.phone ?? ""} />
+          </Section>
+          <Section title="E-mail" sub="Usado para entrar e receber os avisos do Motoka.">
+            <EmailEditor key={user.email ?? ""} userId={user.id} current={user.email ?? ""} />
+          </Section>
+          <Section title="Endereço" sub="O endereço da loja, usado como ponto de partida dos serviços.">
+            <AddressEditor userId={user.id} />
+          </Section>
         </div>
         <div className="flex flex-col gap-4">
+          <Section title="Senha" sub="Troque a senha de acesso ao painel e ao app.">
+            <PasswordEditor userId={user.id} />
+          </Section>
+          <Section title="Formas de pagamento" sub="Cartões usados para pagar a taxa de serviço.">
+            <CardsSection userId={user.id} />
+          </Section>
           <Section title="Preferências" sub="Valem só neste navegador.">
             <Segmented label="Tema" value={theme} options={THEME_OPTIONS} onValueChange={setThemePreference} />
             <Switch
@@ -109,9 +125,11 @@ export function AccountScreen() {
             <p className="type-body-sm text-text-secondary">
               Sair encerra a sessão neste navegador, inclusive nas outras abas do painel.
             </p>
-            <div>
+            <div className="flex flex-wrap gap-3">
               <LogoutButton />
+              <DeleteAccount userId={user.id} />
             </div>
+            <p className="type-caption text-text-tertiary">Excluir a conta remove seus dados de forma permanente e encerra a sessão.</p>
           </Section>
         </div>
       </div>

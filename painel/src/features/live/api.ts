@@ -1,4 +1,5 @@
 import { apiFetch } from "@/features/session/runtime";
+import { ApiError, isUuid } from "@/lib/api/errors";
 import { API_BASE } from "@/lib/env";
 import { parseSnapshot, type LiveSnapshot } from "./model";
 
@@ -16,3 +17,9 @@ export const fetchLive = async (signal?: AbortSignal): Promise<LiveBase> => {
 
 /** L2: stream SSE (lido por `fetch` com `Authorization`). */
 export const LIVE_STREAM_URL = `${API_BASE}/tracking/live/stream`;
+
+/** E17: pede ao motoboy que ligue a localização (push). No máximo um a cada 5 min por turno. */
+export async function remindLocation(membershipId: string): Promise<void> {
+  if (!isUuid(membershipId)) throw new ApiError({ status: 404, code: "ROUTE_NOT_FOUND" });
+  await apiFetch<unknown>(`/teams/me/members/${membershipId}/remind-location`, { method: "POST" });
+}

@@ -70,7 +70,7 @@ Fontes lidas (o código é a fonte da verdade):
 | WN-3 | Mapa ao vivo | implementado, sem commit (§18) |
 | WN-5 | Acertos | implementado (§20) |
 | WN-4 | Integrações | depois das WS-12/13/15 |
-| WN-7 | Telas que hoje só existem no app | **última fase** |
+| WN-7 | Telas que hoje só existem no app | implementado (§21) |
 | WN-L | Limpeza do painel Flutter no `motoka_app` (WS-17) | hand-off, depois do `.well-known` em prod |
 
 ---
@@ -1568,6 +1568,22 @@ Contrato: WS-11 (API 43e988d), S5–S9 em `/v1/teams/me/settlements`. Código em
 - Estado na URL: `filtro`, `semana`, `motoboy`, `acerto` (uuid validado). Sem design no Claude Design: segue o DS e o padrão da aba Escala.
 - Testes: vitest `test/unit/settlements` (13, com R1: versão do S7 capturada ao abrir o ajuste; se o polling trouxer outra, avisa "mudou" e bloqueia salvar), Playwright mockado `settlements.spec.ts` (3) e real `test/e2e-devenv/settlements.spec.ts` (passou: turno curto, M8 end e confirmação do motoboy só por API; o preparo reaproveita um `pending_store` existente).
 - Validação: lint, typecheck, vitest 315, build com `NEXT_PUBLIC_MAP_STYLE_URL` (o `ci.yml` agora define a variável no `painel-check`), Playwright, `size:login` 218.4 KiB. Nota da revisão para a API: o S6 manda `value` da chave Pix em qualquer status; o painel só a mostra em confirmed/paid.
+
+## 21. Execução WN-7 (Contratar motoboys, Solicitar serviço + PIX, Avisos, Conta)
+
+Contrato lido na API (`orders`, `payments`, `notifications`, `users`) e as regras extraídas do app Flutter (`features/establishment`, `notifications`, `profile`). Código em `painel/src/features/{services,notices,account}`; sidebar sem "app only".
+
+- **Serviços** (`/servicos/`, `?pedido=`, `?proposta=`): duas listas como no app (Em andamento sem filtro de data; Próximos a partir de hoje 00:00 de São Paulo), cards de resumo, detalhe, abas Aceitos/Propostas (Base UI Tabs). Negociação: a loja só age com a última oferta pendente do motoboy (Aceitar, Recusar com confirmação, Fazer contraproposta); cancelar serviço com a regra de 3 h do app e o motivo conhecido do cancelamento. `apiFetch` ganhou query com lista (`status` repetido).
+- **Solicitar serviço** (`/servicos/novo/`): datas/horas em São Paulo (`spInstant`), quantidade de motoboys sem teto, como o app e a API (inteiro maior que zero), tipo, valor e bônus por entrega; resumo com a prévia `/orders/review` (taxa e total do servidor); `internal_fee` 0 na resposta pula o pagamento. O bônus de chuva da API não existe no app e ficou fora.
+- **Pagamento (DN-25)**: só a taxa do Motoka. PIX (QR em `data:` validado como base64, copia-e-cola, contagem regressiva com `aria-live` por minuto) ou cartão já salvo (`bank_card_id`). Confirmação só pelo status `paid` do `GET /orders/{id}/payments` (polling de 3 s); "Já fiz o pagamento" só relê. Falha por `gateway_status` com texto fixo. Sem campo de cartão no DOM, sem script da Efí, sem host novo na CSP; cartão novo só no app (texto + links das lojas).
+- **Avisos**: lista paginada, chips Todos/Não lidos, "Marcar todos como lidos", toque marca como lido e abre o destino do próprio painel (serviço, acerto, pedido, equipe; só com UUID).
+- **Conta**: telefone (PATCH), e-mail (código `update_email` no novo endereço, confirmação e PUT, reenvio após 60 s), senha (PUT com a senha atual e as regras do app; depois entra de novo), endereço com CEP (ViaCEP, PUT), cartões salvos (listar e excluir), preferências, Sair e **Excluir conta** com paridade com o app: confirmação forte (digitar EXCLUIR), `DELETE /users/{id}`, logout e saída para a landing (`painel.` vira o domínio raiz; fora disso, `/entrar/`). A revisão achou que o link para `/excluir-conta` dava 404 no host do painel.
+- **Cancelar serviço já pago**: o diálogo avisa que a taxa paga não é devolvida automaticamente e que é preciso falar com o suporte. **Pendência da API:** `DELETE /orders/{id}` tem `# TODO Adicionar lógica de cancelamento de pagamento` (`orders/application/order/remove_order.py`) e não estorna; o app tem a mesma falha. Abrir na lane da API.
+- **Catálogo**: os 9 códigos sem texto entraram (integrações, `TEAM_REMINDER_*`, `TEAM_SESSION_END_TOO_EARLY`); `check-error-codes` fecha sem lacuna.
+- **E17 no mapa ao vivo (WN-3)**: botão "Lembrar de ativar localização" nos cartões de motoboy sem sinal (`POST /teams/me/members/{id}/remind-location`); 429 `TEAM_REMINDER_TOO_SOON` e 409 `TEAM_REMINDER_NOT_APPLICABLE` viram o texto do catálogo.
+- Removido o parâmetro morto `rainBonusPercent` da criação de pedido.
+- Fora: badge de avisos na sidebar, cadastro de cartão, foto, cupom de isenção.
+- Testes: vitest `test/unit/services` (37 + avisos/conta), Playwright mockado `test/e2e/services.spec.ts` (9: PIX, proposta, PIX expirado e novo pagamento, aviso de estorno, recusar proposta, avisos, conta, e-mail e senha, excluir conta ponta a ponta) e `live.spec.ts` (E17). Sem E2E real nem dev-env, por decisão do usuário.
 
 ## Fontes (pesquisa web, out/2026)
 

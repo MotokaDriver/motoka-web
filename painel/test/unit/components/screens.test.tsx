@@ -37,6 +37,8 @@ vi.mock("@/features/session/runtime", () => ({
 const { LoginScreen } = await import("@/features/session/LoginScreen");
 const { ShellGate } = await import("@/features/shell/Shell");
 const { PlaceholderScreen } = await import("@/features/shell/PlaceholderScreen");
+const { ToastProvider } = await import("@/ui/Toast");
+const { AppLinks } = await import("@/features/shell/AppLinks");
 const { AccountScreen } = await import("@/features/account/AccountScreen");
 
 let api: FakeAuthApi;
@@ -253,9 +255,9 @@ describe("placeholders e Conta", () => {
     expect(screen.getByText("Esta área do painel ainda está sendo preparada.")).toBeInTheDocument();
   });
 
-  it("tela só do app aponta para as lojas com noopener", () => {
-    render(withQuery(<PlaceholderScreen path="/avisos/" />));
-    expect(screen.getByText("Por enquanto, use o app Motoka para isso.")).toBeInTheDocument();
+  it("links das lojas abrem com noopener", () => {
+    render(<AppLinks />);
+    expect(screen.getAllByRole("link")).toHaveLength(2);
     for (const link of screen.getAllByRole("link")) {
       expect(link).toHaveAttribute("rel", "noopener noreferrer");
     }
@@ -264,9 +266,9 @@ describe("placeholders e Conta", () => {
   it("Conta mostra os dados da loja e troca as preferências", async () => {
     await signIn();
     const user = userEvent.setup();
-    render(withQuery(<AccountScreen />));
+    render(withQuery(<ToastProvider><AccountScreen /></ToastProvider>));
     expect(screen.getByText("11.222.333/0001-81")).toBeInTheDocument();
-    expect(screen.getByText("(11) 97777-6666")).toBeInTheDocument();
+    expect(screen.getByLabelText("Telefone")).toHaveValue("(11) 97777-6666");
     await user.click(screen.getByRole("radio", { name: "Claro" }));
     expect(document.documentElement.dataset.theme).toBe("light");
     await user.click(screen.getByRole("switch", { name: "Atalhos de teclado" }));

@@ -18,7 +18,7 @@ import { Btn } from "@/ui/Btn";
 import "./icons";
 import { classifyAll } from "./attention";
 import type { LiveStop } from "./model";
-import { AttentionBlock, DriverCard, DriverPanel, FilterChips, LiveDot, SideFooter, matchesFilter, sideSubtitle, statusPill, type Filter } from "./LiveSide";
+import { AttentionBlock, DriverCard, DriverPanel, FilterChips, LiveDot, ReminderButton, SideFooter, matchesFilter, sideSubtitle, statusPill, type Filter } from "./LiveSide";
 import { useLive } from "./useLive";
 
 const MAP_STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL ?? "";
@@ -137,8 +137,9 @@ function Screen({ tracking }: { tracking: boolean }) {
             <FilterChips filter={filter} onChange={setFilter} counts={live.counts} total={views.length} />
             <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 pb-4">
               {visible.map((view) => (
-                <li key={view.driver.driverId}>
+                <li key={view.driver.driverId} className="flex flex-col gap-1.5">
                   <DriverCard view={view} selected={view.driver.driverId === selectedId} onSelect={setSelectedId} />
+                  {(view.display === "no_signal" || view.display === "not_started") && <ReminderButton membershipId={view.driver.membershipId} name={view.driver.shortName || view.driver.fullName} />}
                 </li>
               ))}
             </ul>

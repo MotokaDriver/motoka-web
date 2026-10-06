@@ -1,5 +1,6 @@
 import http from "node:http";
 import { MockDeliveries } from "./mockDeliveries";
+import { MockServices } from "./mockServices";
 import { MockSettlements } from "./mockSettlements";
 import { MockTeam } from "./mockTeam";
 
@@ -51,6 +52,7 @@ export class MockApi {
   team = new MockTeam();
   deliveries = new MockDeliveries();
   settlements = new MockSettlements();
+  services = new MockServices();
   refreshes: Interval[] = [];
   logoutCalls = 0;
   loginCalls = 0;
@@ -143,6 +145,7 @@ export class MockApi {
     this.team = new MockTeam();
     this.deliveries = new MockDeliveries();
     this.settlements = new MockSettlements();
+    this.services = new MockServices();
     this.cookies = new Map();
     this.tokens = new Map();
   }
@@ -214,7 +217,7 @@ export class MockApi {
     if (req.method === "OPTIONS") {
       res.writeHead(200, {
         ...cors,
-        "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "authorization, content-type, x-motoka-client, accept",
         "Access-Control-Max-Age": "0",
       });
@@ -334,6 +337,15 @@ export class MockApi {
     if (path === "/web/capabilities") {
       if (id <= this.staleUpTo) return send(401, { error_code: "AUTH_TOKEN_EXPIRED", detail: "x" });
       return send(200, this.capabilities);
+    }
+
+    const servicesPath =
+      path.endsWith("/remind-location") || path === "/orders" || path.startsWith("/orders/") || path === "/notifications" || path.startsWith("/notifications/") || (path.startsWith("/users/") && (path.split("/").length > 3 || req.method !== "GET"));
+    if (servicesPath) {
+      const raw = req.method === "GET" || req.method === "DELETE" ? "" : await readBody();
+      const json = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      const result = this.services.route(path, req.method ?? "GET", url.searchParams, json);
+      if (result) return send(result[0], result[0] === 204 ? undefined : result[1]);
     }
 
     const userMatch = /^\/users\/([^/]+)$/.exec(path);

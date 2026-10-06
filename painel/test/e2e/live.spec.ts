@@ -18,6 +18,24 @@ async function openLive(page: Page) {
 }
 
 test.describe("Mapa ao vivo (WN-3)", () => {
+  test("E17: lembrar de ativar a localização de quem está sem sinal", async ({ page, guard, api }) => {
+    guard.expectResponse(REFRESH, 401);
+    api.capabilities.tracking = true;
+    api.livePositionAgeMs = 600_000;
+    guard.expectResponse(`${API}/v1/teams/me/members/11111111-1111-4111-8111-111111111111/remind-location`, 429);
+    await openLive(page);
+    const side = page.getByRole("complementary", { name: "Equipe agora" });
+    const remind = side.getByRole("button", { name: "Lembrar Diego R. de ativar a localização" });
+    await expect(remind).toBeVisible();
+    await remind.click();
+    await expect(page.getByText("Lembrete enviado.")).toBeVisible();
+    expect(api.services.calls).toContain("POST /teams/me/members/11111111-1111-4111-8111-111111111111/remind-location");
+    // Duas vezes seguidas: o servidor recusa com 429 e o painel mostra o texto fixo.
+    api.services.nextReminderError = { status: 429, code: "TEAM_REMINDER_TOO_SOON" };
+    await remind.click();
+    await expect(page.getByText("O lembrete acabou de ser enviado. Aguarde alguns minutos para reenviar.")).toBeVisible();
+  });
+
   test("mapa, worker do MapLibre do próprio site, stream e cartões", async ({ page, guard, api }) => {
     guard.expectResponse(REFRESH, 401);
     api.capabilities.tracking = true;

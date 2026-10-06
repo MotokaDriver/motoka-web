@@ -32,8 +32,6 @@ export interface Destination {
   readonly path: string;
   /** Item que depende de uma feature da API (`/v1/web/capabilities`). */
   readonly capability?: Capability;
-  /** Telas que hoje só existem no app (WN-7). */
-  readonly appOnly?: boolean;
 }
 
 /** A sidebar, na ordem do design e do §5.4 (Acertos entra no WN-5). */
@@ -70,7 +68,6 @@ export const DESTINATIONS: readonly Destination[] = [
     subtitle: "Períodos avulsos com motoboys de fora da sua equipe",
     icon: "two_wheeler",
     path: Paths.services,
-    appOnly: true,
   },
   {
     label: "Integrações",
@@ -83,7 +80,6 @@ export const DESTINATIONS: readonly Destination[] = [
     subtitle: "Novidades e alertas da sua operação",
     icon: "notifications",
     path: Paths.notices,
-    appOnly: true,
   },
   {
     label: "Conta",

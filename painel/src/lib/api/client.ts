@@ -15,7 +15,7 @@ export interface ApiRequest {
   readonly method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   /** Serializado como JSON. */
   readonly body?: unknown;
-  readonly query?: Readonly<Record<string, string | number | boolean | null | undefined>>;
+  readonly query?: Readonly<Record<string, string | number | boolean | null | undefined | readonly string[]>>;
   /** Repassado do TanStack Query: cancela a requisição quando a query é descartada. */
   readonly signal?: AbortSignal;
   readonly timeoutMs?: number;
@@ -30,7 +30,8 @@ function buildUrl(path: string, query: ApiRequest["query"]): string {
   }
   const url = new URL(`${API_BASE}${path}`);
   for (const [key, value] of Object.entries(query ?? {})) {
-    if (value !== null && value !== undefined) url.searchParams.set(key, String(value));
+    if (Array.isArray(value)) for (const item of value) url.searchParams.append(key, item);
+    else if (value !== null && value !== undefined) url.searchParams.set(key, String(value));
   }
   return url.toString();
 }

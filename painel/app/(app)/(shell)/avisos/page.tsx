@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { PlaceholderScreen } from "@/features/shell/PlaceholderScreen";
-import { Paths } from "@/lib/routing/routes";
+import { NoticesScreen } from "@/features/notices/NoticesScreen";
 
 export const metadata: Metadata = { title: "Avisos" };
 
 export default function Page() {
-  return <PlaceholderScreen path={Paths.notices} />;
+  return <NoticesScreen />;
 }
