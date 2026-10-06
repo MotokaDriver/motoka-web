@@ -216,6 +216,8 @@ export const API_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   USER_PASSWORD_CONFIRMATION_MISMATCH: "A confirmação não corresponde à nova senha.",
   USER_PASSWORD_INCORRECT: "A senha atual está incorreta.",
   USER_PASSWORD_WEAK: "A senha não atende aos requisitos de segurança.",
+  DELIVERY_DRIVER_SHIFT_NOT_STARTED: "Este motoboy ainda não começou o turno.",
+  DELIVERY_DRIVER_SHIFT_ENDED: "Este motoboy já encerrou o turno.",
   INTEGRATION_AUTH_EXPIRED: "O código expirou. Gere um novo código.",
   INTEGRATION_AUTH_FAILED: "Não foi possível falar com o parceiro agora. Tente de novo em instantes.",
   INTEGRATION_AUTH_STATE_INVALID: "Não foi possível confirmar a conexão. Comece de novo pelo painel.",

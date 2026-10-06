@@ -24,6 +24,9 @@ const IN_TRANSIT: ReadonlySet<DeliveryStatus> = new Set(["picked_up", "on_the_wa
 /** Aviso do pedido que a origem não confirmou (WS-13 §4.4). */
 export const originUnconfirmedText = (origin: Origin): string => `O ${ORIGIN_INFO[origin].label} não confirmou o aceite. Confira o pedido no seu sistema.`;
 
+/** Só recebe entrega quem tem sessão de turno aberta (DW-41): sem sessão, a opção fica desabilitada e o motivo aparece. */
+export const SHIFT_NOT_STARTED_NOTE = "Só recebe pedido quem já abriu o turno no app. Motoboy com \"turno não iniciado\" fica desabilitado até começar.";
+
 export const originNote = (origin: Origin): string => `Cancele no ${ORIGIN_INFO[origin].label}; o Motoka atualiza sozinho.`;
 
 /**

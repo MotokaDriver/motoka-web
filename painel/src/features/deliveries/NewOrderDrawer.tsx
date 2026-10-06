@@ -18,6 +18,7 @@ import { InlineError } from "@/ui/InlineError";
 import { Label } from "@/ui/Label";
 import { SelectField } from "@/ui/SelectField";
 import { Switch } from "@/ui/Switch";
+import { SHIFT_NOT_STARTED_NOTE } from "./logic";
 import { createDelivery, lookupCustomer } from "./api";
 import { CHANNEL_LABEL, type CustomerAddress, type DeliveryDetail } from "./model";
 import {
@@ -425,13 +426,14 @@ function Body({ store, onClose, onCreated }: { store: { city: string; state: str
               {form.driverMode !== "auto" && (
                 <SelectField
                   label="Motoboy em turno"
+                  hint={(onShift.data ?? []).some((o) => !o.sessionStarted) ? SHIFT_NOT_STARTED_NOTE : undefined}
                   value={form.driverMode === "manual" ? (form.driverId ?? "") : ""}
                   onFocus={() => form.driverMode === "none" && patch({ driverMode: "manual" })}
                   onChange={(event) => patch(event.target.value === "" ? { driverMode: "none", driverId: null } : { driverMode: "manual", driverId: event.target.value })}
                 >
                   <option value="">Sem motoboy por enquanto</option>
                   {(onShift.data ?? []).map((o) => (
-                    <option key={o.membershipId} value={o.driver.id}>
+                    <option key={o.membershipId} value={o.driver.id} disabled={!o.sessionStarted}>
                       {o.driver.shortName}
                       {o.sessionStarted ? "" : " · turno não iniciado"}
                     </option>

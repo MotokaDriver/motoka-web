@@ -344,6 +344,10 @@ describe("painel do pedido", () => {
     await waitFor(() => expect(within(select).getAllByRole("option")).toHaveLength(3));
     const labels = within(select).getAllByRole("option").map((o) => o.textContent);
     expect(labels).toEqual(["Escolha o motoboy", "Rafa L. · sugestão", "Diego R. · turno não iniciado"]);
+    // Sem sessão de turno aberta (DW-41) a opção fica desabilitada, e o motivo aparece.
+    expect(within(select).getByRole("option", { name: "Diego R. · turno não iniciado" })).toBeDisabled();
+    expect(within(select).getByRole("option", { name: "Rafa L. · sugestão" })).toBeEnabled();
+    expect(within(panel).getByText(/Só recebe pedido quem já abriu o turno no app/)).toBeInTheDocument();
     await user.selectOptions(select, "e1111111-1111-4111-8111-111111111112");
     await user.click(within(panel).getByRole("button", { name: "Atribuir" }));
     await waitFor(() => expect(api.assignDriver).toHaveBeenCalledWith(ID1, expect.any(String), "e1111111-1111-4111-8111-111111111112"));

@@ -34,7 +34,7 @@ import {
 import { AddressDialog, CancelDialog, ConfirmDeliveryDialog } from "./OrderDialogs";
 import { SourceBadge } from "./SourceBadge";
 import { useDeliveryAction, deliveryKeys } from "./hooks";
-import { DELIVERY_ERROR_OVERRIDES, addressText, availableActions, canWhatsApp, deliveryAlerts, needsAfterCancel, trackingMessage, type ActionId } from "./logic";
+import { SHIFT_NOT_STARTED_NOTE, DELIVERY_ERROR_OVERRIDES, addressText, availableActions, canWhatsApp, deliveryAlerts, needsAfterCancel, trackingMessage, type ActionId } from "./logic";
 import { ORIGIN_INFO, STATUS, paymentLabel, pinHint, type DeliveryDetail, type DeliveryEvent } from "./model";
 
 const time = (iso: string): string => spTime(new Date(iso));
@@ -307,10 +307,15 @@ function DriverSection({ detail }: { detail: DeliveryDetail }) {
           ) : (
             <div className="flex items-end gap-2">
               <div className="min-w-0 flex-1">
-                <SelectField label="Motoboy em turno" value={choice} onChange={(event) => setChoice(event.target.value)}>
+                <SelectField
+                  label="Motoboy em turno"
+                  value={choice}
+                  onChange={(event) => setChoice(event.target.value)}
+                  hint={options.some((o) => !o.sessionStarted) ? SHIFT_NOT_STARTED_NOTE : undefined}
+                >
                   <option value="">Escolha o motoboy</option>
                   {options.map((o) => (
-                    <option key={o.membershipId} value={o.driver.id}>
+                    <option key={o.membershipId} value={o.driver.id} disabled={!o.sessionStarted}>
                       {o.driver.shortName}
                       {o.driver.id === detail.suggestedDriver?.id ? " · sugestão" : ""}
                       {o.sessionStarted ? "" : " · turno não iniciado"}
