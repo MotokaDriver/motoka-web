@@ -3,11 +3,14 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 import { AddressEditor, CardsSection, PhoneEditor } from "./AccountEdit";
 import { DeleteAccount, EmailEditor, PasswordEditor } from "./AccountSecurity";
+import { playBeep } from "@/features/acceptance/alerts";
 import { useSession } from "@/features/session/useSession";
 import { LogoutButton } from "@/features/shell/Shell";
 import { useShortcutsEnabled } from "@/features/shell/ShortcutsProvider";
 import {
+  getAcceptSound,
   getThemePreference,
+  setAcceptSound,
   setShortcutsEnabled,
   setThemePreference,
   subscribePrefs,
@@ -78,6 +81,7 @@ export function AccountScreen() {
   const session = useSession();
   const shortcuts = useShortcutsEnabled();
   const theme = useSyncExternalStore(subscribePrefs, getThemePreference, () => "dark" as const);
+  const acceptSound = useSyncExternalStore(subscribePrefs, getAcceptSound, () => false);
   if (session.status !== "authenticated") return null;
   const user = session.user;
   const address = fullAddress(user);
@@ -119,6 +123,15 @@ export function AccountScreen() {
               description="Teclas de uma letra para as ações das telas. Se você usa leitor de tela ou extensão de teclado, desligue."
               checked={shortcuts}
               onCheckedChange={setShortcutsEnabled}
+            />
+            <Switch
+              label="Som de pedido para aceitar"
+              description="Toca um sinal quando chega um pedido do PDV esperando o seu aceite. Fica desligado até você ligar."
+              checked={acceptSound}
+              onCheckedChange={(next) => {
+                setAcceptSound(next);
+                if (next) playBeep();
+              }}
             />
           </Section>
           <Section title="Sessão" danger>

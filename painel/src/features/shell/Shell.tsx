@@ -12,6 +12,7 @@ import { Dialog } from "@/ui/Dialog";
 import { Icon } from "@/ui/Icon";
 import { InlineError } from "@/ui/InlineError";
 import { Spinner } from "@/ui/Spinner";
+import { AcceptanceHost } from "@/features/acceptance/AcceptanceHost";
 import { ShortcutsProvider } from "./ShortcutsProvider";
 import { Sidebar } from "./Sidebar";
 
@@ -87,6 +88,7 @@ function Shell({ user, children }: { user: PanelUser; children: ReactNode }) {
             <span className="type-title-lg">{title}</span>
           </header>
           <main id="conteudo" tabIndex={-1} className="flex min-w-0 flex-1 flex-col outline-none">
+            <AcceptanceHost />
             {children}
           </main>
         </div>

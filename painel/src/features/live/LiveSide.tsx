@@ -189,7 +189,7 @@ export function AttentionBlock({ items }: { items: readonly AttentionItem[] }) {
               )}
             >
               <span className={item.tone === "error" ? "text-error" : item.tone === "warning" ? "text-warning" : "text-text-tertiary"}>
-                <Icon name={item.kind === "cancelled_by_origin" ? "cancel" : item.kind === "no_driver" ? "person_off" : item.kind === "awaiting_acceptance" ? "notifications_active" : "report"} size={18} />
+                <Icon name={item.kind === "cancelled_by_origin" || item.kind === "origin_unconfirmed" ? "cancel" : item.kind === "no_driver" ? "person_off" : item.kind === "awaiting_acceptance" ? "notifications_active" : "report"} size={18} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="type-body-sm block font-semibold text-text-primary">{item.title}</span>

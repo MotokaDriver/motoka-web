@@ -21,6 +21,9 @@ export interface ActionBar {
 
 const IN_TRANSIT: ReadonlySet<DeliveryStatus> = new Set(["picked_up", "on_the_way", "arrived"]);
 
+/** Aviso do pedido que a origem não confirmou (WS-13 §4.4). */
+export const originUnconfirmedText = (origin: Origin): string => `O ${ORIGIN_INFO[origin].label} não confirmou o aceite. Confira o pedido no seu sistema.`;
+
 export const originNote = (origin: Origin): string => `Cancele no ${ORIGIN_INFO[origin].label}; o Motoka atualiza sozinho.`;
 
 /**
@@ -28,13 +31,15 @@ export const originNote = (origin: Origin): string => `Cancele no ${ORIGIN_INFO[
  * manual: nas outras origens não mudariam nada no sistema de origem. `late_pickup` torna "Pedido voltou
  * para a loja" a ação primária (o acerto só paga o retorno com a confirmação da loja).
  */
-export function availableActions(d: Pick<DeliveryDetail, "status" | "origin" | "cancellation" | "flags">): ActionBar {
+export function availableActions(d: Pick<DeliveryDetail, "status" | "origin" | "cancellation" | "flags"> & { readonly originUnconfirmed?: boolean }): ActionBar {
   const manual = d.origin === "manual";
+  // Origem que não confirmou o aceite (WS-13, B4): a loja ganha o direito de cancelar o pedido de integração.
+  const mayCancel = manual || d.originUnconfirmed === true;
   const out: ActionSpec[] = [];
   const add = (id: ActionId, label: string, opts: { primary?: boolean; danger?: boolean } = {}) =>
     out.push({ id, label, primary: opts.primary ?? false, danger: opts.danger ?? false });
   let needsOriginNote = false;
-  const cancel = () => (manual ? add("cancel", "Cancelar pedido", { danger: true }) : (needsOriginNote = true));
+  const cancel = () => (mayCancel ? add("cancel", "Cancelar pedido", { danger: true }) : (needsOriginNote = true));
 
   if (d.status === "preparing") {
     if (manual) add("ready", "Pronto para retirar", { primary: true });
@@ -137,6 +142,9 @@ export function deliveryAlerts(d: DeliveryDetail, time: (iso: string) => string)
         ? `Cancelado ${who} às ${time(c.at)}. ${driver} foi avisado e volta com o pedido.`
         : `Cancelado às ${time(c.at)}, antes da retirada.`,
     });
+  }
+  if (d.originUnconfirmed) {
+    out.push({ id: "origin-unconfirmed", text: originUnconfirmedText(d.origin) });
   }
   if (d.problem) {
     const p = d.problem;

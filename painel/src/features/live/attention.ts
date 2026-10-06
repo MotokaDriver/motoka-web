@@ -6,6 +6,7 @@ import { PROBLEM_LABEL, ORIGIN_INFO, type DeliveryItem } from "@/features/delive
  */
 export type AttentionKind =
   | "awaiting_acceptance"
+  | "origin_unconfirmed"
   | "cancelled_by_origin"
   | "problem"
   | "code_locked"
@@ -27,6 +28,10 @@ export function classify(item: DeliveryItem): AttentionItem {
   const base = { id: item.id };
   if (item.status === "awaiting_acceptance") {
     return { ...base, kind: "awaiting_acceptance", title: `${n} · Esperando seu aceite`, subtitle: "Responda no painel de pedidos", tone: "warning" };
+  }
+  if (item.originUnconfirmed) {
+    const origin = ORIGIN_INFO[item.origin].label;
+    return { ...base, kind: "origin_unconfirmed", title: `${n} · ${origin} não confirmou o aceite`, subtitle: "Confira no seu sistema e cancele se for o caso", tone: "error" };
   }
   if (item.status === "returning" && item.cancellation) {
     const origin = ORIGIN_INFO[item.origin].label;
@@ -60,7 +65,7 @@ export function classify(item: DeliveryItem): AttentionItem {
   return { ...base, kind: "generic", title: `${n} · Precisa de atenção`, subtitle: "Abra o pedido", tone: "neutral" };
 }
 
-const URGENCY: AttentionKind[] = ["awaiting_acceptance", "cancelled_by_origin", "problem", "code_locked", "delivered_after_cancel", "no_driver", "generic"];
+const URGENCY: AttentionKind[] = ["awaiting_acceptance", "origin_unconfirmed", "cancelled_by_origin", "problem", "code_locked", "delivered_after_cancel", "no_driver", "generic"];
 
 /** Itens classificados, do mais urgente ao menos. Só os `needs_attention`. */
 export function classifyAll(items: readonly DeliveryItem[]): AttentionItem[] {

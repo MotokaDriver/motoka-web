@@ -65,6 +65,16 @@ export class MockServices {
   emailCode = "123456";
   /** Próximo E17 responde este erro (uma vez). */
   nextReminderError: { status: number; code: string } | null = null;
+  /** Aceite (WN-4a): pedidos de integração esperando a loja. */
+  awaiting: Array<Record<string, unknown>> = [];
+  rejected: string[] = [];
+  accepted: string[] = [];
+  /** Integrações (WN-4b). */
+  saiposAvailable = false;
+  takenMerchant = "MERCHANT-JA-EM-USO-000000000000000000000";
+  integrations = new Map<string, { merchant: string | null; webhook: string | null; price: string; connected: boolean; clientId: string | null; secret: string | null }>();
+  integrationActivity: Array<Record<string, unknown>> = [];
+  issuedSecrets: string[] = [];
   calls: string[] = [];
   bodies: Array<{ route: string; body: Record<string, unknown> }> = [];
   private counter = 0;
@@ -129,6 +139,88 @@ export class MockServices {
     this.calls.push(`${method} ${path}`);
     this.bodies.push({ route: `${method} ${path}`, body: json });
     const notFound = (code: string): [number, unknown] => [404, { error_code: code, detail: "x" }];
+
+    // --- Aceite de pedidos de integração (WN-4a) ---
+    if (path === "/deliveries/awaiting-acceptance" && method === "GET") {
+      return [200, { server_time: new Date().toISOString(), items: this.awaiting, team_now: [{ id: "d0000001-0000-4000-8000-000000000001", short_name: "Diego R.", free_in_minutes: 4 }] }];
+    }
+    const decision = /^\/deliveries\/([^/]+)\/(accept|reject)$/.exec(path);
+    if (decision && method === "POST") {
+      const found = this.awaiting.find((item) => item.id === decision[1]);
+      if (!found) return [409, { error_code: "DELIVERY_NOT_AWAITING_ACCEPTANCE", detail: "x" }];
+      this.awaiting = this.awaiting.filter((item) => item !== found);
+      (decision[2] === "accept" ? this.accepted : this.rejected).push(String(found.id));
+      return [200, { ...found, status: decision[2] === "accept" ? "preparing" : "rejected" }];
+    }
+
+    // --- Integrações (WN-4b) ---
+    const integration = /^\/integrations(?:\/([^/]+?)(?:\/(credentials|test))?)?$/.exec(path);
+    if (integration) {
+      const [, type, action] = integration;
+      if (!type && method === "GET") {
+        const card = (t: string, status: string) => ({ type: t, status, state: this.integrations.has(t) ? (this.integrations.get(t)?.connected ? "connected" : "disconnected") : null, last_outbound_ok_at: null, needs_attention: false });
+        return [
+          200,
+          [
+            card("open_delivery", this.integrations.get("open_delivery")?.connected ? "connected" : "available"),
+            card("saipos", this.saiposAvailable ? (this.integrations.get("saipos")?.connected ? "connected" : "available") : "soon"),
+            card("cardapio_web", "soon"),
+            card("ifood", "soon"),
+            card("nuvemshop", "soon"),
+          ],
+        ];
+      }
+      if (type === "activity" && method === "GET") return [200, { items: this.integrationActivity, next_cursor: null }];
+      if (type === "open_delivery" || type === "saipos") {
+        const state = this.integrations.get(type);
+        const detail = () => ({
+          type,
+          status: state?.connected ? "connected" : "available",
+          state: state?.connected ? "connected" : "disconnected",
+          external_merchant_id: state?.merchant ?? null,
+          webhook_url: state?.webhook ?? null,
+          delivery_price: state?.price ?? "0.00",
+          operator_base_url: "https://api.motokadriver.com/od/v1",
+          token_url: "https://api.motokadriver.com/od/oauth/token",
+          client_id: state?.clientId ?? null,
+          secret_hint: state?.secret ? state.secret.slice(-4) : null,
+          credential_version: state?.connected ? 1 : 0,
+          credential_rotated_at: null,
+          health: { last_token_at: null, last_inbound_at: null, last_outbound_ok_at: null, pending_events: 0, dead_events_24h: 0 },
+        });
+        if (!action && method === "GET") return state ? [200, detail()] : notFound("INTEGRATION_NOT_FOUND");
+        if (!action && method === "PUT") {
+          const merchant = (json.external_merchant_id as string | null) ?? null;
+          if (type === "open_delivery" && merchant && merchant.length < 36) return [422, { error_code: "INTEGRATION_MERCHANT_ID_INVALID", detail: "x" }];
+          if (merchant && merchant === this.takenMerchant) return [409, { error_code: "INTEGRATION_MERCHANT_ID_TAKEN", detail: "x" }];
+          const webhook = (json.webhook_url as string | null) ?? null;
+          if (webhook && !webhook.startsWith("https://")) return [422, { error_code: "INTEGRATION_WEBHOOK_URL_INVALID", detail: "x" }];
+          this.integrations.set(type, { merchant, webhook, price: String(json.delivery_price ?? "0.00"), connected: state?.connected ?? false, clientId: state?.clientId ?? null, secret: state?.secret ?? null });
+          return [200, { ...detail(), external_merchant_id: merchant, webhook_url: webhook, delivery_price: String(json.delivery_price ?? "0.00"), status: state?.connected ? "connected" : "available" }];
+        }
+        if (!state) return notFound("INTEGRATION_NOT_FOUND");
+        if (action === "credentials" && method === "POST") {
+          const secret = `sk_od_secret_${this.issuedSecrets.length + 1}_abcd`;
+          this.issuedSecrets.push(secret);
+          state.connected = true;
+          state.clientId = state.clientId ?? "pz-od-2b90e1d4";
+          state.secret = secret;
+          this.integrationActivity.unshift({ id: this.uuid("e"), type, kind: "connected", delivery_id: null, delivery_number: null, meta: {}, created_at: new Date().toISOString() });
+          return [201, { client_id: state.clientId, client_secret: secret, secret_hint: secret.slice(-4), credential_version: 1, token_url: "https://api.motokadriver.com/od/oauth/token" }];
+        }
+        if (action === "test" && method === "POST") {
+          if (!state.webhook) return [200, { ok: false, error: "no_target", detail: null, http_status: null, last_token_at: null, last_outbound_ok_at: null }];
+          if (state.webhook.includes("interno")) return [200, { ok: false, error: "blocked_address", detail: "TEXTO CRU", http_status: null, last_token_at: null, last_outbound_ok_at: null }];
+          return [200, { ok: true, error: null, detail: null, http_status: 405, last_token_at: null, last_outbound_ok_at: null }];
+        }
+        if (!action && method === "DELETE") {
+          state.connected = false;
+          state.secret = null;
+          this.integrationActivity.unshift({ id: this.uuid("e"), type, kind: "disconnected", delivery_id: null, delivery_number: null, meta: {}, created_at: new Date().toISOString() });
+          return [204, null];
+        }
+      }
+    }
 
     // --- Lembrete de localização (E17) ---
     if (/^\/teams\/me\/members\/[^/]+\/remind-location$/.test(path) && method === "POST") {

@@ -9,7 +9,9 @@ import { listHtml } from "./csp-externalize.mjs";
 const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 const EVENT_ATTR_RE = /<[a-z][^>]*\son[a-z]+\s*=/i;
 const JS_URL_RE = /(?:href|src|action|formaction)\s*=\s*["']?\s*javascript:/i;
-const SECRET_RES = [/client_secret/i, /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /AKIA[0-9A-Z]{16}/, /sk_live_[0-9a-zA-Z]+/];
+// `client_secret` em qualquer forma é vazamento (JSON, JSON escapado no payload RSC, query, env), menos o acesso por
+// propriedade (`t.client_secret`): é o nome do campo da API que a tela de Integrações (WN-4b) lê na resposta de credenciais.
+export const SECRET_RES = [/(?<![.\w])client_secret/i, /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /AKIA[0-9A-Z]{16}/, /sk_live_[0-9a-zA-Z]+/];
 
 const REQUIRED = [
   "index.html",

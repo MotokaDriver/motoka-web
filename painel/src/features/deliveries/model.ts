@@ -80,6 +80,12 @@ export interface DeliveryItem {
   readonly createdAt: string;
   readonly estimatedReadyAt: string | null;
   readonly readyAt: string | null;
+  /** Prazo de aceite de um pedido de integração (`awaiting_acceptance`). */
+  readonly acceptDeadlineAt: string | null;
+  /** O sistema de origem não confirmou o aceite: a loja confere lá e pode cancelar (WS-13, B4). */
+  readonly originUnconfirmed: boolean;
+  /** O motoboy previsto para o aceite (sugestão do servidor). */
+  readonly previewedDriver: DriverRef | null;
 }
 
 export interface Address {
@@ -183,7 +189,7 @@ const ACTORS = ["establishment", "driver", "origin", "system"] as const;
 
 const parseStatus = (value: unknown): DeliveryStatus => oneOf<DeliveryStatus>(value, STATUSES, "unknown");
 
-function parseDriverRef(value: unknown): DriverRef | null {
+export function parseDriverRef(value: unknown): DriverRef | null {
   const raw = maybeObj(value);
   if (!raw) return null;
   return { id: id(raw.id), shortName: str(raw.short_name), initials: str(raw.initials) };
@@ -244,6 +250,9 @@ export function parseItem(raw: Raw): DeliveryItem {
     createdAt: str(raw.created_at),
     estimatedReadyAt: strOrNull(raw.estimated_ready_at),
     readyAt: strOrNull(raw.ready_at),
+    acceptDeadlineAt: strOrNull(raw.accept_deadline_at),
+    originUnconfirmed: raw.origin_unconfirmed === true,
+    previewedDriver: parseDriverRef(raw.previewed_driver),
   };
 }
 

@@ -7,6 +7,7 @@
 
 export const SHORTCUTS_KEY = "motoka.panel.shortcuts";
 export const THEME_KEY = "motoka.panel.theme";
+export const ACCEPT_SOUND_KEY = "motoka.panel.accept-sound";
 const RELOAD_MARK_KEY = "motoka.panel.chunk-reload";
 
 export type ThemePreference = "dark" | "light" | "system";
@@ -29,7 +30,7 @@ function write(key: string, value: string): void {
   }
 }
 
-const memory: { shortcuts?: boolean; theme?: ThemePreference } = {};
+const memory: { shortcuts?: boolean; theme?: ThemePreference; acceptSound?: boolean } = {};
 
 export function subscribePrefs(listener: () => void): () => void {
   listeners.add(listener);
@@ -49,6 +50,18 @@ export function getShortcutsEnabled(): boolean {
 export function setShortcutsEnabled(enabled: boolean): void {
   memory.shortcuts = enabled;
   write(SHORTCUTS_KEY, enabled ? "on" : "off");
+  notify();
+}
+
+/** Som quando chega pedido para aceitar: desligado até a pessoa ligar (autoplay e bom senso). */
+export function getAcceptSound(): boolean {
+  if (memory.acceptSound !== undefined) return memory.acceptSound;
+  return read(ACCEPT_SOUND_KEY) === "on";
+}
+
+export function setAcceptSound(enabled: boolean): void {
+  memory.acceptSound = enabled;
+  write(ACCEPT_SOUND_KEY, enabled ? "on" : "off");
   notify();
 }
 

@@ -5,7 +5,7 @@ import { resolveBuildEnv } from "../../../scripts/build-env.mjs";
 import { renderHeaders, validateHeaders } from "../../../scripts/build-headers.mjs";
 import { injectApiMeta } from "../../../scripts/copy-static.mjs";
 import { externalizeScripts } from "../../../scripts/csp-externalize.mjs";
-import { inspectHtml } from "../../../scripts/verify-out.mjs";
+import { SECRET_RES, inspectHtml } from "../../../scripts/verify-out.mjs";
 
 const root = path.resolve(__dirname, "../../..");
 const template = fs.readFileSync(path.join(root, "headers.template"), "utf8");
@@ -181,5 +181,27 @@ describe("flatten-segments", () => {
     expect(flattenSegments(dir)).toBe(1);
     expect(fs.readFileSync(path.join(dir, "ao-vivo", "__next.!KGFwcCk.!KHNoZWxsKQ.ao-vivo.__PAGE__.txt"), "utf8")).toBe("payload");
     fs.rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe("verify-out: padrão de segredo (client_secret)", () => {
+  const leaks = (text: string) => SECRET_RES.some((re) => re.test(text));
+  it("pega o vazamento em qualquer forma: JSON, JSON escapado do payload RSC, query e env", () => {
+    expect(leaks('{client_secret:"s3cr3t-valor-longo"}')).toBe(true);
+    expect(leaks('{"client_secret":"s3cr3t-valor-longo"}')).toBe(true);
+    expect(leaks(String.raw`self.__next_f.push([1,"{\\"client_secret\\":\\"s3cr3t-valor-longo\\"}"])`)).toBe(true);
+    expect(leaks("https://x.test/cb?client_secret=s3cr3t-valor-longo")).toBe(true);
+    expect(leaks("CLIENT_SECRET=s3cr3t-valor-longo")).toBe(true);
+    expect(leaks("x_client_secret_y")).toBe(false);
+  });
+  it("libera só o acesso por propriedade (o parser da tela de Integrações)", () => {
+    expect(leaks('typeof t.client_secret!=="string"')).toBe(false);
+    expect(leaks("a.b.client_secret")).toBe(false);
+  });
+  it("as outras formas de segredo continuam barradas", () => {
+    expect(leaks("-----BEGIN RSA PRIVATE KEY-----")).toBe(true);
+    expect(leaks("AKIAABCDEFGHIJKLMNOP")).toBe(true);
+    expect(leaks("sk_live_abc123")).toBe(true);
+    expect(leaks("texto comum do painel")).toBe(false);
   });
 });

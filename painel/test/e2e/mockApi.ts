@@ -340,7 +340,7 @@ export class MockApi {
     }
 
     const servicesPath =
-      path.endsWith("/remind-location") || path === "/orders" || path.startsWith("/orders/") || path === "/notifications" || path.startsWith("/notifications/") || (path.startsWith("/users/") && (path.split("/").length > 3 || req.method !== "GET"));
+      path.endsWith("/remind-location") || path === "/integrations" || path.startsWith("/integrations/") || path === "/deliveries/awaiting-acceptance" || /^\/deliveries\/[^/]+\/(accept|reject)$/.test(path) || path === "/orders" || path.startsWith("/orders/") || path === "/notifications" || path.startsWith("/notifications/") || (path.startsWith("/users/") && (path.split("/").length > 3 || req.method !== "GET"));
     if (servicesPath) {
       const raw = req.method === "GET" || req.method === "DELETE" ? "" : await readBody();
       const json = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};

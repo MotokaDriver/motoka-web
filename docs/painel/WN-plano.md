@@ -69,7 +69,7 @@ Fontes lidas (o código é a fonte da verdade):
 | WN-6 | Acompanhar pedido | implementado, sem commit (§19) |
 | WN-3 | Mapa ao vivo | implementado, sem commit (§18) |
 | WN-5 | Acertos | implementado (§20) |
-| WN-4 | Integrações | depois das WS-12/13/15 |
+| WN-4 | Integrações | WN-4a e WN-4b implementados (§22); WN-4c/4d dependem das WS-15/16 |
 | WN-7 | Telas que hoje só existem no app | implementado (§21) |
 | WN-L | Limpeza do painel Flutter no `motoka_app` (WS-17) | hand-off, depois do `.well-known` em prod |
 
@@ -1584,6 +1584,20 @@ Contrato lido na API (`orders`, `payments`, `notifications`, `users`) e as regra
 - Removido o parâmetro morto `rainBonusPercent` da criação de pedido.
 - Fora: badge de avisos na sidebar, cadastro de cartão, foto, cupom de isenção.
 - Testes: vitest `test/unit/services` (37 + avisos/conta), Playwright mockado `test/e2e/services.spec.ts` (9: PIX, proposta, PIX expirado e novo pagamento, aviso de estorno, recusar proposta, avisos, conta, e-mail e senha, excluir conta ponta a ponta) e `live.spec.ts` (E17). Sem E2E real nem dev-env, por decisão do usuário.
+
+## 22. Execução WN-4a (aceite) e WN-4b (Integrações)
+
+Contrato: commit 3fd9185 da API (WS-12/13) e o working tree da WS-14 (Saipos, `INTEGRATION_MERCHANT_ID_INVALID`). Design: `WebIntegrations.jsx`. Código em `painel/src/features/{acceptance,integrations}`.
+
+- **WN-4a, aceite**: banner no topo de toda tela logada (`AcceptanceHost` no `Shell`) e drawer com as ações (`AcceptanceDrawer`, carregado sob demanda para não pesar o shell). `GET /deliveries/awaiting-acceptance` a cada 5 s em `/pedidos/` e a cada 10 s nas outras telas, só com integração conectada; com a aba oculta **não pausa**: segue a cada 30 s (o prazo é curto e o PDV costuma ficar na frente), o título pisca "(1) Pedido aguardando" e, só se a pessoa ligar em Conta ("Som de pedido para aceitar", desligado por padrão), toca um sinal feito com WebAudio a cada pedido novo. Usa o backoff do painel. A contagem usa `offset = server_time - chegada`. Ações: "Aceitar · {previsto} leva", "Aceitar e chamar reforço" (aceita e abre Solicitar serviço), "Recusar" com confirmação ("O {origem} foi avisado"). Sem previsto ou sem ninguém em turno, só a recusa. No zero, os botões somem e fica "Recusando…". `DELIVERY_ACCEPT_DEADLINE_PASSED`, `DELIVERY_NOT_AWAITING_ACCEPTANCE` e `DELIVERY_ACCEPT_NO_DRIVER` entram no catálogo. `action_id` por toque, mantido em 5xx/rede.
+- **Origem que não confirmou (`origin_unconfirmed`)**: entra em "precisa de atenção" (mapa ao vivo), ganha o alerta "O {origem} não confirmou o aceite. Confira o pedido no seu sistema." e a loja pode cancelar o pedido de integração (antes só pedido manual).
+- **WN-4b, Integrações** (`/integracoes/`): cards (Open Delivery; Saipos só se a API a liberar; Nuvemshop "Em breve"; Cardápio Web e iFood ficam para a WN-4c), painel do conector, regra de aceite fixa (somente leitura: a WS-13d ainda não existe) e atividade paginada em pt-BR. Painel: Merchant ID, URL de eventos (webhook, só OD), preço; credenciais; "Testar conexão" (texto fixo por erro, nunca o `detail`); desconectar com confirmação; rotação com confirmação; saúde. Saipos: só o Merchant ID (a URL e a taxa são dela).
+- **Validação no cliente, decisão da API**: Merchant ID (OD tem pelo menos 36 caracteres), webhook (https, porta 443 ou 8443, sem usuário e senha; `http://localhost` só fora de prod). Os erros da API (`MERCHANT_ID_TAKEN`, `MERCHANT_ID_INVALID`, `WEBHOOK_URL_INVALID`) viram texto fixo no campo.
+- **Secret**: só aparece na resposta de "Gerar credenciais" e vive no estado do componente (não passa pelo TanStack Query, nem mutação, storage, log, toast ou URL). Escondido por padrão, com "Mostrar" e "Copiar"; "Já copiei" ou sair da tela apaga. Depois só a dica ("••••9f3a"). Teste unitário confere que cache de queries e mutações e o storage não têm o secret.
+- **Build**: o guarda `verify-out` barra `client_secret` em qualquer forma (JSON, JSON escapado do payload RSC, query, env) com `/(?<![.\w])client_secret/i`, e libera só o acesso por propriedade (`t.client_secret`), que é o parser da tela. Testado em `test/unit/build/scripts.test.ts`.
+- **Conexão nova**: salvar ou conectar invalida `["integrations"]` (inclui o `useOdConnected`, que também passou a 60 s); o secret some ao trocar de conector (teste).
+- **Bundle**: login 219,1 KiB gz (teto 220); o parser e as telas de Pedidos não entram no shell por causa do banner (`import()` no polling e drawer sob demanda).
+- Testes: vitest `test/unit/integrations` (24), Playwright mockado `test/e2e/integrations.spec.ts` (5). Sem E2E real (decisão do usuário).
 
 ## Fontes (pesquisa web, out/2026)
 
