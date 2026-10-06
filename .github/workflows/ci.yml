@@ -85,6 +85,8 @@ jobs:
       # Build do E2E: API mockada pelo servidor de teste na 8790 (test/e2e/mockApi.ts).
       NEXT_PUBLIC_APP_ENV: e2e
       NEXT_PUBLIC_API_URL: http://localhost:8790
+      # Estilo do mapa do mock (WN-3): o E2E espera o host dele na CSP e o mapa carregando.
+      NEXT_PUBLIC_MAP_STYLE_URL: http://localhost:8790/style.json
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0

@@ -1,5 +1,6 @@
 import http from "node:http";
 import { MockDeliveries } from "./mockDeliveries";
+import { MockSettlements } from "./mockSettlements";
 import { MockTeam } from "./mockTeam";
 
 /**
@@ -49,6 +50,7 @@ const LIVE_DRIVER = "a1111111-1111-4111-8111-111111111111";
 export class MockApi {
   team = new MockTeam();
   deliveries = new MockDeliveries();
+  settlements = new MockSettlements();
   refreshes: Interval[] = [];
   logoutCalls = 0;
   loginCalls = 0;
@@ -140,6 +142,7 @@ export class MockApi {
     this.liveStreams = 0;
     this.team = new MockTeam();
     this.deliveries = new MockDeliveries();
+    this.settlements = new MockSettlements();
     this.cookies = new Map();
     this.tokens = new Map();
   }
@@ -348,6 +351,13 @@ export class MockApi {
         corporate_reason: data.name,
         address: { street: data.street, number: 200, neighborhood: "Centro", city: "Curitiba", state: "PR" },
       });
+    }
+
+    if (path === "/teams/me/settlements" || path.startsWith("/teams/me/settlements/")) {
+      const raw = req.method === "GET" || req.method === "DELETE" ? "" : await readBody();
+      const json = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      const result = this.settlements.route(path.slice("/teams/me/settlements".length), req.method ?? "GET", url.searchParams, json);
+      if (result) return send(result[0], result[1]);
     }
 
     if (path.startsWith("/teams/me/")) {

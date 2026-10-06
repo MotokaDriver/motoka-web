@@ -68,7 +68,7 @@ Fontes lidas (o código é a fonte da verdade):
 | WN-2 | Pedidos | implementado, sem commit (§17) |
 | WN-6 | Acompanhar pedido | implementado, sem commit (§19) |
 | WN-3 | Mapa ao vivo | implementado, sem commit (§18) |
-| WN-5 | Acertos | depois da WS-11 |
+| WN-5 | Acertos | implementado (§20) |
 | WN-4 | Integrações | depois das WS-12/13/15 |
 | WN-7 | Telas que hoje só existem no app | **última fase** |
 | WN-L | Limpeza do painel Flutter no `motoka_app` (WS-17) | hand-off, depois do `.well-known` em prod |
@@ -1556,6 +1556,18 @@ Data: 2026-10-05. Sem commit (a pedido). `painel/static-pages/r/{index.html,r.js
 - CSP e privacidade: a página herda a CSP do site (`script-src 'self'`), `Referrer-Policy: no-referrer` exato e `noindex` já vêm do `_headers`; a única requisição é para a API (o E2E confere os hosts).
 - Tamanho: **6,8 KiB gz** (HTML + JS + CSS), teto de 30 KiB, medido por `yarn size:login`. `r.js` com `// @ts-check` passa no `tsc -p static-pages`.
 - Testes: `test/unit/r/r.test.ts` (token, etapas, stale, erros, polling, aba oculta, 429, stream) e `test/e2e/r.spec.ts` (cabeçalhos, hosts, fragmento, 410, 404, stale pelo relógio, API fora). E2E real: P1 e P2 de um pedido criado na API real, 404 de token falso e o encerramento depois do cancelamento passaram no dev-env.
+
+## 20. Execução WN-5 (Acertos)
+
+Contrato: WS-11 (API 43e988d), S5–S9 em `/v1/teams/me/settlements`. Código em `src/features/settlements/`, rota `/acertos/`, abas Escala | Acertos em Minha equipe (contador = `needs_action_count`).
+
+- Valores sempre do servidor (o cliente nunca soma); `version` e `expected_total` em toda escrita; 409 de versão recarrega o acerto e avisa com o texto fixo do catálogo.
+- S7 manda o conjunto inteiro de `excluded_delivery_ids`: "Retirar do acerto" acrescenta o id, "Desfazer" manda o conjunto sem ele (só linhas com `reason = return_receipt`).
+- Chave Pix só no detalhe confirmado/pago (S6), `gcTime: 0`, fora de storage e de toast; sem `value`, só a máscara. Não há botão "pagar": só "Marcar como pago" (registro do Pix feito fora do app).
+- D-18: faixa na lista, no painel e nos diálogos de confirmar/pagar ("o Motoka não movimenta dinheiro").
+- Estado na URL: `filtro`, `semana`, `motoboy`, `acerto` (uuid validado). Sem design no Claude Design: segue o DS e o padrão da aba Escala.
+- Testes: vitest `test/unit/settlements` (13, com R1: versão do S7 capturada ao abrir o ajuste; se o polling trouxer outra, avisa "mudou" e bloqueia salvar), Playwright mockado `settlements.spec.ts` (3) e real `test/e2e-devenv/settlements.spec.ts` (passou: turno curto, M8 end e confirmação do motoboy só por API; o preparo reaproveita um `pending_store` existente).
+- Validação: lint, typecheck, vitest 315, build com `NEXT_PUBLIC_MAP_STYLE_URL` (o `ci.yml` agora define a variável no `painel-check`), Playwright, `size:login` 218.4 KiB. Nota da revisão para a API: o S6 manda `value` da chave Pix em qualquer status; o painel só a mostra em confirmed/paid.
 
 ## Fontes (pesquisa web, out/2026)
 

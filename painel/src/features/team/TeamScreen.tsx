@@ -26,6 +26,8 @@ import { DealDialog } from "./DealDialog";
 import { isCurrentWeekOf, isPastWeekOf, resolveWeek, weekSelectorLabel, weekRangeLabel } from "./dates";
 import { teamKeys, useNow, useOnShift, useSchedule, useTeamActions } from "./hooks";
 import { InviteModal } from "./InviteModal";
+import { useSettlements } from "@/features/settlements/hooks";
+import { TeamTabs } from "@/features/settlements/TeamTabs";
 import { isActive, isPaused, type Deal, type Invite, type Member, type Occurrence } from "./model";
 import { NowStrip } from "./NowStrip";
 import { ShiftMenu, removeShiftDescription } from "./ShiftMenu";
@@ -52,6 +54,7 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
   const data = schedule.data;
   const current = data ? isCurrentWeekOf(data.weekStart, data.today) : false;
   const onShift = useOnShift(current);
+  const needsAction = useSettlements({}).data?.needsActionCount ?? 0;
   const { busyId, run } = useTeamActions();
 
   const [addShift, setAddShift] = useState<AddShiftRequest | null>(null);
@@ -196,6 +199,10 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
           </div>
         }
       />
+
+      <div className="px-5 pb-3 lg:px-7">
+        <TeamTabs active="escala" needsAction={needsAction} />
+      </div>
 
       {schedule.isPending ? (
         <div className="grid flex-1 place-items-center py-16 text-primary-text">

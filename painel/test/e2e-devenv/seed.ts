@@ -147,3 +147,47 @@ export async function createManualDelivery(request: APIRequestContext, name: str
 export async function cancelDeliveryApi(request: APIRequestContext, bearer: string, id: string): Promise<void> {
   await request.post(`${API}/v1/deliveries/${id}/cancel`, { headers: { Authorization: bearer }, data: { action_id: crypto.randomUUID(), reason: "Teste E2E" } });
 }
+
+/**
+ * Prepara, só por API, um acerto aguardando a loja: turno curto (começa em 1 min, 8 min de duração) →
+ * o motoboy abre a sessão, encerra (M8 `end`: o acerto nasce na mesma transação) e confirma o valor.
+ * Reaproveita um `pending_store` que já exista. Devolve `null` se a janela estiver ocupada (turno de
+ * outra rodada ainda em curso ou perto da meia-noite) para o teste se pular dizendo por quê.
+ */
+export async function ensurePendingStoreSettlement(request: APIRequestContext): Promise<string | null> {
+  const store = await login(request, STORE);
+  const driver = await login(request, DRIVER);
+  const existing = await json<{ items: Array<{ id: string }> }>(
+    await request.get(`${API}/v1/teams/me/settlements?status=pending_store`, { headers: { Authorization: store.bearer } }),
+  );
+  if (existing.items[0]) return existing.items[0].id;
+
+  const members = await json<{ items: Array<{ id: string; driver: { id: string } }> }>(await request.get(`${API}/v1/teams/me/members`, { headers: { Authorization: store.bearer } }));
+  const member = members.items.find((m) => m.driver.id === driver.sub);
+  if (!member) return null;
+  const now = new Date();
+  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(now);
+  const hm = (d: Date) => new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d);
+  const start = new Date(now.getTime() + 60_000);
+  const end = new Date(now.getTime() + 9 * 60_000);
+  if (hm(end) < hm(start)) return null;
+  const weekday = (new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7;
+  const monday = new Date(Date.parse(`${day}T00:00:00Z`) - weekday * 86_400_000).toISOString().slice(0, 10);
+  const created = await request.post(`${API}/v1/teams/me/shifts`, {
+    headers: { Authorization: store.bearer },
+    data: { membership_id: member.id, weekdays: [weekday], start_time: hm(start), end_time: hm(end), week_start: monday, repeat_weekly: false, remind_location: false },
+  });
+  if (!created.ok()) return null;
+  const shiftId = (await json<{ items: Array<{ id: string }> }>(created)).items[0]?.id;
+  const headers = { Authorization: driver.bearer };
+  const started = await request.post(`${API}/v1/teams/mine/shifts/${shiftId}/start`, { headers, data: { occurrence_date: day } });
+  if (!started.ok()) return null;
+  const sessionId = (await json<{ id: string }>(started)).id;
+  const ended = await request.post(`${API}/v1/teams/mine/sessions/${sessionId}/end`, { headers });
+  if (!ended.ok()) return null;
+  const settlementId = (await json<{ settlement: { id: string } | null }>(ended)).settlement?.id;
+  if (!settlementId) return null;
+  const mine = await json<{ version: number; total: string | null }>(await request.get(`${API}/v1/teams/mine/settlements/${settlementId}`, { headers }));
+  const confirmed = await request.post(`${API}/v1/teams/mine/settlements/${settlementId}/confirm`, { headers, data: { version: mine.version, expected_total: mine.total } });
+  return confirmed.ok() ? settlementId : null;
+}
