@@ -1,14 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { fetchOnShift } from "@/features/team/api";
 import { teamKeys } from "@/features/team/hooks";
 import { currencyInput, phoneInput } from "@/features/team/model";
 import { isApiError } from "@/lib/api/errors";
 import { UNKNOWN_MESSAGE } from "@/lib/errors/messages";
-import { Paths } from "@/lib/routing/routes";
 import { Btn } from "@/ui/Btn";
 import { cn } from "@/ui/cn";
 import { ConfirmDialog } from "@/ui/ConfirmDialog";
@@ -209,10 +207,7 @@ function Body({ store, onClose, onCreated }: { store: { city: string; state: str
           <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-6">
             <p className="type-body-sm text-text-tertiary">Para pedidos de WhatsApp, telefone ou balcão.</p>
             <p className="type-body-sm rounded-md border border-border bg-surface p-3 text-text-secondary">
-              Pedidos do iFood, Saipos e Cardápio Web entram sozinhos.{" "}
-              <Link href={Paths.integrations} className="font-semibold text-primary-text hover:underline">
-                Ver integrações
-              </Link>
+              Em breve, pedidos do iFood, Saipos e Cardápio Web vão entrar sozinhos.
             </p>
 
             <fieldset className="flex flex-col gap-2">

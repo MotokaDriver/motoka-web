@@ -34,6 +34,11 @@ export interface Destination {
   readonly path: string;
   /** Item que depende de uma feature da API (`/v1/web/capabilities`). */
   readonly capability?: Capability;
+  /**
+   * Aparece na sidebar como "Em breve", sem link. A rota continua de pé: os retornos de OAuth e o
+   * aviso de instalação da Nuvemshop ainda levam até ela.
+   */
+  readonly comingSoon?: boolean;
 }
 
 /** A sidebar, na ordem do design e do §5.4 (Acertos entra no WN-5). */
@@ -76,6 +81,7 @@ export const DESTINATIONS: readonly Destination[] = [
     subtitle: "Conecte o PDV e os apps de delivery da loja",
     icon: "hub",
     path: Paths.integrations,
+    comingSoon: true,
   },
   {
     label: "Avisos",

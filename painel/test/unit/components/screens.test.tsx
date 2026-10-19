@@ -196,10 +196,14 @@ describe("ShellGate", () => {
       "Pedidos",
       "Acertos",
       "Contratar motoboys",
-      "Integrações",
       "Avisos",
       "Conta",
     ]);
+    // Integrações fica visível como "Em breve", mas sem caminho até a tela.
+    expect(within(sidebar).queryByRole("link", { name: /Integrações/ })).toBeNull();
+    const soon = within(sidebar).getByText("Integrações").closest("[data-coming-soon]");
+    expect(soon).not.toBeNull();
+    expect(soon).toHaveTextContent("Em breve");
     expect(within(sidebar).getByRole("link", { name: "Mapa ao vivo" })).toHaveAttribute("aria-current", "page");
     expect(screen.getAllByText("Padaria Teste LTDA")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Praça da Sé, 200")[0]).toBeInTheDocument();

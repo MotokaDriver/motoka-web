@@ -6,6 +6,7 @@ import { DESTINATIONS, Paths, destinationFor } from "@/lib/routing/routes";
 import { isAvailable, useCapabilities } from "./capabilities";
 import { initials, storeAddress, storeName, type PanelUser } from "@/lib/session/user";
 import { Avatar } from "@/ui/Avatar";
+import { Chip } from "@/ui/Chip";
 import { cn } from "@/ui/cn";
 import { Icon } from "@/ui/Icon";
 
@@ -37,6 +38,22 @@ export function Sidebar({
       </div>
       <nav aria-label="Painel" className="flex flex-col gap-1">
         {DESTINATIONS.map((destination) => {
+          // Sem link e sem estado ativo, mesmo quando um retorno de OAuth abre a tela por URL.
+          if (destination.comingSoon) {
+            return (
+              <div
+                key={destination.path}
+                data-coming-soon
+                className="type-body-md flex min-h-10 items-center gap-2.5 rounded-md px-2.5 py-[9px] text-text-tertiary"
+              >
+                <Icon name={destination.icon} size={20} />
+                {destination.label}
+                <span className="ml-auto">
+                  <Chip>Em breve</Chip>
+                </span>
+              </div>
+            );
+          }
           const on = destination === active;
           return (
             <Link

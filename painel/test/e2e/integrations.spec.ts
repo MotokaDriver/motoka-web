@@ -84,7 +84,8 @@ test.describe("Integrações (WN-4b, API mockada)", () => {
     guard.expectResponse(REFRESH, 401);
     guard.expectResponse(/\/v1\/integrations\/open_delivery$/, 409);
     await login(page);
-    await page.getByRole("link", { name: "Integrações" }).first().click();
+    // Sem item na sidebar enquanto Integrações está "Em breve": a tela só abre pela URL.
+    await page.goto("/integracoes/");
     await expect(page).toHaveURL(/\/integracoes\/$/);
     const grid = page.getByRole("list", { name: "Conectores" });
     await expect(grid.getByRole("button", { name: "Open Delivery, Conectar" })).toBeVisible();
