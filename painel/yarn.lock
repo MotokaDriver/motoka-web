@@ -3824,7 +3824,7 @@ magic-string@^0.30.21:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.5.5"
 
-maplibre-gl@6:
+maplibre-gl@6.12.0:
   version "6.12.0"
   resolved "https://registry.yarnpkg.com/maplibre-gl/-/maplibre-gl-6.12.0.tgz#90b84c56e68df7e0ae290c057d0919c152c54408"
   integrity sha512-DwgganVi2BhNxOpD7ob3lJC0dQQz4HfJfuQQV3XxCY3XdOzFrMqp9ylMXhRzryRsOnIezdZcklWXIIs/Q8JPjA==
