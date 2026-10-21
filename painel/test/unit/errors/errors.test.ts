@@ -4,6 +4,24 @@ import { API_ERROR_MESSAGES } from "@/lib/errors/catalog";
 import { NETWORK_MESSAGE, UNKNOWN_MESSAGE, catalogMessage, errorText, messageForStatus } from "@/lib/errors/messages";
 
 describe("catálogo de erros", () => {
+  it("sem os códigos do Phone Auth removidos da API (PA) e com TEAM_MEMBER_NOT_PENDING", () => {
+    const removed = [
+      "PHONE_AUTH_TOKEN_INVALID",
+      "PHONE_AUTH_TOKEN_STALE",
+      "PHONE_AUTH_PHONE_NOT_SUPPORTED",
+      "PHONE_AUTH_UNAVAILABLE",
+      "PHONE_ACCOUNT_NOT_FOUND",
+      "PHONE_LOGIN_REINVITE_REQUIRED",
+      "PHONE_ALREADY_VERIFIED_ELSEWHERE",
+      "PHONE_VERIFY_NOT_ALLOWED",
+      "ACCOUNT_PHONE_CHANGE_REQUIRES_VERIFICATION",
+      "ACCOUNT_PHONE_ONLY",
+      "PHONE_ALREADY_REGISTERED",
+      "TEAM_INVITE_PHONE_MISMATCH",
+    ];
+    for (const code of removed) expect(catalogMessage(code)).toBeUndefined();
+    expect(catalogMessage("TEAM_MEMBER_NOT_PENDING")).toBe("Este pedido para entrar já foi respondido.");
+  });
   it("todo código conhecido tem texto pt-BR não vazio", () => {
     const entries = Object.entries(API_ERROR_MESSAGES);
     expect(entries.length).toBeGreaterThanOrEqual(200);

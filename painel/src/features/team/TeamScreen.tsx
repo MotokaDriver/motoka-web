@@ -20,11 +20,12 @@ import { InlineError } from "@/ui/InlineError";
 import { PageHead } from "@/ui/PageHead";
 import { Spinner } from "@/ui/Spinner";
 import { useToast } from "@/ui/Toast";
-import { deleteShift, memberAction, updateDeal } from "./api";
+import { approveMember, deleteShift, memberAction, rejectMember, updateDeal } from "./api";
 import { AddShiftDrawer, type AddShiftRequest } from "./AddShiftDrawer";
-import { DealDialog } from "./DealDialog";
+import { ApproveDialog, DealDialog } from "./DealDialog";
 import { isCurrentWeekOf, isPastWeekOf, resolveWeek, weekSelectorLabel, weekRangeLabel } from "./dates";
-import { teamKeys, useNow, useOnShift, useSchedule, useTeamActions } from "./hooks";
+import { teamKeys, useJoinRequests, useNow, useOnShift, useSchedule, useTeamActions } from "./hooks";
+import { JoinRequests } from "./JoinRequests";
 import { InviteModal } from "./InviteModal";
 import { useSettlements } from "@/features/settlements/hooks";
 import { TeamTabs } from "@/features/settlements/TeamTabs";
@@ -37,6 +38,8 @@ export const PAUSE_DESCRIPTION =
   "Os turnos dele ficam suspensos e ele não recebe pedidos até você retomar. Se estiver em turno agora, o turno é encerrado. Os pedidos que ele ainda não retirou ficam sem motoboy.";
 export const REMOVE_DESCRIPTION =
   "Os turnos dele a partir de hoje são apagados e ele é avisado no app. Os pedidos que ele ainda não retirou ficam sem motoboy. Para voltar, ele precisa de um novo convite.";
+export const REJECT_DESCRIPTION =
+  "Ele não entra na equipe e é avisado no app. Para entrar depois, vai precisar de um convite pelo nome.";
 
 /** "Minha equipe" (`/equipe/`): escala da semana, faixa "Agora", ações de membro e turno, convites. */
 export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
@@ -55,6 +58,7 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
   const current = data ? isCurrentWeekOf(data.weekStart, data.today) : false;
   const onShift = useOnShift(current);
   const needsAction = useSettlements({}).data?.needsActionCount ?? 0;
+  const joinRequests = useJoinRequests().data ?? [];
   const { busyId, run } = useTeamActions();
 
   const [addShift, setAddShift] = useState<AddShiftRequest | null>(null);
@@ -62,6 +66,7 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
   const [resending, setResending] = useState<Invite | null>(null);
   const [shiftFor, setShiftFor] = useState<{ member: Member; occurrence: Occurrence } | null>(null);
   const [dealFor, setDealFor] = useState<Member | null>(null);
+  const [approveFor, setApproveFor] = useState<Member | null>(null);
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
 
   const readOnly = data ? isPastWeekOf(data.weekStart, data.today) : false;
@@ -146,6 +151,21 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
   const saveDeal = (member: Member, deal: Deal) =>
     void run(member.id, () => updateDeal(member.id, deal), `Combinado de ${member.driver.shortName} salvo.`);
 
+  const approve = (member: Member, deal: Deal | null) =>
+    void run(member.id, () => approveMember(member.id, deal), `${member.driver.shortName} entrou na equipe.`);
+
+  const askReject = useCallback(
+    (member: Member) =>
+      setConfirm({
+        title: `Recusar o pedido de ${member.driver.shortName}?`,
+        description: REJECT_DESCRIPTION,
+        confirmLabel: "Recusar",
+        danger: true,
+        onConfirm: () => void run(member.id, () => rejectMember(member.id), `Pedido de ${member.driver.shortName} recusado.`),
+      }),
+    [run],
+  );
+
   const removeShift = (occurrence: Occurrence) =>
     void run(occurrence.shiftId, () => deleteShift(occurrence.seriesId), "Turno removido.");
 
@@ -201,8 +221,10 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
       />
 
       <div className="px-5 pb-3 lg:px-7">
-        <TeamTabs active="escala" needsAction={needsAction} />
+        <TeamTabs active="escala" needsAction={needsAction} joinRequests={joinRequests.length} />
       </div>
+
+      <JoinRequests requests={joinRequests} now={now} busyId={busyId} onApprove={setApproveFor} onReject={askReject} />
 
       {schedule.isPending ? (
         <div className="grid flex-1 place-items-center py-16 text-primary-text">
@@ -215,19 +237,19 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
             onRetry={isApiError(schedule.error) && schedule.error.status === 403 ? undefined : () => void schedule.refetch()}
           />
         </div>
-      ) : data && empty ? (
+      ) : data && empty && joinRequests.length === 0 ? (
         <div className="flex flex-1 items-center justify-center py-16">
           <EmptyState
             icon="group_add"
             title="Sua equipe ainda está vazia"
-            description="Convide motoboys pelo link. Eles entram só com nome e celular, sem enviar documentos."
+            description="Convide motoboys pelo link ou pelo nome. Eles criam a conta no app, sem enviar documentos."
           >
             <Btn icon="person_add" onClick={() => setInviteOpen(true)}>
               Convidar motoboy
             </Btn>
           </EmptyState>
         </div>
-      ) : data ? (
+      ) : data && empty ? null : data ? (
         <div className="flex flex-col pb-7">
           {schedule.isRefetchError && (
             <p role="status" className="type-caption px-5 pb-3 text-text-tertiary lg:px-7">
@@ -289,6 +311,7 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
         }}
       />
       <DealDialog member={dealFor} onClose={() => setDealFor(null)} onSave={saveDeal} />
+      <ApproveDialog member={approveFor} onClose={() => setApproveFor(null)} onApprove={approve} />
       <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />
     </>
   );

@@ -89,3 +89,65 @@ function DealForm({
     </>
   );
 }
+
+export const APPROVE_HELP =
+  "Ele entra na equipe e já pode receber turnos. Defina o combinado agora ou deixe para depois.";
+
+/**
+ * Diálogo "Aprovar <nome>" de um pedido para entrar pelo link. `onApprove` recebe o combinado a
+ * enviar, ou `null` para aprovar sem mexer no combinado; fechar não aprova.
+ */
+export function ApproveDialog({
+  member,
+  onClose,
+  onApprove,
+}: {
+  member: Member | null;
+  onClose: () => void;
+  onApprove: (member: Member, deal: Deal | null) => void;
+}) {
+  return (
+    <Dialog
+      open={member !== null}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+      title={member ? `Aprovar ${member.driver.shortName}` : ""}
+      description={APPROVE_HELP}
+    >
+      {member && <ApproveForm key={member.id} member={member} onClose={onClose} onApprove={onApprove} />}
+    </Dialog>
+  );
+}
+
+function ApproveForm({
+  member,
+  onClose,
+  onApprove,
+}: {
+  member: Member;
+  onClose: () => void;
+  onApprove: (member: Member, deal: Deal | null) => void;
+}) {
+  const [value, setValue] = useState(() => initial(member));
+  const deal = toDeal(value);
+  const approve = (chosen: Deal | null) => {
+    onClose();
+    onApprove(member, chosen);
+  };
+  return (
+    <>
+      <div className="mt-6">
+        <DealFields value={value} onChange={setValue} />
+      </div>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Btn kind="secondary" className="flex-1" onClick={() => approve(null)}>
+          Aprovar e combinar depois
+        </Btn>
+        <Btn className="flex-1" disabled={!dealIsValid(deal)} onClick={() => approve(deal)}>
+          Aprovar
+        </Btn>
+      </div>
+    </>
+  );
+}

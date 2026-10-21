@@ -24,6 +24,7 @@ import {
   formatPhone,
   parseDeal,
   parseMember,
+  parseMembers,
   parseSchedule,
   phoneInput,
   timeInput,
@@ -68,6 +69,13 @@ describe("modelo", () => {
     expect(m.status).toBe("active");
     expect(m.access).toBe("team");
     expect(parseDeal({ pay_type: "x" }).payType).toBe("per_delivery");
+  });
+  it("vínculo pendente (pedido pelo link) e lista do E1", () => {
+    const m = member({ status: "PENDING", source: "via_link" });
+    expect(m.status).toBe("pending");
+    expect(m.joinedAt).toBe("2026-10-01T10:00:00Z");
+    expect(parseMembers({ count: 1, items: [{ id: "m2", driver: { id: "d2", full_name: "Rafa" }, status: "pending" }, null] })).toHaveLength(1);
+    expect(() => parseMembers([])).toThrow(ApiError);
   });
   it("schedule sem week_start é ilegível", () => {
     expect(() => parseSchedule({})).toThrow(ApiError);

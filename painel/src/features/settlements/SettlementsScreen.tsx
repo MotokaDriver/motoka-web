@@ -19,6 +19,7 @@ import { SelectField } from "@/ui/SelectField";
 import { Spinner } from "@/ui/Spinner";
 import { cn } from "@/ui/cn";
 import "@/features/team/icons";
+import { useJoinRequests } from "@/features/team/hooks";
 import { useSettlement, useSettlements } from "./hooks";
 import { D18_NOTE, SettlementPanel } from "./SettlementPanel";
 import { FILTERS, STATUS_LABEL, filterParams, type StatusFilter } from "./logic";
@@ -85,11 +86,12 @@ export function SettlementsScreen() {
 
   const data = list.data;
   const needsAction = base.data?.needsActionCount ?? 0;
+  const joinRequests = useJoinRequests().data?.length ?? 0;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       <div className="min-w-0 flex-1 pb-7">
-        <PageHead title="Acertos" sub="O que cada motoboy tem a receber pelos turnos da sua equipe" right={<TeamTabs active="acertos" needsAction={needsAction} />} />
+        <PageHead title="Acertos" sub="O que cada motoboy tem a receber pelos turnos da sua equipe" right={<TeamTabs active="acertos" needsAction={needsAction} joinRequests={joinRequests} />} />
         <div className="mx-5 mb-4 flex gap-2.5 rounded-md border border-border bg-surface p-3 lg:mx-7">
           <span className="text-info">
             <Icon name="info" size={18} />

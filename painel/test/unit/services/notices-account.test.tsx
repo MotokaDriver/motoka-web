@@ -65,6 +65,7 @@ describe("Avisos", () => {
     expect(targetOf(parse(notice({ type: "settlement_disputed", data: { settlement_id: ORDER } })))).toBe(`/acertos/?acerto=${ORDER}`);
     expect(targetOf(parse(notice({ type: "delivery_problem", data: { delivery_id: ORDER } })))).toBe(`/pedidos/?pedido=${ORDER}`);
     expect(targetOf(parse(notice({ type: "team_member_joined", data: {} })))).toBe("/equipe/");
+    expect(targetOf(parse(notice({ type: "team_join_requested", data: { membership_id: ORDER, driver_id: NEG } })))).toBe("/equipe/");
     expect(targetOf(parse(notice({ data: { order_id: "../../x" } })))).toBeNull();
     expect(targetOf(parse(notice({ type: "algo_novo", data: {} })))).toBeNull();
   });

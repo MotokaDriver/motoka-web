@@ -440,7 +440,7 @@ export class MockApi {
     if (path.startsWith("/teams/me/")) {
       const raw = req.method === "GET" || req.method === "DELETE" ? "" : await readBody();
       const json = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
-      const result = this.team.route(path.slice("/teams/me/".length), req.method ?? "GET", url.searchParams.get("week_start"), json);
+      const result = this.team.route(path.slice("/teams/me/".length), req.method ?? "GET", url.searchParams.get("week_start"), json, url.searchParams);
       if (result) return send(result[0], result[1]);
     }
 

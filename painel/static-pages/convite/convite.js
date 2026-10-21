@@ -159,6 +159,9 @@
       $("deal").hidden = false;
     }
 
+    // Pelo link multiuso a entrada fica pendente até a loja aprovar; o convite pelo nome entra direto.
+    $("approval").hidden = data.kind !== "link";
+
     $("invite-code").textContent = token;
 
     var os = platform();
