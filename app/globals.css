@@ -6,23 +6,12 @@
 @source not "../docs";
 @source not "../README.md";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #3756A9;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  /* Inline: a variável da Inter (next/font) fica no wrapper da landing, não no :root. */
+  /* Inline: a variável da Inter (next/font) fica no <html> (app/layout.tsx). */
   --font-lp: var(--font-inter-sans), system-ui, sans-serif;
 }
 
-/* Landing (app/page.tsx): tema escuro próprio, independente do esquema do sistema. */
+/* Site público (landing e páginas da raiz): tema escuro próprio, independente do esquema do sistema. */
 @theme {
   --color-lp-bg: #0A0A0A;
   --color-lp-bg-2: #070707;
@@ -36,6 +25,8 @@
   --color-lp-blue-hover: #5A7DD0;
   --color-lp-blue-2: #6B8CD9;
   --color-lp-blue-ink: #9DB4EA;
+  --color-lp-warn: #F2B866;
+  --color-lp-ok: #7FD1A4;
   --breakpoint-lp-md: 861px;
   --breakpoint-lp-lg: 1081px;
 }
@@ -77,16 +68,85 @@
   display: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary: #3756A9;
-  }
+/* Fundo escuro também no <html>: sem faixa branca no overscroll nem antes do CSS do body. */
+html {
+  background: var(--color-lp-bg);
+  color-scheme: dark;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Texto longo (termos, privacidade, excluir conta): largura de leitura e ritmo vertical.
+   Em @layer components: as utilities do Tailwind continuam vencendo quando usadas nos filhos. */
+@layer components {
+.lp-prose {
+  max-width: 70ch;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--color-lp-ink-2);
+  text-wrap: pretty;
+}
+.lp-prose > * + * {
+  margin-top: 1.1em;
+}
+.lp-prose h2 {
+  margin-top: 2.6em;
+  padding-top: 1.4em;
+  border-top: 1px solid var(--color-lp-line);
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--color-lp-ink);
+  text-wrap: balance;
+  scroll-margin-top: 96px;
+}
+.lp-prose h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.lp-prose h2 + * {
+  margin-top: 0.9em;
+}
+.lp-prose h3 {
+  margin-top: 1.8em;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-lp-ink);
+}
+.lp-prose strong {
+  font-weight: 600;
+  color: var(--color-lp-ink);
+}
+.lp-prose ul,
+.lp-prose ol {
+  padding-left: 1.4em;
+}
+.lp-prose ul {
+  list-style: disc;
+}
+.lp-prose ol {
+  list-style: decimal;
+}
+.lp-prose li + li {
+  margin-top: 0.5em;
+}
+.lp-prose li::marker {
+  color: var(--color-lp-ink-3);
+}
+.lp-prose a {
+  color: var(--color-lp-blue-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-lp-blue-ink) 45%, transparent);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  border-radius: 2px;
+}
+.lp-prose a:hover {
+  text-decoration-color: currentColor;
+}
+.lp-prose a:focus-visible {
+  outline: 2px solid var(--color-lp-blue-ink);
+  outline-offset: 2px;
+}
 }
