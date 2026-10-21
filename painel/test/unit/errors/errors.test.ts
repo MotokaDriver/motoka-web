@@ -21,6 +21,7 @@ describe("catálogo de erros", () => {
     ];
     for (const code of removed) expect(catalogMessage(code)).toBeUndefined();
     expect(catalogMessage("TEAM_MEMBER_NOT_PENDING")).toBe("Este pedido para entrar já foi respondido.");
+    expect(catalogMessage("TEAM_JOIN_REQUEST_COOLDOWN")).toBe("O motoboy saiu da equipe há pouco. Ele pode pedir para entrar de novo mais tarde.");
   });
   it("todo código conhecido tem texto pt-BR não vazio", () => {
     const entries = Object.entries(API_ERROR_MESSAGES);

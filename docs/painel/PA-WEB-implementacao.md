@@ -26,7 +26,7 @@ equipe (o pedido pode ter sido respondido em outra aba).
   válido, "Aprovar e combinar depois" (sem corpo) quando não; "Agora não" fecha. Recusar passa pelo
   `ConfirmDialog` (sem `window.confirm`). Falha na leitura sem lista anterior mostra um aviso discreto.
 - Paridade de códigos conferida com `MOTOKA_API_DIR=<src de origin/feat/remove-phone-auth> yarn
-  check-error-codes` (230 na API, 231 no painel, nenhum faltando).
+  check-error-codes` (231 na API, 232 no painel, nenhum faltando; inclui `TEAM_JOIN_REQUEST_COOLDOWN`).
 - `TeamTabs`: contador de pedidos na aba Escala (também na tela de Acertos).
 - Equipe vazia com pedido pendente mostra a seção, não o estado vazio.
 - Textos: `InviteModal` ("Quem entrar por este link precisa da sua aprovação."; convite pelo nome entra

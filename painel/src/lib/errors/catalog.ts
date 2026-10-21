@@ -155,6 +155,7 @@ export const API_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   TEAM_INVITE_RESEND_TOO_SOON: "Aguarde um minuto para reenviar o convite.",
   TEAM_INVITE_REVOKED: "Este convite foi cancelado pela loja.",
   TEAM_INVITEE_ALREADY_MEMBER: "Esse motoboy já está na sua equipe.",
+  TEAM_JOIN_REQUEST_COOLDOWN: "O motoboy saiu da equipe há pouco. Ele pode pedir para entrar de novo mais tarde.",
   TEAM_MEMBER_ALREADY_ENDED: "Este vínculo já foi encerrado.",
   TEAM_MEMBER_NOT_ACTIVE: "Este motoboy não está ativo na equipe.",
   TEAM_MEMBER_NOT_FOUND: "Motoboy não encontrado na equipe.",
