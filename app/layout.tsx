@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Inter e o tema escuro da landing valem para todas as páginas públicas (home, legais,
+// excluir conta, pedido e 404). O painel é outro app (painel/) e não passa por aqui.
+const inter = Inter({
+  variable: "--font-inter-sans",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Motoka Driver - Download App",
-  description: "Baixe o aplicativo Motoka Driver para Android e iOS",
+  title: "Motoka Driver",
+  description: "Logística de motoboys para estabelecimentos. Painel web para a loja, app para o motoboy.",
 };
 
 export default function RootLayout({
@@ -24,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={inter.variable}>
       <head>
         <GoogleAnalytics />
       </head>
@@ -34,7 +32,7 @@ export default function RootLayout({
         // gerando um aviso de hidratação falso. suppressHydrationWarning cobre
         // só os atributos deste elemento — não afeta os filhos.
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="bg-lp-bg font-lp text-lp-ink antialiased"
       >
         {children}
       </body>

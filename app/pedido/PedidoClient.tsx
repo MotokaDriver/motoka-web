@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import SiteShell from "../components/landing/SiteShell";
+import { btnPrimary, btnSecondary, focusRing } from "../components/landing/links";
 import {
   APP_STORE_URL,
   PLAY_STORE_URL,
@@ -62,18 +62,16 @@ function formatDuration(startIso: string, endIso: string): string {
   return `${h}h${String(m).padStart(2, "0")}`;
 }
 
-/** Envolve o conteúdo do pedido com a navegação padrão do site (header + footer),
- *  para o motoboy conseguir navegar para as demais telas. Mantém o fundo slate
- *  característico da página de pedido. */
+
+/** Envolve o conteúdo do pedido com a navegação padrão do site (nav + rodapé da landing),
+ *  para o motoboy conseguir navegar para as demais telas. */
 function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header />
-      <main className="flex flex-1 flex-col">{children}</main>
-      <Footer />
-    </div>
-  );
+  return <SiteShell mainClassName="flex flex-col pt-16">{children}</SiteShell>;
 }
+
+const card = "rounded-3xl border border-lp-line bg-lp-panel";
+const tile = "rounded-2xl border border-lp-line bg-lp-bg";
+const label = "text-[11px] font-semibold uppercase tracking-[0.9px] text-lp-ink-3";
 
 export default function PedidoClient() {
   const [order, setOrder] = useState<PublicOrder | null>(null);
@@ -137,44 +135,44 @@ export default function PedidoClient() {
 
   return (
     <Shell>
-      <div className="font-sans text-gray-900 px-4 py-8 sm:py-12">
+      <div className="px-4 py-12 lp-md:py-20">
         <div className="mx-auto w-full max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 rounded-full border border-orange-300 bg-orange-50 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-orange-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+        <div className="mb-10 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-lp-line-2 bg-lp-panel px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.9px] text-lp-blue-ink">
+            <span className="size-1.5 rounded-[2px] bg-lp-blue" />
             Nova oportunidade
           </span>
-          <h1 className="mt-5 text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+          <h1 className="mt-6 text-[clamp(30px,4.4vw,44px)] font-bold leading-[1.08] tracking-[-0.035em] text-balance">
             Você recebeu uma <br className="hidden sm:block" />
             solicitação de serviço
           </h1>
-          <p className="mt-3 text-gray-500 text-base">
+          <p className="mx-auto mt-4 max-w-[46ch] text-[17px] leading-[1.55] text-lp-ink-2 text-pretty">
             Confira os detalhes da oportunidade e escolha como deseja responder.
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-3xl border border-gray-100 bg-white p-5 sm:p-8 shadow-xl shadow-gray-200/60">
+        <div className={`${card} p-5 sm:p-8`}>
           {/* Establishment */}
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-gray-100 bg-slate-100">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="size-16 shrink-0 overflow-hidden rounded-full border border-lp-line-2 bg-lp-bg">
                 {est?.photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={est.photo} alt={est.corporate_description} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-slate-400">
+                  <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-lp-ink-3">
                     {est?.corporate_description?.charAt(0) ?? "?"}
                   </div>
                 )}
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-xl font-bold text-gray-900">
+                <h2 className="truncate text-xl font-semibold tracking-[-0.015em]">
                   {est?.corporate_description ?? "Estabelecimento"}
                 </h2>
                 {est?.address && (
-                  <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
+                  <p className="mt-1 flex items-center gap-1.5 text-sm text-lp-ink-3">
                     <PinIcon />
                     <span className="truncate">
                       {est.address.neighborhood} – {est.address.city}/{est.address.state}
@@ -185,18 +183,18 @@ export default function PedidoClient() {
             </div>
 
             {est?.rating != null && (
-              <div className="shrink-0 rounded-2xl bg-slate-50 px-4 py-3 text-center">
-                <div className="flex items-center justify-center gap-1 text-lg font-bold text-gray-900">
+              <div className={`${tile} shrink-0 px-4 py-3 text-center`}>
+                <div className="flex items-center justify-center gap-1 text-lg font-semibold">
                   <StarIcon />
                   {est.rating.toFixed(1).replace(".", ",")}
                 </div>
-                <p className="mt-0.5 text-[11px] leading-tight text-gray-400">Avaliação</p>
+                <p className="mt-0.5 text-[11px] leading-tight text-lp-ink-3">Avaliação</p>
               </div>
             )}
           </div>
 
           {/* Info tiles */}
-          <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="mt-6 grid grid-cols-3 gap-2.5 sm:gap-3">
             <InfoTile icon={<CalendarIcon />} label="Data" value={date.label} sub={date.today ? "Hoje" : undefined} />
             <InfoTile
               icon={<ClockIcon />}
@@ -207,7 +205,7 @@ export default function PedidoClient() {
           </div>
 
           {/* Values */}
-          <h3 className="mt-8 mb-3 text-sm font-bold uppercase tracking-wide text-gray-500">Valores a combinar</h3>
+          <h3 className={`mt-8 mb-3 ${label} !text-xs`}>Valores a combinar</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {showPeriodValue && (
               <ValueCard title="Valor pelo período" value={money(order.value)} sub={`pelas ${duration}`} />
@@ -217,7 +215,7 @@ export default function PedidoClient() {
             )}
           </div>
 
-          <p className="mt-4 text-sm text-gray-500">
+          <p className="mt-4 text-sm text-lp-ink-2">
             {openSlots > 0
               ? `${openSlots} ${openSlots === 1 ? "vaga disponível" : "vagas disponíveis"} nesta solicitação.`
               : "As vagas desta solicitação já foram preenchidas."}
@@ -229,32 +227,32 @@ export default function PedidoClient() {
               type="button"
               onClick={() => handleAction("counter")}
               disabled={!isOpen}
-              className="flex flex-col items-center justify-center rounded-2xl border-2 border-[#3756A9] px-6 py-4 font-bold text-[#3756A9] transition-all hover:bg-[#3756A9]/5 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`${btnSecondary} ${actionBtn} disabled:hover:border-lp-line-2 disabled:hover:bg-transparent`}
             >
               <span>Fazer contraproposta</span>
-              <span className="text-xs font-medium text-[#3756A9]/70">Negocie valores e condições</span>
+              <span className="text-xs font-medium text-lp-ink-2">Negocie valores e condições</span>
             </button>
             <button
               type="button"
               onClick={() => handleAction("accept")}
               disabled={!isOpen}
-              className="flex flex-col items-center justify-center rounded-2xl bg-orange-500 px-6 py-4 font-bold text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+              className={`${btnPrimary} ${actionBtn} disabled:hover:border-lp-blue disabled:hover:bg-lp-blue`}
             >
               <span className="flex items-center gap-2">
                 <CheckCircleIcon />
                 Aceitar
               </span>
-              <span className="text-xs font-medium text-white/80">Aceitar esta solicitação</span>
+              <span className="text-xs font-medium text-white/85">Aceitar esta solicitação</span>
             </button>
           </div>
 
           {!isOpen && (
-            <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-center text-sm font-medium text-amber-700">
+            <p className="mt-4 rounded-xl border border-lp-warn/35 bg-lp-warn/[0.07] px-4 py-3 text-center text-sm font-medium text-lp-warn">
               Esta oportunidade não está mais disponível para resposta.
             </p>
           )}
 
-          <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-xs text-gray-400">
+          <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-xs text-lp-ink-3">
             <InfoIcon />
             Para aceitar ou negociar, você será direcionado para o app Motoka Driver.
           </p>
@@ -276,9 +274,13 @@ export default function PedidoClient() {
 
 /* ---------- Sub-components ---------- */
 
+// Botões de ação com duas linhas (rótulo + legenda), sobre os botões da landing.
+const actionBtn =
+  "!h-auto flex-col !gap-0.5 !whitespace-normal rounded-xl py-3.5 disabled:cursor-not-allowed disabled:opacity-40";
+
 function InfoTile({
   icon,
-  label,
+  label: tileLabel,
   value,
   sub,
 }: {
@@ -288,28 +290,28 @@ function InfoTile({
   sub?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-slate-50/70 p-3 text-center">
-      <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#3756A9] shadow-sm">
+    <div className={`${tile} p-2.5 text-center sm:p-3`}>
+      <div className="mx-auto mb-2 flex size-9 items-center justify-center rounded-xl bg-lp-blue/15 text-lp-blue-ink">
         {icon}
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-      <p className="mt-0.5 text-sm font-bold text-gray-900">{value}</p>
-      {sub && <p className="text-[11px] font-medium text-[#3756A9]">{sub}</p>}
+      <p className={label}>{tileLabel}</p>
+      <p className="mt-0.5 text-sm font-semibold">{value}</p>
+      {sub && <p className="text-[11px] font-medium text-lp-blue-ink">{sub}</p>}
     </div>
   );
 }
 
 function ValueCard({ title, value, sub }: { title: string; value: string; sub: string }) {
   return (
-    <div className="rounded-2xl border border-green-100 bg-green-50/60 p-4">
+    <div className={`${tile} p-4`}>
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-lp-ok/15 text-lp-ok">
           <DollarIcon />
         </div>
         <div>
-          <p className="text-xs font-medium text-gray-500">{title}</p>
-          <p className="text-xl font-extrabold text-gray-900">{value}</p>
-          <p className="text-xs text-gray-400">{sub}</p>
+          <p className="text-xs font-medium text-lp-ink-2">{title}</p>
+          <p className="text-xl font-bold tracking-[-0.015em]">{value}</p>
+          <p className="text-xs text-lp-ink-3">{sub}</p>
         </div>
       </div>
     </div>
@@ -318,37 +320,29 @@ function ValueCard({ title, value, sub }: { title: string; value: string; sub: s
 
 function Badge({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 text-center shadow-sm">
-      <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-[#3756A9]/10 text-[#3756A9]">
+    <div className="rounded-2xl border border-lp-line bg-lp-bg-2 p-4 text-center">
+      <div className="mx-auto mb-2 flex size-9 items-center justify-center rounded-xl bg-lp-blue/15 text-lp-blue-ink">
         {icon}
       </div>
-      <h4 className="text-sm font-bold text-gray-900">{title}</h4>
-      <p className="mt-1 text-xs text-gray-500">{text}</p>
+      <h4 className="text-sm font-semibold">{title}</h4>
+      <p className="mt-1 text-xs text-lp-ink-3">{text}</p>
     </div>
   );
 }
 
+const storeBtn = `flex items-center justify-center gap-2 rounded-xl border border-lp-line-2 bg-[#111] px-6 py-3 text-sm font-semibold text-lp-ink transition-colors hover:border-lp-blue hover:bg-[#12161F] ${focusRing}`;
+
 function StoreLinks() {
   return (
-    <div className="mt-5 border-t border-gray-100 pt-5">
-      <p className="mb-3 text-center text-sm font-medium text-gray-600">
+    <div className="mt-5 border-t border-lp-line pt-5">
+      <p className="mb-3 text-center text-sm font-medium text-lp-ink-2">
         Abra pelo celular ou baixe o app para continuar:
       </p>
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <a
-          href={PLAY_STORE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-black"
-        >
+        <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className={storeBtn}>
           Google Play
         </a>
-        <a
-          href={APP_STORE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-bold text-gray-900 transition-colors hover:border-gray-300"
-        >
+        <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className={storeBtn}>
           App Store
         </a>
       </div>
@@ -359,26 +353,26 @@ function StoreLinks() {
 function LoadingState() {
   return (
     <Shell>
-      <div className="px-4 py-12">
-        <div className="mx-auto w-full max-w-2xl animate-pulse">
-        <div className="mx-auto h-6 w-40 rounded-full bg-gray-200" />
-        <div className="mx-auto mt-5 h-9 w-3/4 rounded-lg bg-gray-200" />
-        <div className="mt-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-xl">
+      <div className="px-4 py-12 lp-md:py-20">
+        <div className="mx-auto w-full max-w-2xl animate-pulse motion-reduce:animate-none">
+        <div className="mx-auto h-6 w-40 rounded-full bg-lp-line" />
+        <div className="mx-auto mt-6 h-9 w-3/4 rounded-lg bg-lp-line" />
+        <div className={`${card} mt-10 p-8`}>
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-gray-200" />
+            <div className="size-16 rounded-full bg-lp-line" />
             <div className="flex-1 space-y-2">
-              <div className="h-5 w-2/3 rounded bg-gray-200" />
-              <div className="h-4 w-1/2 rounded bg-gray-100" />
+              <div className="h-5 w-2/3 rounded bg-lp-line" />
+              <div className="h-4 w-1/2 rounded bg-lp-line/60" />
             </div>
           </div>
           <div className="mt-6 grid grid-cols-3 gap-3">
-            <div className="h-20 rounded-2xl bg-gray-100" />
-            <div className="h-20 rounded-2xl bg-gray-100" />
-            <div className="h-20 rounded-2xl bg-gray-100" />
+            <div className="h-20 rounded-2xl bg-lp-line/60" />
+            <div className="h-20 rounded-2xl bg-lp-line/60" />
+            <div className="h-20 rounded-2xl bg-lp-line/60" />
           </div>
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <div className="h-20 rounded-2xl bg-gray-100" />
-            <div className="h-20 rounded-2xl bg-gray-100" />
+            <div className="h-20 rounded-2xl bg-lp-line/60" />
+            <div className="h-20 rounded-2xl bg-lp-line/60" />
           </div>
         </div>
         </div>
@@ -390,19 +384,16 @@ function LoadingState() {
 function ErrorState({ message }: { message: string }) {
   return (
     <Shell>
-      <div className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-xl">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
-          <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex flex-1 items-center justify-center px-4 py-16 lp-md:py-24">
+        <div className={`${card} w-full max-w-md p-8 text-center`}>
+        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-lp-warn/10 text-lp-warn">
+          <svg aria-hidden="true" className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h1 className="text-xl font-bold text-gray-900">Ops!</h1>
-        <p className="mt-2 text-gray-500">{message}</p>
-        <a
-          href="https://motokadriver.com"
-          className="mt-6 inline-block rounded-xl bg-[#3756A9] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#2c4585]"
-        >
+        <h1 className="text-2xl font-bold tracking-[-0.02em]">Ops!</h1>
+        <p className="mt-2 text-lp-ink-2">{message}</p>
+        <a href="https://motokadriver.com" className={`${btnPrimary} mt-6`}>
           Conhecer o Motoka Driver
         </a>
         </div>
@@ -415,7 +406,7 @@ function ErrorState({ message }: { message: string }) {
 
 function PinIcon() {
   return (
-    <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="h-4 w-4 shrink-0 text-lp-ink-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
