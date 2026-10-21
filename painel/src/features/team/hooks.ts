@@ -6,12 +6,13 @@ import { isApiError } from "@/lib/api/errors";
 import { UNKNOWN_MESSAGE } from "@/lib/errors/messages";
 import { POLLING, pollingInterval } from "@/lib/polling/polling";
 import { useToast } from "@/ui/Toast";
-import { fetchOnShift, fetchSchedule } from "./api";
+import { fetchMembers, fetchOnShift, fetchSchedule } from "./api";
 
 export const teamKeys = {
   all: ["team"] as const,
   schedule: (week: string) => ["team", "schedule", week] as const,
   onShift: ["team", "on-shift"] as const,
+  joinRequests: ["team", "members", "pending"] as const,
 };
 
 /** Escala da semana (E15), a cada 60 s. Sem retry: o backoff vem do `refetchInterval` (DN-07). */
@@ -30,6 +31,20 @@ export function useOnShift(enabled: boolean) {
     queryKey: teamKeys.onShift,
     queryFn: ({ signal }) => fetchOnShift(signal),
     refetchInterval: pollingInterval(POLLING.onShift),
+    retry: false,
+    enabled,
+  });
+}
+
+/**
+ * Pedidos para entrar pelo link (E1 `?status=pending`), a cada 60 s. Serve à seção da escala e ao
+ * contador da aba; uma falha mantém a última lista.
+ */
+export function useJoinRequests(enabled = true) {
+  return useQuery({
+    queryKey: teamKeys.joinRequests,
+    queryFn: ({ signal }) => fetchMembers("pending", signal),
+    refetchInterval: pollingInterval(POLLING.teamJoinRequests),
     retry: false,
     enabled,
   });
@@ -69,6 +84,10 @@ export function useTeamActions() {
         await queryClient.invalidateQueries({ queryKey: teamKeys.all });
       } catch (error) {
         toast({ title: isApiError(error) ? error.text() : UNKNOWN_MESSAGE });
+        // 404/409: o alvo mudou no servidor (ex.: pedido já respondido); relê para a tela alcançar.
+        if (isApiError(error) && (error.status === 404 || error.status === 409)) {
+          void queryClient.invalidateQueries({ queryKey: teamKeys.all });
+        }
       } finally {
         running.current = false;
         setBusyId(null);

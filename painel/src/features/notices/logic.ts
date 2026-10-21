@@ -65,6 +65,9 @@ export function lookOf(type: string): Look {
       return { icon: "play_circle", tone: "primary" };
     case "team_member_joined":
       return { icon: "person_add", tone: "success" };
+    case "team_join_requested":
+      return { icon: "person_add", tone: "warning" };
+    // Não é mais emitido (saiu com o Phone Auth), mas avisos antigos seguem no banco e na lista.
     case "team_member_new_device":
       return { icon: "mobile", tone: "warning" };
     default:
@@ -81,7 +84,8 @@ export function targetOf(notice: Notice): string | null {
   const ok = (id: string | undefined): id is string => id !== undefined && UUID.test(id);
   if (type.startsWith("settlement_")) return ok(refs.settlement_id) ? `${Paths.settlements}?acerto=${refs.settlement_id}` : null;
   if (type.startsWith("delivery_")) return ok(refs.delivery_id) ? `${Paths.deliveries}?pedido=${refs.delivery_id}` : null;
-  if (type.startsWith("team_member_")) return Paths.team;
+  // `team_join_requested`: pedido para entrar pelo link, respondido na seção da escala.
+  if (type.startsWith("team_member_") || type === "team_join_requested") return Paths.team;
   if (ok(refs.order_id)) {
     const proposal = ok(refs.negotiation_id) ? `&proposta=${refs.negotiation_id}` : "";
     return `${Paths.services}?pedido=${refs.order_id}${proposal}`;

@@ -12,8 +12,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./test/setup.ts"],
     include: ["test/unit/**/*.test.{ts,tsx}"],
-    // MAP_STYLE vazio: o CI define a URL do mock no job inteiro (para o build e2e), e o teste
+    // Chave do mapa vazia: o CI define a chave falsa no job inteiro (para o build e2e), e o teste
     // de "Mapa não configurado" não pode depender do ambiente de quem roda.
-    env: { NEXT_PUBLIC_API_URL: "http://api.test", NEXT_PUBLIC_APP_ENV: "e2e", NEXT_PUBLIC_MAP_STYLE_URL: "" },
+    env: { NEXT_PUBLIC_API_URL: "http://api.test", NEXT_PUBLIC_APP_ENV: "e2e", NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: "", NEXT_PUBLIC_GOOGLE_TILES_URL: "" },
   },
 });
