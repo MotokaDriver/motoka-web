@@ -475,8 +475,8 @@ describe("pedidos para entrar", () => {
     const { user } = setup();
     await user.click(await screen.findByRole("button", { name: "Aprovar o pedido de Paulo Souza" }));
     const dialog = await screen.findByRole("dialog", { name: "Aprovar Paulo S." });
-    // Combinado "a definir": o Aprovar com combinado só libera com a tarifa preenchida.
-    expect(within(dialog).getByRole("button", { name: "Aprovar" })).toBeDisabled();
+    // Combinado "a definir": o único primário aprova e deixa o combinado para depois.
+    expect(within(dialog).queryByRole("button", { name: "Aprovar" })).toBeNull();
     await user.click(within(dialog).getByRole("button", { name: "Aprovar e combinar depois" }));
     await waitFor(() => expect(api.approveMember).toHaveBeenCalledWith(PAULO, null));
     expect(await screen.findByText("Paulo S. entrou na equipe.")).toBeInTheDocument();
@@ -492,6 +492,23 @@ describe("pedidos para entrar", () => {
     await user.click(within(dialog).getByRole("button", { name: "Aprovar" }));
     await waitFor(() => expect(api.approveMember).toHaveBeenCalled());
     expect(api.approveMember.mock.calls[0]?.[1]).toMatchObject({ payType: "per_delivery", perDeliveryRate: "7.00" });
+  });
+
+  it("Agora não fecha sem aprovar", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    const { user } = setup();
+    await user.click(await screen.findByRole("button", { name: "Aprovar o pedido de Paulo Souza" }));
+    const dialog = await screen.findByRole("dialog", { name: "Aprovar Paulo S." });
+    await user.click(within(dialog).getByRole("button", { name: "Agora não" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(api.approveMember).not.toHaveBeenCalled();
+  });
+
+  it("falha ao ler os pedidos sem lista anterior: aviso discreto, não some em silêncio", async () => {
+    api.fetchMembers.mockRejectedValue(new ApiError({ status: 503, code: null }));
+    setup();
+    expect(await screen.findByText("Não foi possível carregar os pedidos para entrar. Tentando de novo.")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /^Pedidos para entrar/ })).toBeNull();
   });
 
   it("recusar pede confirmação (sem window.confirm) e chama a API", async () => {

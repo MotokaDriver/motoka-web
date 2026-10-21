@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api/errors";
+import { addDays, spDay } from "@/lib/time/saoPaulo";
 
 /**
  * Modelos de `/v1/teams/me/*` (E1–E16, `teams/application/dto.py`). Enums em minúsculas, dinheiro como
@@ -411,4 +412,17 @@ export function entityColor(id: string): string {
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
   return PALETTE[hash % PALETTE.length] ?? PALETTE[0];
+}
+
+/** "pediu agora", "pediu há 5 min", "pediu há 2 h", "pediu ontem" ou "pediu em 03/10" (São Paulo). */
+export function requestedLabel(iso: string | null, now: Date): string {
+  const at = iso ? Date.parse(iso) : Number.NaN;
+  if (Number.isNaN(at)) return "";
+  const minutes = Math.floor((now.getTime() - at) / 60_000);
+  const day = spDay(new Date(at));
+  if (minutes < 1) return "pediu agora";
+  if (minutes < 60) return `pediu há ${minutes} min`;
+  if (day === spDay(now)) return `pediu há ${Math.floor(minutes / 60)} h`;
+  if (day === addDays(spDay(now), -1)) return "pediu ontem";
+  return `pediu em ${day.slice(8, 10)}/${day.slice(5, 7)}`;
 }

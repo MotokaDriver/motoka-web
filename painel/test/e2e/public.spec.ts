@@ -127,6 +127,7 @@ test.describe("convite (4 estados) @smoke", () => {
     await expect(page.locator("#approval")).toBeVisible();
     await expect(page.locator(".steps")).toContainText("crie sua conta, ou entre se já tiver uma");
     await expect(page.locator(".steps")).not.toContainText("SMS");
+    await expect(page.locator(".steps")).toContainText("Tenho um convite de equipe");
     expect(api.inviteRequests).toHaveLength(1);
     expect(api.inviteRequests[0]!.url).toBe(`/v1/teams/invites/${TOKEN}?mark_opened=true`);
     expect(api.inviteRequests[0]!.referer).toBeUndefined();

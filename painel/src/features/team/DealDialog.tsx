@@ -131,6 +131,7 @@ function ApproveForm({
 }) {
   const [value, setValue] = useState(() => initial(member));
   const deal = toDeal(value);
+  const valid = dealIsValid(deal);
   const approve = (chosen: Deal | null) => {
     onClose();
     onApprove(member, chosen);
@@ -140,12 +141,13 @@ function ApproveForm({
       <div className="mt-6">
         <DealFields value={value} onChange={setValue} />
       </div>
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Btn kind="secondary" className="flex-1" onClick={() => approve(null)}>
-          Aprovar e combinar depois
+      {/* Um só primário: com combinado válido aprova com ele; sem, aprova e o combinado fica para depois. */}
+      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+        <Btn kind="ghost" className="flex-1" onClick={onClose}>
+          Agora não
         </Btn>
-        <Btn className="flex-1" disabled={!dealIsValid(deal)} onClick={() => approve(deal)}>
-          Aprovar
+        <Btn className="flex-1" onClick={() => approve(valid ? deal : null)}>
+          {valid ? "Aprovar" : "Aprovar e combinar depois"}
         </Btn>
       </div>
     </>

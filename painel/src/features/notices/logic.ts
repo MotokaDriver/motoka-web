@@ -67,6 +67,7 @@ export function lookOf(type: string): Look {
       return { icon: "person_add", tone: "success" };
     case "team_join_requested":
       return { icon: "person_add", tone: "warning" };
+    // Não é mais emitido (saiu com o Phone Auth), mas avisos antigos seguem no banco e na lista.
     case "team_member_new_device":
       return { icon: "mobile", tone: "warning" };
     default:

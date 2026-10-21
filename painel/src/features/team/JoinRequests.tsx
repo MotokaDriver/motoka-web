@@ -1,9 +1,8 @@
 "use client";
 
-import { relativeTime } from "@/features/notices/logic";
 import { Avatar } from "@/ui/Avatar";
 import { Btn } from "@/ui/Btn";
-import { entityColor, formatPhone, type Member } from "./model";
+import { entityColor, formatPhone, requestedLabel, type Member } from "./model";
 
 /**
  * "Pedidos para entrar (N)": quem entrou pelo link e espera a loja (vínculo `pending`). Aprovar abre o
@@ -13,16 +12,26 @@ export function JoinRequests({
   requests,
   now,
   busyId,
+  failed = false,
   onApprove,
   onReject,
 }: {
   requests: readonly Member[];
+  /** A leitura falhou e não há lista anterior: avisa em vez de sumir com a seção. */
+  failed?: boolean;
   now: Date;
   busyId: string | null;
   onApprove: (member: Member) => void;
   onReject: (member: Member) => void;
 }) {
-  if (requests.length === 0) return null;
+  if (requests.length === 0) {
+    if (!failed) return null;
+    return (
+      <p role="status" className="type-caption mx-5 mb-3 text-text-tertiary lg:mx-7">
+        Não foi possível carregar os pedidos para entrar. Tentando de novo.
+      </p>
+    );
+  }
   return (
     <section aria-labelledby="join-requests-title" className="mx-5 mb-4 rounded-lg border border-warning/40 bg-warning/10 p-3.5 lg:mx-7">
       <h2 id="join-requests-title" className="type-title-sm font-semibold">
@@ -32,14 +41,14 @@ export function JoinRequests({
       <ul className="mt-3 flex flex-col gap-2">
         {requests.map((member) => {
           const phone = formatPhone(member.driver.phone);
-          const when = member.joinedAt ? relativeTime(member.joinedAt, now) : "";
+          const when = requestedLabel(member.joinedAt, now);
           const busy = busyId === member.id;
           return (
             <li key={member.id} className="flex flex-wrap items-center gap-3 rounded-md border border-border bg-surface p-3">
               <Avatar initials={member.driver.initials} color={entityColor(member.driver.id)} size={34} />
               <div className="min-w-0 flex-1">
                 <p className="type-label-lg truncate font-semibold">{member.driver.fullName}</p>
-                <p className="type-caption text-text-tertiary">{[phone, when && `pediu ${when.toLowerCase()}`].filter(Boolean).join(" · ")}</p>
+                <p className="type-caption text-text-tertiary">{[phone, when].filter(Boolean).join(" · ")}</p>
               </div>
               <div className="flex gap-2">
                 <Btn

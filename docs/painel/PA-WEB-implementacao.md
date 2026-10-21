@@ -22,8 +22,11 @@ equipe (o pedido pode ter sido respondido em outra aba).
 
 - `team/model.ts`: `MemberStatus` ganha `pending`; `Member.joinedAt`; `parseMembers` (E1).
 - `team/JoinRequests.tsx`: seção "Pedidos para entrar (N)" no topo da escala, com celular e "pediu há…".
-  Aprovar abre `ApproveDialog` (`DealDialog.tsx`): "Aprovar" com combinado ou "Aprovar e combinar
-  depois". Recusar passa pelo `ConfirmDialog` (sem `window.confirm`).
+  Aprovar abre `ApproveDialog` (`DealDialog.tsx`) com um só primário: "Aprovar" quando o combinado é
+  válido, "Aprovar e combinar depois" (sem corpo) quando não; "Agora não" fecha. Recusar passa pelo
+  `ConfirmDialog` (sem `window.confirm`). Falha na leitura sem lista anterior mostra um aviso discreto.
+- Paridade de códigos conferida com `MOTOKA_API_DIR=<src de origin/feat/remove-phone-auth> yarn
+  check-error-codes` (230 na API, 231 no painel, nenhum faltando).
 - `TeamTabs`: contador de pedidos na aba Escala (também na tela de Acertos).
 - Equipe vazia com pedido pendente mostra a seção, não o estado vazio.
 - Textos: `InviteModal` ("Quem entrar por este link precisa da sua aprovação."; convite pelo nome entra

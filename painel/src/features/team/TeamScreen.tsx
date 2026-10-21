@@ -58,7 +58,9 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
   const current = data ? isCurrentWeekOf(data.weekStart, data.today) : false;
   const onShift = useOnShift(current);
   const needsAction = useSettlements({}).data?.needsActionCount ?? 0;
-  const joinRequests = useJoinRequests().data ?? [];
+  const joinQuery = useJoinRequests();
+  const joinRequests = joinQuery.data ?? [];
+  const joinFailed = joinQuery.isError && joinQuery.data === undefined;
   const { busyId, run } = useTeamActions();
 
   const [addShift, setAddShift] = useState<AddShiftRequest | null>(null);
@@ -224,7 +226,7 @@ export function TeamScreen({ onGridRender }: { onGridRender?: () => void }) {
         <TeamTabs active="escala" needsAction={needsAction} joinRequests={joinRequests.length} />
       </div>
 
-      <JoinRequests requests={joinRequests} now={now} busyId={busyId} onApprove={setApproveFor} onReject={askReject} />
+      <JoinRequests requests={joinRequests} failed={joinFailed} now={now} busyId={busyId} onApprove={setApproveFor} onReject={askReject} />
 
       {schedule.isPending ? (
         <div className="grid flex-1 place-items-center py-16 text-primary-text">
