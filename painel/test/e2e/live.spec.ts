@@ -53,7 +53,7 @@ test.describe("Mapa ao vivo (WN-3)", () => {
     await expect(side.getByText("1 em turno")).toBeVisible();
     await expect(side.getByRole("button", { name: /Diego Ramos, Entregando/ })).toBeVisible();
     await expect(page.getByRole("status").filter({ hasText: /^Ao vivo$/ })).toBeVisible();
-    await expect(page.getByText(/1 em turno · 1 entrega na rua · 3 feitas hoje/)).toBeVisible();
+    await expect(page.getByText(/1 em turno · 1 entrega na rua · 0 livres · 3 feitas hoje/)).toBeVisible();
     // A loja e o motoboy: dois marcadores.
     await expect(page.locator(".maplibregl-marker")).toHaveCount(2);
     await expect(page.locator(".maplibregl-marker").filter({ hasText: "DR" })).toHaveCount(1);
