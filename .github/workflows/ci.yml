@@ -118,6 +118,9 @@ jobs:
         env:
           NEXT_PUBLIC_APP_ENV: prod
           NEXT_PUBLIC_API_URL: https://api.motokadriver.com
+          # Sem estilo do mapa: o job define o do mock (http://localhost), que o build de prod
+          # recusa, e o E2E de prod espera a CSP sem host de tiles.
+          NEXT_PUBLIC_MAP_STYLE_URL: ""
           E2E_VARIANT: prod
         run: |
           yarn build
