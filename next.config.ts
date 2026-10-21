@@ -41,9 +41,9 @@ function resolvePainelUrl(): string {
 }
 
 const nextConfig: NextConfig = {
+  // Export estático servido na raiz de https://motokadriver.com por um Worker só de assets
+  // (wrangler.jsonc). Sem basePath: o `/motoka-web` era do GitHub Pages.
   output: 'export',
-  basePath: process.env.NODE_ENV === 'production' ? '/motoka-web' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/motoka-web/' : '',
   images: {
     unoptimized: true,
   },

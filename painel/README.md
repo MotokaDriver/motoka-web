@@ -63,16 +63,36 @@ páginas sem sessão).
 - As páginas sem framework ficam em `static-pages/` (não `static/`, que o Next copiaria para o
   export). Os assets delas vão para `/_static/<página>/`, fora da reescrita `/<página>/*`.
 
-## Deploy (H-1)
+## Deploy (Cloudflare Workers Builds)
 
-O pipeline (`.github/workflows/ci.yml` e `painel-deploy.yml`) fica pronto, mas os jobs da
-Cloudflare só rodam depois que o usuário configurar:
+O deploy de prod é feito pela integração Git da Cloudflare (Workers Builds), sem GitHub Actions e
+sem token no repositório: a cada push na `main` a Cloudflare builda o `painel/` e roda
+`npx wrangler deploy` (Worker `motoka-painel`, `wrangler.jsonc`). O antigo `painel-deploy.yml`
+(verify + deploy + smoke + rollback por token) foi removido para não haver dois caminhos de deploy.
+O lint, os testes e o E2E continuam no `ci.yml` em todo PR; o smoke de prod e o rollback passam a
+ser manuais (`npx wrangler rollback` ou pelo painel da Cloudflare).
 
-- secrets do repositório: `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) e `CLOUDFLARE_ACCOUNT_ID`;
-- variáveis do repositório: `CLOUDFLARE_ENABLED=true`, `PAINEL_API_URL`, `PAINEL_PREVIEW_API_URL`,
-  `PAINEL_MAP_STYLE_URL`;
-- o Worker `motoka-painel` com o domínio custom `painel.motokadriver.com` e o subdomínio
-  `workers.dev` ligado (o preview por PR depende dele);
-- o environment `painel-prod`, com o usuário como revisor obrigatório.
+Configuração do projeto na Cloudflare (Workers & Pages > motoka-painel > Settings > Build):
 
-Sem isso, `painel-preview` e `deploy` aparecem como *skipped*.
+| Campo | Valor |
+|---|---|
+| Diretório raiz | `painel` |
+| Comando de build | `yarn build` |
+| Comando de deploy | `npx wrangler deploy` |
+| Caminhos observados | incluir `painel/*` |
+| Domínio | `painel.motokadriver.com` (Custom Domain do Worker) |
+
+Variáveis de build (prod):
+
+| Variável | Valor | Obrigatória |
+|---|---|---|
+| `NEXT_PUBLIC_APP_ENV` | `prod` | sim (sem ela o build sai como `dev`, sem HSTS e aceitando localhost) |
+| `NEXT_PUBLIC_API_URL` | `https://api.motokadriver.com` (origem, **sem** `/v1`) | sim em prod |
+| `NEXT_PUBLIC_MAP_STYLE_URL` | URL https do estilo do mapa | não (vazio: "Mapa não configurado") |
+| `MAP_EXTRA_ORIGINS` | origens https extras para a CSP do mapa | não |
+| `NODE_VERSION` | `22` (`engines.node >=22`) | recomendada |
+
+O job `painel-preview` do `ci.yml` (preview por PR via `wrangler versions upload`) segue
+desligado sem a variável de repositório `CLOUDFLARE_ENABLED=true`; a alternativa sem token são os
+builds de branches que não são a de produção do próprio Workers Builds.
+
