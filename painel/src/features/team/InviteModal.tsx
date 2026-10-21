@@ -249,7 +249,10 @@ function InviteBody({ storeName, resend }: { storeName: string; resend: Invite |
           </div>
           <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-surface p-3.5">
             <Rule icon="group" tone="text-info" strong="Entregas da sua loja:">
-              entra só com nome e telefone. Sem verificação de documentos.
+              cria a conta no app, sem verificação de documentos.
+            </Rule>
+            <Rule icon="hourglass_empty" tone="text-warning" strong="Quem entrar por este link precisa da sua aprovação.">
+              Os pedidos aparecem no topo da escala.
             </Rule>
             <Rule icon="verified_user" tone="text-warning" strong="Entregas avulsas de outras lojas:">
               ele precisa passar pelo KYC no app.
@@ -316,7 +319,7 @@ function InviteBody({ storeName, resend }: { storeName: string; resend: Invite |
   );
 }
 
-function Rule({ icon, tone, strong, children }: { icon: "group" | "verified_user"; tone: string; strong: string; children: string }) {
+function Rule({ icon, tone, strong, children }: { icon: "group" | "verified_user" | "hourglass_empty"; tone: string; strong: string; children: string }) {
   return (
     <p className="type-body-sm flex gap-2.5 text-text-secondary">
       <span className={tone}>
@@ -404,7 +407,7 @@ function NominalSection({
           )}
         </div>
       )}
-      <p className="type-caption text-text-tertiary">O convite vale para a equipe. O motoboy entra só com nome e celular.</p>
+      <p className="type-caption text-text-tertiary">O convite pelo nome entra direto na equipe, sem esperar aprovação.</p>
     </form>
   );
 }

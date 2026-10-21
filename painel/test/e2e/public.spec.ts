@@ -9,7 +9,8 @@ import { API } from "./mockApi";
 const PROD = process.env.E2E_VARIANT === "prod";
 const API_ORIGIN = process.env.E2E_API_ORIGIN ?? (PROD ? "https://api.motokadriver.com" : API);
 
-// Hosts do estilo do mapa no build do E2E (NEXT_PUBLIC_MAP_STYLE_URL na API mockada); prod sem estilo não tem.
+// Origem dos tiles do Google no build do E2E (NEXT_PUBLIC_GOOGLE_TILES_URL na API mockada, em img-src e connect-src);
+// o build de prod do CI vai sem chave e não tem.
 const TILES = process.env.E2E_TILES ?? (PROD ? "" : ` ${API}`);
 
 const CSP =
@@ -109,10 +110,11 @@ test.describe("headers efetivos @smoke", () => {
 test.describe("convite (4 estados) @smoke", () => {
   const TOKEN = "abcdefghijklmnop1234";
 
-  test("convite válido mostra a loja e o combinado, sem Referer e sem cookie", async ({ page, api }) => {
+  test("convite válido mostra a loja, o combinado e a aprovação do link, sem Referer e sem cookie", async ({ page, api }) => {
     api.invite = {
       status: 200,
       body: {
+        kind: "link",
         establishment: { name: "Pizzaria do Zé", initials: "PZ", address_line: "Rua das Flores, 220", neighborhood: "Centro" },
         deal: { pay_type: "fixed_value_with_delivery", daily_rate: "90.00", per_delivery_rate: "6.00" },
       },
@@ -121,6 +123,11 @@ test.describe("convite (4 estados) @smoke", () => {
     await expect(page.getByRole("heading", { name: "Pizzaria do Zé quer você na equipe de entregas" })).toBeVisible();
     await expect(page.getByText("Diária R$ 90 + R$ 6 por entrega")).toBeVisible();
     await expect(page.locator("#invite-code")).toHaveText(TOKEN);
+    await expect(page.locator("#approval")).toContainText("a loja aprova sua entrada");
+    await expect(page.locator("#approval")).toBeVisible();
+    await expect(page.locator(".steps")).toContainText("crie sua conta, ou entre se já tiver uma");
+    await expect(page.locator(".steps")).not.toContainText("SMS");
+    await expect(page.locator(".steps")).toContainText("Tenho um convite de equipe");
     expect(api.inviteRequests).toHaveLength(1);
     expect(api.inviteRequests[0]!.url).toBe(`/v1/teams/invites/${TOKEN}?mark_opened=true`);
     expect(api.inviteRequests[0]!.referer).toBeUndefined();

@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchList } from "@/features/deliveries/api";
 import { PlaceholderScreen } from "@/features/shell/PlaceholderScreen";
 import { isAvailable, useCapabilities } from "@/features/shell/capabilities";
@@ -18,10 +18,27 @@ import { Btn } from "@/ui/Btn";
 import "./icons";
 import { classifyAll } from "./attention";
 import type { LiveStop } from "./model";
+import type { MapFailure } from "./MapView";
 import { AttentionBlock, DriverCard, DriverPanel, FilterChips, LiveDot, ReminderButton, SideFooter, matchesFilter, sideSubtitle, statusPill, type Filter } from "./LiveSide";
 import { useLive } from "./useLive";
 
-const MAP_STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL ?? "";
+// Tiles do Google (WN-3b): sem chave no build (preview de PR, dev sem chave), o mapa não sobe e a lateral segue.
+// Lidas na renderização (o Next troca o `process.env.NEXT_PUBLIC_*` pelo valor no build; os testes trocam o env).
+function tilesConfig(): { key: string; base: string } | null {
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+  return key ? { key, base: process.env.NEXT_PUBLIC_GOOGLE_TILES_URL || "https://tile.googleapis.com" } : null;
+}
+
+/**
+ * Cota estourada (429): o mapa tenta subir de novo, com a sessão do cache, depois de 1, 2, 5, 10 e 15 min (teto). Cada
+ * tentativa custa tiles; o backoff zera quando o mapa carrega sem 429.
+ */
+const QUOTA_RETRY_MS = [60_000, 120_000, 300_000, 600_000, 900_000] as const;
+
+const FAILURE_TITLES: Record<MapFailure, string> = {
+  error: "Não foi possível carregar o mapa",
+  quota: "O mapa atingiu o limite de uso por agora",
+};
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -52,7 +69,17 @@ function Screen({ tracking }: { tracking: boolean }) {
   const live = useLive(tracking);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
-  const [mapFailed, setMapFailed] = useState(false);
+  const [mapFailed, setMapFailed] = useState<MapFailure | null>(null);
+  const [quotaStrikes, setQuotaStrikes] = useState(0);
+  useEffect(() => {
+    if (mapFailed !== "quota") return;
+    const delay = QUOTA_RETRY_MS[Math.min(quotaStrikes, QUOTA_RETRY_MS.length - 1)];
+    const timer = setTimeout(() => {
+      setQuotaStrikes((n) => n + 1);
+      setMapFailed(null);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [mapFailed, quotaStrikes]);
   const [webgl] = useState(() => (typeof document === "undefined" ? true : hasWebGL2()));
 
   const attention = useQuery({
@@ -85,7 +112,8 @@ function Screen({ tracking }: { tracking: boolean }) {
           selectedId={selectedId}
           stops={selectedStops}
           onSelect={setSelectedId}
-          onFailed={() => setMapFailed(true)}
+          onFailed={setMapFailed}
+          onLoaded={() => setQuotaStrikes(0)}
         />
         {!notEnabled && !forbidden && (
           <div className="pointer-events-none absolute left-5 right-5 top-[18px] flex flex-wrap items-center gap-2">
@@ -161,8 +189,9 @@ function MapArea({
   stops,
   onSelect,
   onFailed,
+  onLoaded,
 }: {
-  failed: boolean;
+  failed: MapFailure | null;
   webgl: boolean;
   notEnabled: boolean;
   store: { lat: number; lng: number; name: string } | null;
@@ -170,14 +199,16 @@ function MapArea({
   selectedId: string | null;
   stops: readonly LiveStop[];
   onSelect: (id: string) => void;
-  onFailed: () => void;
+  onFailed: (reason: MapFailure) => void;
+  onLoaded: () => void;
 }) {
-  const message = !MAP_STYLE_URL
+  const [tiles] = useState(tilesConfig);
+  const message = !tiles
     ? { title: "Mapa não configurado", text: "A lista ao lado continua atualizando." }
     : !webgl
       ? { title: "Seu navegador não mostra o mapa", text: "A lista ao lado continua atualizando." }
       : failed
-        ? { title: "Não foi possível carregar o mapa", text: "A lista ao lado continua atualizando." }
+        ? { title: FAILURE_TITLES[failed], text: "A lista ao lado continua atualizando." }
         : null;
   if (message) {
     return (
@@ -186,6 +217,6 @@ function MapArea({
       </div>
     );
   }
-  if (notEnabled) return null;
-  return <MapView styleUrl={MAP_STYLE_URL} store={store} views={views} selectedId={selectedId} stops={stops} onSelect={onSelect} onFailed={onFailed} />;
+  if (notEnabled || !tiles) return null;
+  return <MapView tiles={tiles} store={store} views={views} selectedId={selectedId} stops={stops} onSelect={onSelect} onFailed={onFailed} onLoaded={onLoaded} />;
 }

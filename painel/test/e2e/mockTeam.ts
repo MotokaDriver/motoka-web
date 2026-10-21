@@ -15,6 +15,16 @@ interface TeamShift {
   repeats: boolean;
 }
 
+/** Vínculo que entrou pelo link e espera a loja (`pending`), ou já respondido. */
+interface JoinRequest {
+  id: string;
+  driverId: string;
+  name: string;
+  initials: string;
+  status: "pending" | "active" | "removed";
+  deal: Record<string, unknown>;
+}
+
 interface TeamInvite {
   id: string;
   name: string;
@@ -35,6 +45,7 @@ export class MockTeam {
   onShiftNow = false;
   shifts: TeamShift[] = [];
   invites: TeamInvite[] = [];
+  joinRequests: JoinRequest[] = [];
   linkVersion = 1;
   counter = 0;
   calls: string[] = [];
@@ -50,10 +61,31 @@ export class MockTeam {
       id: TEAM_IDS.diego,
       driver: { id: TEAM_IDS.driverDiego, full_name: "Diego Ramos", short_name: "Diego R.", initials: "DR", phone: "5541999990077" },
       status: this.memberStatus,
-      source: "link",
+      source: "via_link",
       access: "team",
       joined_at: new Date().toISOString(),
       deal: this.deal,
+      also_in_other_team: false,
+    };
+  }
+
+  /** Um pedido para entrar pelo link (E1 `?status=pending`). */
+  addJoinRequest(name: string): string {
+    const id = this.id("f");
+    const initials = name.split(" ").map((part) => part[0] ?? "").join("").slice(0, 2).toUpperCase();
+    this.joinRequests.push({ id, driverId: this.id("a"), name, initials, status: "pending", deal: { pay_type: "per_delivery", daily_rate: null, per_delivery_rate: null, rain_bonus_percent: null } });
+    return id;
+  }
+
+  joinMember(r: JoinRequest) {
+    return {
+      id: r.id,
+      driver: { id: r.driverId, full_name: r.name, short_name: r.name, initials: r.initials, phone: "5541988887766" },
+      status: r.status,
+      source: "via_link",
+      access: "team",
+      joined_at: new Date(Date.now() - 5 * 60_000).toISOString(),
+      deal: r.deal,
       also_in_other_team: false,
     };
   }
@@ -90,7 +122,10 @@ export class MockTeam {
       week_start: weekStart,
       week_end: addDay(weekStart, 6),
       today,
-      members: this.memberStatus === "removed" ? [] : [this.member()],
+      members: [
+        ...(this.memberStatus === "removed" ? [] : [this.member()]),
+        ...this.joinRequests.filter((r) => r.status === "active").map((r) => this.joinMember(r)),
+      ],
       pending_invites: this.invites.filter((i) => i.status === "not_opened").map((i) => this.inviteItem(i)),
       occurrences,
       busy: [],
@@ -150,8 +185,25 @@ export class MockTeam {
   }
 
   /** Roteia `/teams/me/<rest>`. Devolve `[status, body]` ou `null` se a rota não existe. */
-  route(rest: string, method: string, searchWeek: string | null, json: Record<string, unknown>): [number, unknown] | null {
+  route(rest: string, method: string, searchWeek: string | null, json: Record<string, unknown>, search?: URLSearchParams): [number, unknown] | null {
     this.calls.push(`${method} ${rest}`);
+    if (rest === "members" && method === "GET") {
+      const wanted = (search?.get("status") ?? "active,paused").split(",");
+      const items = [
+        ...(wanted.includes(this.memberStatus) ? [this.member()] : []),
+        ...this.joinRequests.filter((r) => wanted.includes(r.status)).map((r) => this.joinMember(r)),
+      ];
+      return [200, { count: items.length, items }];
+    }
+    const answer = /^members\/([^/]+)\/(approve|reject)$/.exec(rest);
+    if (answer && method === "POST") {
+      const request = this.joinRequests.find((r) => r.id === answer[1]);
+      if (!request) return [404, { error_code: "TEAM_MEMBER_NOT_FOUND", detail: "x" }];
+      if (request.status !== "pending") return [409, { error_code: "TEAM_MEMBER_NOT_PENDING", detail: "x" }];
+      request.status = answer[2] === "approve" ? "active" : "removed";
+      if (answer[2] === "approve" && json.deal) request.deal = json.deal as Record<string, unknown>;
+      return [200, this.joinMember(request)];
+    }
     if (rest === "schedule") return [200, this.schedule(searchWeek)];
     if (rest === "on-shift") {
       const items = this.onShiftNow

@@ -38,6 +38,9 @@ const api = vi.hoisted(() => ({
   revokeInvite: vi.fn(),
   createShifts: vi.fn(),
   deleteShift: vi.fn(),
+  fetchMembers: vi.fn(),
+  approveMember: vi.fn(),
+  rejectMember: vi.fn(),
 }));
 vi.mock("@/features/team/api", () => api);
 
@@ -103,6 +106,7 @@ beforeEach(() => {
   api.deleteShift.mockResolvedValue(undefined);
   api.fetchInviteLink.mockResolvedValue({ id: "l1", url: `${location.origin}/convite/tok`, joinsLast24h: 2 });
   api.fetchInvites.mockResolvedValue([]);
+  api.fetchMembers.mockResolvedValue([]);
 });
 
 describe("grade", () => {
@@ -438,5 +442,108 @@ describe("adicionar turno", () => {
     const confirm = await screen.findByRole("dialog", { name: "Descartar as alterações?" });
     await user.click(within(confirm).getByRole("button", { name: "Descartar" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+});
+
+describe("pedidos para entrar", () => {
+  const PAULO = "66666666-6666-4666-8666-666666666666";
+  const pending = () =>
+    model.parseMember({
+      id: PAULO,
+      driver: { id: "d6", full_name: "Paulo Souza", short_name: "Paulo S.", initials: "PS", phone: "5541988887766" },
+      status: "pending",
+      source: "via_link",
+      access: "team",
+      joined_at: new Date().toISOString(),
+      deal: { pay_type: "per_delivery", daily_rate: null, per_delivery_rate: null, rain_bonus_percent: null },
+      also_in_other_team: false,
+    });
+
+  it("lista o pedido com celular e marca a aba Escala; só pede status=pending", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    setup();
+    const section = await screen.findByRole("region", { name: "Pedidos para entrar (1)" });
+    expect(within(section).getByText("Paulo Souza")).toBeInTheDocument();
+    expect(within(section).getByText(/\(41\) 98888-7766/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Escala, 1 pedido para entrar" })).toBeInTheDocument();
+    expect(api.fetchMembers).toHaveBeenCalledWith("pending", expect.anything());
+  });
+
+  it("aprovar abre o combinado opcional; combinar depois aprova sem corpo", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    api.approveMember.mockResolvedValue({});
+    const { user } = setup();
+    await user.click(await screen.findByRole("button", { name: "Aprovar o pedido de Paulo Souza" }));
+    const dialog = await screen.findByRole("dialog", { name: "Aprovar Paulo S." });
+    // Combinado "a definir": o único primário aprova e deixa o combinado para depois.
+    expect(within(dialog).queryByRole("button", { name: "Aprovar" })).toBeNull();
+    await user.click(within(dialog).getByRole("button", { name: "Aprovar e combinar depois" }));
+    await waitFor(() => expect(api.approveMember).toHaveBeenCalledWith(PAULO, null));
+    expect(await screen.findByText("Paulo S. entrou na equipe.")).toBeInTheDocument();
+  });
+
+  it("aprovar com combinado manda o deal", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    api.approveMember.mockResolvedValue({});
+    const { user } = setup();
+    await user.click(await screen.findByRole("button", { name: "Aprovar o pedido de Paulo Souza" }));
+    const dialog = await screen.findByRole("dialog", { name: "Aprovar Paulo S." });
+    await user.type(within(dialog).getByLabelText("Por entrega"), "700");
+    await user.click(within(dialog).getByRole("button", { name: "Aprovar" }));
+    await waitFor(() => expect(api.approveMember).toHaveBeenCalled());
+    expect(api.approveMember.mock.calls[0]?.[1]).toMatchObject({ payType: "per_delivery", perDeliveryRate: "7.00" });
+  });
+
+  it("Agora não fecha sem aprovar", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    const { user } = setup();
+    await user.click(await screen.findByRole("button", { name: "Aprovar o pedido de Paulo Souza" }));
+    const dialog = await screen.findByRole("dialog", { name: "Aprovar Paulo S." });
+    await user.click(within(dialog).getByRole("button", { name: "Agora não" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(api.approveMember).not.toHaveBeenCalled();
+  });
+
+  it("falha ao ler os pedidos sem lista anterior: aviso discreto, não some em silêncio", async () => {
+    api.fetchMembers.mockRejectedValue(new ApiError({ status: 503, code: null }));
+    setup();
+    expect(await screen.findByText("Não foi possível carregar os pedidos para entrar. Tentando de novo.")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /^Pedidos para entrar/ })).toBeNull();
+  });
+
+  it("recusar pede confirmação (sem window.confirm) e chama a API", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    api.rejectMember.mockResolvedValue({});
+    const confirmSpy = vi.spyOn(window, "confirm");
+    const { user } = setup();
+    await user.click(await screen.findByRole("button", { name: "Recusar o pedido de Paulo Souza" }));
+    const dialog = await screen.findByRole("dialog", { name: "Recusar o pedido de Paulo S.?" });
+    expect(api.rejectMember).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole("button", { name: "Recusar" }));
+    await waitFor(() => expect(api.rejectMember).toHaveBeenCalledWith(PAULO));
+    expect(await screen.findByText("Pedido de Paulo S. recusado.")).toBeInTheDocument();
+    expect(confirmSpy).not.toHaveBeenCalled();
+    confirmSpy.mockRestore();
+  });
+
+  it("pedido já respondido: texto fixo e relê a lista", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    api.approveMember.mockRejectedValue(new ApiError({ status: 409, code: "TEAM_MEMBER_NOT_PENDING" }));
+    const { user } = setup();
+    await user.click(await screen.findByRole("button", { name: "Aprovar o pedido de Paulo Souza" }));
+    const dialog = await screen.findByRole("dialog", { name: "Aprovar Paulo S." });
+    const calls = api.fetchMembers.mock.calls.length;
+    api.fetchMembers.mockResolvedValue([]);
+    await user.click(within(dialog).getByRole("button", { name: "Aprovar e combinar depois" }));
+    expect(await screen.findByText("Este pedido para entrar já foi respondido.")).toBeInTheDocument();
+    await waitFor(() => expect(api.fetchMembers.mock.calls.length).toBeGreaterThan(calls));
+    await waitFor(() => expect(screen.queryByRole("region", { name: /^Pedidos para entrar/ })).toBeNull());
+  });
+
+  it("equipe vazia com pedido mostra o pedido, não o estado vazio", async () => {
+    api.fetchMembers.mockResolvedValue([pending()]);
+    setup(rawSchedule({ members: [], pending_invites: [], occurrences: [] }));
+    expect(await screen.findByRole("region", { name: "Pedidos para entrar (1)" })).toBeInTheDocument();
+    expect(screen.queryByText("Sua equipe ainda está vazia")).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/errors";
 import { establishmentUser } from "../helpers";
 
@@ -32,6 +32,24 @@ vi.mock("@/features/live/stream", () => ({
     setHidden() {}
   },
 }));
+// O mapa de verdade (MapLibre + tiles do Google) fica no pins.test: aqui ele só avisa a falha que o teste pedir.
+const mapView = vi.hoisted(() => ({ failure: null as "error" | "quota" | null, loads: true, mounts: 0, fail: null as ((reason: "error" | "quota") => void) | null }));
+vi.mock("@/features/live/MapView", async () => {
+  const { useEffect } = await import("react");
+  return {
+    default: function FakeMap({ onFailed, onLoaded }: { onFailed: (reason: "error" | "quota") => void; onLoaded?: () => void }) {
+      useEffect(() => {
+        mapView.mounts += 1;
+        mapView.fail = onFailed;
+        if (mapView.failure) onFailed(mapView.failure);
+        else if (mapView.loads) onLoaded?.();
+        // Só no mount, como o mapa de verdade.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+      return <div data-testid="live-map" />;
+    },
+  };
+});
 const deliveries = vi.hoisted(() => ({ fetchList: vi.fn() }));
 vi.mock("@/features/deliveries/api", () => ({ fetchList: deliveries.fetchList, PAGE_SIZE: 100 }));
 
@@ -85,7 +103,15 @@ function mount() {
   return { user };
 }
 
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+});
+
 beforeEach(() => {
+  mapView.failure = null;
+  mapView.loads = true;
+  mapView.mounts = 0;
   sessionState.current = { status: "authenticated", user: establishmentUser() };
   live.fetchLive.mockReset();
   live.attached = 0;
@@ -94,7 +120,7 @@ beforeEach(() => {
 });
 
 describe("mapa ao vivo", () => {
-  it("sem NEXT_PUBLIC_MAP_STYLE_URL: Mapa não configurado, e a lateral funciona", async () => {
+  it("sem NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: Mapa não configurado, e a lateral funciona", async () => {
     live.fetchLive.mockResolvedValue(
       snapshot([driver("d1", "Diego Ramos"), driver("d2", "Rafa Lima", { state: "returning" }), driver("d3", "Paulo Nunes", { state: "not_started", position: null })]),
     );
@@ -117,6 +143,103 @@ describe("mapa ao vivo", () => {
     expect(within(side).getByRole("button", { name: /Paulo Nunes/ })).toBeInTheDocument();
     // O transporte abriu ao entrar na tela.
     expect(live.attached).toBe(1);
+  });
+
+  it.each([
+    ["error", "Não foi possível carregar o mapa"],
+    ["quota", "O mapa atingiu o limite de uso por agora"],
+  ] as const)("com chave, o mapa avisa %s: o texto certo, e a lateral segue", async (failure, title) => {
+    vi.stubEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "e2e-fake-key-0000000000");
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({} as RenderingContext);
+    mapView.failure = failure;
+    live.fetchLive.mockResolvedValue(snapshot([driver("d1", "Diego Ramos")]));
+    mount();
+    expect(await screen.findByText(title)).toBeInTheDocument();
+    expect(screen.getByText("A lista ao lado continua atualizando.")).toBeInTheDocument();
+    expect(screen.queryByText("Mapa não configurado")).not.toBeInTheDocument();
+    const side = screen.getByRole("complementary", { name: "Equipe agora" });
+    expect(await within(side).findByRole("button", { name: /Diego Ramos, Entregando/ })).toBeInTheDocument();
+  });
+
+  it("cota estourada: o aviso fica uns 60 s e o mapa tenta subir de novo sozinho", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      vi.stubEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "e2e-fake-key-0000000000");
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({} as RenderingContext);
+      mapView.failure = "quota";
+      live.fetchLive.mockResolvedValue(snapshot([]));
+      mount();
+      expect(await screen.findByText("O mapa atingiu o limite de uso por agora")).toBeInTheDocument();
+      expect(screen.queryByTestId("live-map")).not.toBeInTheDocument();
+      // Na volta, a cota já liberou: o mapa monta e não avisa de novo.
+      mapView.failure = null;
+      await act(async () => void (await vi.advanceTimersByTimeAsync(59_000)));
+      expect(screen.getByText("O mapa atingiu o limite de uso por agora")).toBeInTheDocument();
+      await act(async () => void (await vi.advanceTimersByTimeAsync(1_000)));
+      expect(await screen.findByTestId("live-map")).toBeInTheDocument();
+      expect(screen.queryByTestId("map-fallback")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cota: backoff de 1, 2, 5, 10 e 15 min (teto); zera quando o mapa carrega sem 429", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      vi.stubEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "e2e-fake-key-0000000000");
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({} as RenderingContext);
+      mapView.failure = "quota";
+      live.fetchLive.mockResolvedValue(snapshot([]));
+      mount();
+      expect(await screen.findByText("O mapa atingiu o limite de uso por agora")).toBeInTheDocument();
+      const tick = (ms: number) => act(async () => void (await vi.advanceTimersByTimeAsync(ms)));
+      // A cota segue estourada: cada volta remonta o mapa, que leva outro 429, e a espera cresce.
+      const MIN = 60_000;
+      for (const [wait, mounts] of [[1, 2], [2, 3], [5, 4], [10, 5], [15, 6], [15, 7]] as const) {
+        await tick(wait * MIN - 1_000);
+        expect(mapView.mounts).toBe(mounts - 1);
+        await tick(1_000);
+        expect(mapView.mounts).toBe(mounts);
+      }
+      // A cota liberou: o mapa carrega sem 429 e o backoff zera.
+      mapView.failure = null;
+      await tick(15 * MIN);
+      expect(await screen.findByTestId("live-map")).toBeInTheDocument();
+      expect(mapView.mounts).toBe(8);
+      // Novo 429 depois disso: volta a esperar 1 min, não 15.
+      await act(async () => mapView.fail?.("quota"));
+      expect(screen.getByText("O mapa atingiu o limite de uso por agora")).toBeInTheDocument();
+      await tick(MIN);
+      expect(mapView.mounts).toBe(9);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("erro (não cota) não volta sozinho", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      vi.stubEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "e2e-fake-key-0000000000");
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({} as RenderingContext);
+      mapView.failure = "error";
+      live.fetchLive.mockResolvedValue(snapshot([]));
+      mount();
+      expect(await screen.findByText("Não foi possível carregar o mapa")).toBeInTheDocument();
+      mapView.failure = null;
+      await act(async () => void (await vi.advanceTimersByTimeAsync(120_000)));
+      expect(screen.getByText("Não foi possível carregar o mapa")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("com chave e sem falha, o mapa sobe no lugar do aviso", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "e2e-fake-key-0000000000");
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({} as RenderingContext);
+    live.fetchLive.mockResolvedValue(snapshot([]));
+    mount();
+    expect(await screen.findByTestId("live-map")).toBeInTheDocument();
+    expect(screen.queryByTestId("map-fallback")).not.toBeInTheDocument();
   });
 
   it("selecionar um cartão abre o painel do motoboy com Ligar e WhatsApp; sem sinal não abre", async () => {

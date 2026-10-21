@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api/errors";
+import { addDays, spDay } from "@/lib/time/saoPaulo";
 
 /**
  * Modelos de `/v1/teams/me/*` (E1–E16, `teams/application/dto.py`). Enums em minúsculas, dinheiro como
@@ -23,7 +24,8 @@ export interface Deal {
   readonly rainBonusPercent: number | null;
 }
 
-export type MemberStatus = "active" | "paused" | "removed" | "left" | "unknown";
+/** `pending`: entrou pelo link e espera a loja aprovar (fora da escala até lá). */
+export type MemberStatus = "active" | "paused" | "pending" | "removed" | "left" | "unknown";
 export type TeamAccess = "team" | "full";
 export type InviteStatus = "not_opened" | "opened" | "accepted" | "declined" | "expired" | "revoked" | "unknown";
 
@@ -42,6 +44,8 @@ export interface Member {
   readonly access: TeamAccess;
   readonly deal: Deal;
   readonly alsoInOtherTeam: boolean;
+  /** Quando entrou (ou pediu para entrar, se `pending`). */
+  readonly joinedAt: string | null;
 }
 
 export interface Invite {
@@ -205,12 +209,18 @@ export function parseMember(value: unknown): Member {
   return {
     id: id(raw.id),
     driver: parseDriver(raw.driver),
-    status: oneOf(raw.status, ["active", "paused", "removed", "left"], "unknown"),
+    status: oneOf(raw.status, ["active", "paused", "pending", "removed", "left"], "unknown"),
     // Valor desconhecido é tratado como o mais restrito.
     access: lower(raw.access) === "full" ? "full" : "team",
     deal: parseDeal(raw.deal),
     alsoInOtherTeam: raw.also_in_other_team === true,
+    joinedAt: strOrNull(raw.joined_at),
   };
+}
+
+/** E1 (`{count, items}`). */
+export function parseMembers(value: unknown): Member[] {
+  return list(obj(value).items).map(parseMember);
 }
 
 export function parseInvite(value: unknown): Invite {
@@ -305,6 +315,7 @@ export function parseCreatedShifts(value: unknown): CreatedShifts {
 
 export const isActive = (member: Member): boolean => member.status === "active";
 export const isPaused = (member: Member): boolean => member.status === "paused";
+export const isPending = (member: Member): boolean => member.status === "pending";
 export const inviteIsActive = (status: InviteStatus): boolean => status === "not_opened" || status === "opened";
 export const inviteCanResend = (status: InviteStatus): boolean => inviteIsActive(status) || status === "expired";
 
@@ -401,4 +412,17 @@ export function entityColor(id: string): string {
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
   return PALETTE[hash % PALETTE.length] ?? PALETTE[0];
+}
+
+/** "pediu agora", "pediu há 5 min", "pediu há 2 h", "pediu ontem" ou "pediu em 03/10" (São Paulo). */
+export function requestedLabel(iso: string | null, now: Date): string {
+  const at = iso ? Date.parse(iso) : Number.NaN;
+  if (Number.isNaN(at)) return "";
+  const minutes = Math.floor((now.getTime() - at) / 60_000);
+  const day = spDay(new Date(at));
+  if (minutes < 1) return "pediu agora";
+  if (minutes < 60) return `pediu há ${minutes} min`;
+  if (day === spDay(now)) return `pediu há ${Math.floor(minutes / 60)} h`;
+  if (day === addDays(spDay(now), -1)) return "pediu ontem";
+  return `pediu em ${day.slice(8, 10)}/${day.slice(5, 7)}`;
 }
