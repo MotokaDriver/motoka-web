@@ -1,0 +1,15 @@
+// Landing (https://motokadriver.com): Worker só de assets, sem script.
+// O `out/` sai do `yarn build` (export estático do Next). O deploy é feito pela integração Git da
+// Cloudflare (Workers Builds), que roda `npx wrangler deploy` a cada push na main.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "motoka-landing",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./out",
+    // 404 da landing: o export do Next gera out/404.html.
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  "workers_dev": true
+}

@@ -29,11 +29,27 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy (Cloudflare Workers)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+A landing é um export estático (`output: 'export'`) servido na raiz de https://motokadriver.com
+pelo Worker só de assets `motoka-landing` (`wrangler.jsonc`). O deploy é feito pela integração Git
+da Cloudflare (Workers Builds), sem GitHub Actions e sem token no repositório: a cada push na `main`
+a Cloudflare builda e roda `npx wrangler deploy`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Configuração do projeto no painel da Cloudflare (Workers & Pages > motoka-landing > Settings > Build):
+
+| Campo | Valor |
+|---|---|
+| Diretório raiz | `/` |
+| Comando de build | `yarn build` |
+| Comando de deploy | `npx wrangler deploy` |
+| Caminhos observados | incluir `*`, excluir `painel/*` e `docs/*` (o painel tem Worker próprio) |
+| Variáveis de build | `NEXT_PUBLIC_API_URL=https://api.motokadriver.com` (origem, sem `/v1`), `NEXT_PUBLIC_PAINEL_URL=https://painel.motokadriver.com`, `NODE_VERSION=22` |
+| Domínio | `motokadriver.com` e `www.motokadriver.com` (Custom Domains do Worker) |
+
+Para conferir localmente: `yarn build && npx wrangler dev` (serve o `out/`).
+
+O painel (`painel/`) tem outro Worker (`motoka-painel`), publicado do mesmo jeito; ver `painel/README.md`.
 
 ## Botão "Entrar" (painel do estabelecimento)
 
@@ -44,4 +60,4 @@ O botão "Entrar" leva ao painel web (app Next em `painel/`, publicado no Cloudf
 | `NEXT_PUBLIC_PAINEL_URL` | URL do painel (pública, não é segredo; nunca colocar segredo em `NEXT_PUBLIC_*`) | `https://painel.motokadriver.com` (placeholder, domínio ainda não definido) |
 | `PAINEL_ALLOWED_HOSTS` | domínios extras permitidos, separados por vírgula (só build) | vazio |
 
-`next.config.ts` valida em build e **falha o build** se a URL não for `https` (exceto `http://localhost` em dev), tiver credenciais ou estiver fora da allowlist (`motokadriver.com` e subdomínios + `PAINEL_ALLOWED_HOSTS`). Em produção, definir as variáveis em Settings > Variables do repositório (o workflow as repassa). O link abre na mesma aba; motoboys são orientados a usar o app. Detalhes em `docs/WS-08-plano.md`.
+`next.config.ts` valida em build e **falha o build** se a URL não for `https` (exceto `http://localhost` em dev), tiver credenciais ou estiver fora da allowlist (`motokadriver.com` e subdomínios + `PAINEL_ALLOWED_HOSTS`). Em produção, definir as variáveis de build no projeto da Cloudflare (ver Deploy acima). O link abre na mesma aba; motoboys são orientados a usar o app. Detalhes em `docs/WS-08-plano.md`.
