@@ -7,6 +7,12 @@ import { wrap } from "./SectionHead";
 const linkClass = `rounded text-sm text-lp-ink-2 [overflow-wrap:anywhere] hover:text-lp-ink ${focusRing}`;
 const headClass = "m-0 mb-3.5 text-xs font-semibold uppercase tracking-[0.9px] text-lp-ink-3";
 
+// Selos de startup que a landing antiga mostrava no rodapé.
+const SEALS = [
+  { src: "/landing/selo-prime.png", alt: "Founders Club: membro Prime" },
+  { src: "/landing/selo-verificada.png", alt: "Founders Club: startup verificada" },
+];
+
 export default function LandingFooter() {
   return (
     <footer className="border-t border-[#1A1A1A] pt-14 pb-12">
@@ -49,7 +55,20 @@ export default function LandingFooter() {
             </ul>
           </nav>
         </div>
-        <div className="mt-12 flex flex-wrap justify-between gap-x-6 gap-y-3 border-t border-[#161616] pt-6 text-[13px] text-lp-ink-3">
+        <div className="mt-12 flex flex-wrap items-center gap-8">
+          {SEALS.map((seal) => (
+            <img
+              key={seal.src}
+              src={seal.src}
+              alt={seal.alt}
+              width={966}
+              height={546}
+              loading="lazy"
+              className="block h-20 w-auto lp-md:h-24"
+            />
+          ))}
+        </div>
+        <div className="mt-8 flex flex-wrap justify-between gap-x-6 gap-y-3 border-t border-[#161616] pt-6 text-[13px] text-lp-ink-3">
           <span>© {new Date().getFullYear()} Motoka · CNPJ 57.562.666/0001-50</span>
           <span>motokadriver.com</span>
         </div>
