@@ -11,8 +11,8 @@
   "dependencies": {
     "motion": "^12.23.24",
     "next": "16.3.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
