@@ -67,20 +67,39 @@ páginas sem sessão).
 - As páginas sem framework ficam em `static-pages/` (não `static/`, que o Next copiaria para o
   export). Os assets delas vão para `/_static/<página>/`, fora da reescrita `/<página>/*`.
 
-## Deploy (H-1)
+## Deploy (Cloudflare Workers Builds)
 
-O pipeline (`.github/workflows/ci.yml` e `painel-deploy.yml`) fica pronto, mas os jobs da
-Cloudflare só rodam depois que o usuário configurar:
+O deploy de prod é feito pela integração Git da Cloudflare (Workers Builds), sem GitHub Actions e
+sem token no repositório: a cada push na `main` a Cloudflare builda o `painel/` e roda
+`npx wrangler deploy` (Worker `motoka-painel`, `wrangler.jsonc`). O antigo `painel-deploy.yml`
+(verify + deploy + smoke + rollback por token) foi removido para não haver dois caminhos de deploy.
+O lint, os testes e o E2E continuam no `ci.yml` em todo PR; o smoke de prod e o rollback passam a
+ser manuais (`npx wrangler rollback` ou pelo painel da Cloudflare).
 
-- secrets do repositório: `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) e `CLOUDFLARE_ACCOUNT_ID`;
-- variáveis do repositório: `CLOUDFLARE_ENABLED=true`, `PAINEL_API_URL`, `PAINEL_PREVIEW_API_URL`,
-  `PAINEL_GOOGLE_MAPS_API_KEY` (ver a pendência H-3 abaixo);
-- o Worker `motoka-painel` com o domínio custom `painel.motokadriver.com` e o subdomínio
-  `workers.dev` ligado (o preview por PR depende dele);
-- o environment `painel-prod`, com o usuário como revisor obrigatório.
+Configuração do projeto na Cloudflare (Workers & Pages > motoka-painel > Settings > Build):
 
-Sem isso, `painel-preview` e `deploy` aparecem como *skipped*. O preview por PR não recebe a chave do Google: lá o
-mapa mostra "Mapa não configurado" e a lateral funciona.
+| Campo | Valor |
+|---|---|
+| Diretório raiz | `painel` |
+| Comando de build | `yarn build` |
+| Comando de deploy | `npx wrangler deploy` |
+| Caminhos observados | incluir `painel/*` |
+| Domínio | `painel.motokadriver.com` (Custom Domain do Worker) |
+
+Variáveis de build (prod):
+
+| Variável | Valor | Obrigatória |
+|---|---|---|
+| `NEXT_PUBLIC_APP_ENV` | `prod` | sim (sem ela o build sai como `dev`, sem HSTS e aceitando localhost) |
+| `NEXT_PUBLIC_API_URL` | `https://api.motokadriver.com` (origem, **sem** `/v1`) | sim em prod |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | chave de navegador do Google, restrita por referrer e à Map Tiles API (ver abaixo) | não (vazia: "Mapa não configurado") |
+| `NODE_VERSION` | `22` (`engines.node >=22`) | recomendada |
+
+O job `painel-preview` do `ci.yml` (preview por PR via `wrangler versions upload`) segue
+desligado sem a variável de repositório `CLOUDFLARE_ENABLED=true`; a alternativa sem token são os
+builds de branches que não são a de produção do próprio Workers Builds. O preview não recebe a chave do
+Google: lá o mapa mostra "Mapa não configurado" e a lateral funciona.
+
 
 ## Mapa do Google (H-3, WN-3b)
 
@@ -89,7 +108,7 @@ Pendência humana, no Google Cloud do projeto da API:
 
 - habilitar a **Map Tiles API**;
 - criar uma chave de navegador restrita por referrer (`https://painel.motokadriver.com/*`; `http://localhost:3001/*`
-  numa chave separada de dev) e por API (só Map Tiles), e gravá-la em `PAINEL_GOOGLE_MAPS_API_KEY`;
+  numa chave separada de dev) e por API (só Map Tiles), e gravá-la como variável de build `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` do Worker `motoka-painel`;
 - cobrança por tile: colocar alerta de orçamento. A cota padrão é de 15.000 tiles 2D por dia (e 6.000 por minuto);
   pedir aumento antes de abrir o mapa para muitas lojas e travar um teto que caiba no orçamento. Com a cota estourada
   o mapa mostra "O mapa atingiu o limite de uso por agora";

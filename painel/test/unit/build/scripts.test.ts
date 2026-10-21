@@ -150,7 +150,10 @@ describe("páginas estáticas (porte de invite_static_files_test.dart)", () => {
   it(".well-known copiado literalmente do motoka_app", () => {
     const links = JSON.parse(fs.readFileSync(path.join(root, "public/.well-known/assetlinks.json"), "utf8"));
     expect(links[0].target.package_name).toBe("com.app.motoka_app");
-    expect(links[0].target.sha256_cert_fingerprints[0]).toMatch(/^B8:7B:54:/);
+    // Play App Signing (o que a loja entrega), upload e debug.
+    const prints: string[] = links[0].target.sha256_cert_fingerprints;
+    expect(prints[0]).toMatch(/^87:81:F1:28:/);
+    expect(prints).toEqual(expect.arrayContaining([expect.stringMatching(/^CC:C3:A0:C8:/), expect.stringMatching(/^B8:7B:54:/)]));
     const aasa = JSON.parse(fs.readFileSync(path.join(root, "public/.well-known/apple-app-site-association"), "utf8"));
     expect(aasa.applinks.details[0].appIDs).toEqual(["9D92T4ZS2F.com.app.motoka"]);
     expect(aasa.applinks.details[0].components[0]["/"]).toBe("/convite/*");
