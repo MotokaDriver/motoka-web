@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PAINEL_URL } from "../lib/painel";
 import motokaLogo from "../../public/images/motoka-logo.png";
 
 export default function Footer() {
@@ -28,6 +29,9 @@ export default function Footer() {
           <Link href="/excluir-conta" className="hover:text-primary transition-colors">
             Excluir Conta
           </Link>
+          <a href={PAINEL_URL} className="hover:text-primary transition-colors">
+            Área do estabelecimento
+          </a>
         </div>
       </div>
     </footer>

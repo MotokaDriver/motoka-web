@@ -90,6 +90,7 @@ export default function PedidoClient() {
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("id");
     if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- lê query string só no cliente (export estático); ver comentário acima
       setLoading(false);
       setError("Link inválido: pedido não informado.");
       return;

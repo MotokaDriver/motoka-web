@@ -1,0 +1,17 @@
+// Painel web do estabelecimento: Worker só de assets, sem script (DN-03).
+// O `out/` sai do `yarn build` (export do Next + pós-build), com `_headers` e `_redirects`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "motoka-painel",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./out",
+    // 404 do painel (app/not-found.tsx exportado como out/404.html, DN-23).
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  // Preview por PR (`wrangler versions upload --preview-alias`) depende do subdomínio
+  // workers.dev (N2-4, H-1).
+  "workers_dev": true,
+  "preview_urls": true
+}

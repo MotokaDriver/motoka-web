@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!--
+    Página do convite de equipe (WS-06, D-W6-05/D-W6-15; DN-16 do painel). HTML puro e leve:
+    abre no 3G sem baixar o runtime do Next. Script e estilo em /_static/convite/: tudo sob
+    /convite/* é reescrito para esta página (_redirects), inclusive um .js que exista lá. A meta
+    motoka-api é gravada no pós-build (scripts/postbuild.mjs).
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="referrer" content="no-referrer">
+  <meta name="motoka-api" content="__MOTOKA_API__">
+  <title>Convite de equipe · Motoka</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/_static/convite/convite.css">
+  <script src="/_static/convite/convite.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="brand">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-name">Motoka</span>
+    </header>
+
+    <section id="loading" class="card state" aria-live="polite">
+      <div class="skeleton avatar"></div>
+      <div class="skeleton line wide"></div>
+      <div class="skeleton line"></div>
+    </section>
+
+    <section id="invite" class="state" hidden>
+      <div class="hero">
+        <div id="store-avatar" class="avatar" aria-hidden="true"></div>
+        <p class="eyebrow">Convite para equipe</p>
+        <h1 id="store-title"></h1>
+        <p id="store-address" class="muted"></p>
+      </div>
+
+      <div class="card note">
+        <span class="note-icon" aria-hidden="true">&#9889;</span>
+        <p>Como você veio pelo convite, <strong>não precisa enviar documentos</strong> para trabalhar com esta loja.</p>
+      </div>
+
+      <div id="deal" class="card row" hidden>
+        <span class="muted">Acordo proposto</span>
+        <strong id="deal-text"></strong>
+      </div>
+
+      <div class="card code-card">
+        <p class="label">Código do convite</p>
+        <p id="invite-code" class="code"></p>
+        <button id="copy-code" type="button" class="btn secondary">Copiar código</button>
+        <p id="copy-feedback" class="feedback" aria-live="polite"></p>
+      </div>
+
+      <div class="actions">
+        <a id="open-app" class="btn primary" hidden>Abrir no app</a>
+        <a id="play-store" class="btn secondary" hidden>Baixar no Google Play</a>
+        <a id="app-store" class="btn secondary" hidden>Baixar na App Store</a>
+      </div>
+
+      <ol class="steps">
+        <li>Instale o app <strong>Motoka Driver</strong>.</li>
+        <li>Na tela de entrada, toque em <strong>Tenho um convite</strong>.</li>
+        <li>Cole o código acima e confirme seu celular por SMS.</li>
+      </ol>
+    </section>
+
+    <section id="error" class="card state error" hidden>
+      <h1>Não deu para abrir o convite</h1>
+      <p id="error-text" class="muted"></p>
+      <button id="retry" type="button" class="btn secondary" hidden>Tentar de novo</button>
+    </section>
+
+    <footer class="foot muted">Motoka · entregas com a sua equipe</footer>
+  </main>
+</body>
+</html>

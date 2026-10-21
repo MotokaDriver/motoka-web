@@ -45,7 +45,7 @@ export default function TermosDeUso() {
         3.3 O USUÁRIO concorda que a Motoka Driver poderá utilizar avaliações e feedbacks sobre o serviço prestado pelos motofretistas ou estabelecimentos, de forma pública ou interna, conforme descrito na Política de Privacidade.
       </p>
       <p className="mb-4">
-        3.4 Os USUÁRIOS que se cadastrarem como motoboys (motofretistas) devem obrigatoriamente ter 18 anos completos e possuir autorização legal para conduzir motocicletas, incluindo a Carteira Nacional de Habilitação (CNH) categoria "A" válida. A omissão ou falsidade dessas informações poderá acarretar em bloqueio ou exclusão do cadastro.
+        3.4 Os USUÁRIOS que se cadastrarem como motoboys (motofretistas) devem obrigatoriamente ter 18 anos completos e possuir autorização legal para conduzir motocicletas, incluindo a Carteira Nacional de Habilitação (CNH) categoria &quot;A&quot; válida. A omissão ou falsidade dessas informações poderá acarretar em bloqueio ou exclusão do cadastro.
       </p>
 
       <h2 className="text-2xl font-semibold mb-4 mt-8 text-gray-800">4. OBRIGAÇÕES DA PLATAFORMA</h2>

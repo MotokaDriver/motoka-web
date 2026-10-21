@@ -1,0 +1,5 @@
+# Os arquivos de deploy (_redirects, headers.template) e as páginas estáticas saem em LF em
+# qualquer SO: o Workers lê o _redirects linha a linha.
+* text=auto eol=lf
+*.woff2 binary
+*.png binary

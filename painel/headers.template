@@ -1,0 +1,36 @@
+# Base do out/_headers (scripts/build-headers.mjs). {API}, {TILES}, {UIR} e {HSTS} saem das
+# variáveis de build validadas (DN-14, §6.1). Linhas começando com # não vão para o out/.
+# `! Header` remove o valor herdado de /* (sem isso, dois blocos que casam o mesmo caminho
+# concatenam valores). `/convite/*` já casa `/convite/` (conferido no wrangler dev): uma regra
+# só por página, senão o X-Robots-Tag sai duplicado.
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:{TILES}; font-src 'self'; connect-src 'self' {API} https://viacep.com.br{TILES}; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'{UIR}
+  {HSTS}
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Cache-Control: no-cache
+/_next/static/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/_csp/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/_maplibre/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/convite/*
+  ! Referrer-Policy
+  Referrer-Policy: no-referrer
+  X-Robots-Tag: noindex, nofollow
+/r/*
+  ! Referrer-Policy
+  Referrer-Policy: no-referrer
+  X-Robots-Tag: noindex, nofollow
+/.well-known/*
+  ! Cache-Control
+  Cache-Control: public, max-age=300
+  Content-Type: application/json

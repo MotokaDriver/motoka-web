@@ -8,6 +8,8 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
+    # O painel (painel/) tem deploy próprio (painel-deploy.yml): mexer só nele não republica a landing.
+    paths-ignore: ["painel/**", "docs/**"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -77,6 +79,8 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_PAINEL_URL: ${{ vars.NEXT_PUBLIC_PAINEL_URL }}
+          PAINEL_ALLOWED_HOSTS: ${{ vars.PAINEL_ALLOWED_HOSTS }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

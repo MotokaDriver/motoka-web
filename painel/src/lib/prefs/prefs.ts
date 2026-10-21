@@ -1,0 +1,154 @@
+/**
+ * Preferências de quem usa o painel neste navegador. É o único lugar do código que toca
+ * `localStorage`/`sessionStorage` (regra de lint, DN-13), sempre com try/catch: a leitura pode
+ * falhar em janela privada ou com dados do site bloqueados, e o painel funciona sem ela.
+ * Nada de sessão mora aqui.
+ */
+
+export const SHORTCUTS_KEY = "motoka.panel.shortcuts";
+export const THEME_KEY = "motoka.panel.theme";
+export const ACCEPT_SOUND_KEY = "motoka.panel.accept-sound";
+const RELOAD_MARK_KEY = "motoka.panel.chunk-reload";
+const OAUTH_PENDING_KEY = "motoka.panel.oauth-pending";
+
+export type ThemePreference = "dark" | "light" | "system";
+
+const listeners = new Set<() => void>();
+
+function read(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function write(key: string, value: string): void {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Fica só em memória nesta visita.
+  }
+}
+
+const memory: { shortcuts?: boolean; theme?: ThemePreference; acceptSound?: boolean } = {};
+
+export function subscribePrefs(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function notify(): void {
+  for (const listener of listeners) listener();
+}
+
+/** Ligados por padrão; só um "off" explícito desliga (WCAG 2.1.4). */
+export function getShortcutsEnabled(): boolean {
+  if (memory.shortcuts !== undefined) return memory.shortcuts;
+  return read(SHORTCUTS_KEY) !== "off";
+}
+
+export function setShortcutsEnabled(enabled: boolean): void {
+  memory.shortcuts = enabled;
+  write(SHORTCUTS_KEY, enabled ? "on" : "off");
+  notify();
+}
+
+/** Som quando chega pedido para aceitar: desligado até a pessoa ligar (autoplay e bom senso). */
+/**
+ * Conexão OAuth em andamento (WN-4c): o `state` que o painel mandou ao parceiro, para conferir na volta. Vive em
+ * `sessionStorage` (some ao fechar a aba), por no máximo 10 minutos, e é lido uma vez só. Nunca `localStorage`. O
+ * `code_verifier` do PKCE nem passa pelo navegador: fica no cofre da API.
+ */
+export interface PendingOauth {
+  readonly type: string;
+  readonly state: string;
+}
+
+const OAUTH_TTL_MS = 10 * 60_000;
+
+export function savePendingOauth(pending: PendingOauth): void {
+  try {
+    window.sessionStorage.setItem(OAUTH_PENDING_KEY, JSON.stringify({ ...pending, at: Date.now() }));
+  } catch {
+    // Sem storage: a volta não consegue conferir o state e recusa (a API também confere).
+  }
+}
+
+/** Lê e apaga (uso único). `null` se não há, se venceu ou se está ilegível. */
+export function takePendingOauth(): PendingOauth | null {
+  try {
+    const raw = window.sessionStorage.getItem(OAUTH_PENDING_KEY);
+    window.sessionStorage.removeItem(OAUTH_PENDING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { type?: unknown; state?: unknown; at?: unknown };
+    if (typeof parsed.type !== "string" || typeof parsed.state !== "string" || typeof parsed.at !== "number") return null;
+    if (Date.now() - parsed.at > OAUTH_TTL_MS) return null;
+    return { type: parsed.type, state: parsed.state };
+  } catch {
+    return null;
+  }
+}
+
+export function getAcceptSound(): boolean {
+  if (memory.acceptSound !== undefined) return memory.acceptSound;
+  return read(ACCEPT_SOUND_KEY) === "on";
+}
+
+export function setAcceptSound(enabled: boolean): void {
+  memory.acceptSound = enabled;
+  write(ACCEPT_SOUND_KEY, enabled ? "on" : "off");
+  notify();
+}
+
+export function getThemePreference(): ThemePreference {
+  if (memory.theme) return memory.theme;
+  const stored = read(THEME_KEY);
+  return stored === "light" || stored === "system" ? stored : "dark";
+}
+
+export function setThemePreference(theme: ThemePreference): void {
+  memory.theme = theme;
+  write(THEME_KEY, theme);
+  applyTheme(theme);
+  notify();
+}
+
+/** Mesma regra do `/theme-init.js`, que aplica o tema antes da primeira pintura. */
+export function resolveTheme(theme: ThemePreference): "dark" | "light" {
+  if (theme !== "system") return theme;
+  try {
+    return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  } catch {
+    return "dark";
+  }
+}
+
+export function applyTheme(theme: ThemePreference): void {
+  document.documentElement.dataset.theme = resolveTheme(theme);
+}
+
+/** Marca da recarga automática depois de um deploy novo (DN-24): uma por aba, nunca em loop. */
+export function takeReloadMark(): boolean {
+  try {
+    if (window.sessionStorage.getItem(RELOAD_MARK_KEY)) return false;
+    window.sessionStorage.setItem(RELOAD_MARK_KEY, String(Date.now()));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearReloadMark(): void {
+  try {
+    window.sessionStorage.removeItem(RELOAD_MARK_KEY);
+  } catch {
+    // Sem storage não há marca.
+  }
+}
+
+/** Só para testes. */
+export function resetPrefsMemory(): void {
+  delete memory.shortcuts;
+  delete memory.theme;
+}
