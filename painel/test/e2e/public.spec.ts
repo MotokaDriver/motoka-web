@@ -9,7 +9,8 @@ import { API } from "./mockApi";
 const PROD = process.env.E2E_VARIANT === "prod";
 const API_ORIGIN = process.env.E2E_API_ORIGIN ?? (PROD ? "https://api.motokadriver.com" : API);
 
-// Hosts do estilo do mapa no build do E2E (NEXT_PUBLIC_MAP_STYLE_URL na API mockada); prod sem estilo não tem.
+// Origem dos tiles do Google no build do E2E (NEXT_PUBLIC_GOOGLE_TILES_URL na API mockada, em img-src e connect-src);
+// o build de prod do CI vai sem chave e não tem.
 const TILES = process.env.E2E_TILES ?? (PROD ? "" : ` ${API}`);
 
 const CSP =

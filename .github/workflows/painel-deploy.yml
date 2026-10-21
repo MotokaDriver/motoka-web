@@ -29,6 +29,9 @@ jobs:
     env:
       NEXT_PUBLIC_APP_ENV: e2e
       NEXT_PUBLIC_API_URL: http://localhost:8790
+      # Mesmo build do E2E do ci.yml: tiles do Google de mentira no mock (WN-3b).
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: e2e-fake-key-0000000000
+      NEXT_PUBLIC_GOOGLE_TILES_URL: http://localhost:8790
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -76,7 +79,9 @@ jobs:
         env:
           NEXT_PUBLIC_APP_ENV: prod
           NEXT_PUBLIC_API_URL: ${{ vars.PAINEL_API_URL }}
-          NEXT_PUBLIC_MAP_STYLE_URL: ${{ vars.PAINEL_MAP_STYLE_URL }}
+          # Chave de navegador do Google, restrita por referrer e à Map Tiles API (WN-3b, D-W3b-02). Os tiles vêm de
+          # https://tile.googleapis.com (fixo em prod).
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ vars.PAINEL_GOOGLE_MAPS_API_KEY }}
         run: yarn build
       - name: Há versão publicada para um rollback?
         id: previous

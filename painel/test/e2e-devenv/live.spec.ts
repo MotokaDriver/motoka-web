@@ -4,9 +4,11 @@ import { API, DRIVER_NAME, STORE, cancelDeliveryApi, createManualDelivery, ensur
 /**
  * "Mapa ao vivo" e "Acompanhar pedido" contra a API REAL do dev-env (API em :8000, painel na 3001): o
  * motoboy do seed em turno manda pontos (T1), o painel os vê pelo stream L2, e o link do cliente (P1/P2)
- * acompanha um pedido até o cancelamento. O build precisa de `NEXT_PUBLIC_API_URL=http://localhost:8000`,
- * `NEXT_PUBLIC_APP_ENV=e2e` e `NEXT_PUBLIC_MAP_STYLE_URL` apontando para um estilo local (ver README).
+ * acompanha um pedido até o cancelamento. O build precisa de `NEXT_PUBLIC_API_URL=http://localhost:8000` e
+ * `NEXT_PUBLIC_APP_ENV=e2e`. O mapa depende de `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (WN-3b), no build e no shell do teste:
+ * sem ela, espera "Mapa não configurado" e os cartões; com a chave de dev (rede até o Google), espera os markers.
  */
+const MAP_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 test("mapa ao vivo: o motoboy em turno aparece e a posição chega pelo stream", async ({ page, request, guard }) => {
   guard.expectResponse(`${API}/v1/web/auth/refresh`, 401);
   expect(await ensureDriverInTeam(request, null), "o motoboy do painel na equipe").toBe(true);
@@ -23,7 +25,11 @@ test("mapa ao vivo: o motoboy em turno aparece e a posição chega pelo stream",
   const card = side.getByRole("button", { name: new RegExp(`^${DRIVER_NAME}, `)});
   await expect(card).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: /^Ao vivo$/ })).toBeVisible({ timeout: 20_000 }); // stream aberto e com bytes
-  await expect(page.locator(".maplibregl-marker").filter({ hasText: DRIVER_NAME.split(" ").map((w) => w[0]).filter((_, i, a) => i === 0 || i === a.length - 1).join("") })).toBeVisible();
+  if (MAP_KEY) {
+    await expect(page.locator(".maplibregl-marker").filter({ hasText: DRIVER_NAME.split(" ").map((w) => w[0]).filter((_, i, a) => i === 0 || i === a.length - 1).join("") })).toBeVisible();
+  } else {
+    await expect(page.getByText("Mapa não configurado")).toBeVisible();
+  }
 
   // Um ponto novo chega pelo stream: o "há N s" volta a ser pequeno.
   await reportPosition(request, -25.438, -49.271);

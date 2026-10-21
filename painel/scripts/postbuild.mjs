@@ -8,9 +8,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveBuildEnv } from "./build-env.mjs";
+import { resolveBuildEnv, tileOriginsFor } from "./build-env.mjs";
 import { renderHeaders } from "./build-headers.mjs";
-import { copyMaplibreWorker, loadTileOrigins, parseExtraOrigins } from "./map-assets.mjs";
+import { copyMaplibreWorker } from "./map-assets.mjs";
 import { copyStaticPages } from "./copy-static.mjs";
 import { externalizeOut } from "./csp-externalize.mjs";
 import { flattenSegments } from "./flatten-segments.mjs";
@@ -28,9 +28,9 @@ const env = resolveBuildEnv(process.env);
 const csp = externalizeOut(outDir);
 const segments = flattenSegments(outDir);
 copyStaticPages(path.join(root, "static-pages"), outDir, `${env.apiUrl}/v1`);
-// Mapa (WN-3): worker no mesmo site e hosts do estilo na CSP (tiles, glyphs, sprite).
+// Mapa (WN-3, WN-3b): worker no mesmo site; a origem dos tiles do Google entra na CSP só com chave (img-src e connect-src).
 const mapVersion = copyMaplibreWorker(root, outDir);
-const tileOrigins = [...new Set([...(env.mapStyleUrl ? await loadTileOrigins(env.mapStyleUrl) : []), ...parseExtraOrigins(process.env.MAP_EXTRA_ORIGINS)])].sort();
+const tileOrigins = tileOriginsFor(env);
 fs.writeFileSync(
   path.join(outDir, "_headers"),
   renderHeaders(fs.readFileSync(path.join(root, "headers.template"), "utf8"), {
@@ -45,5 +45,5 @@ const checked = verifyOut(outDir);
 console.log(
   `pós-build (${env.appEnv}): ${csp.scripts} scripts inline externalizados em ${csp.pages} páginas; ` +
     `${segments} payloads de segmento; ${checked.html} HTML verificados; API ${env.apiUrl}; MapLibre ${mapVersion}` +
-    `${tileOrigins.length ? `; tiles ${tileOrigins.join(", ")}` : "; sem estilo de mapa"}.`,
+    `${tileOrigins.length ? `; tiles ${tileOrigins.join(", ")}` : "; sem chave do mapa"}.`,
 );

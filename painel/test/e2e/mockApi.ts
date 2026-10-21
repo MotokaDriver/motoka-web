@@ -27,6 +27,9 @@ export const STORES = {
 export type StoreDoc = keyof typeof STORES;
 
 const PASSWORD = "NovaSenha@1";
+/** A chave falsa do build do E2E (ci.yml) e um tile PNG 1×1. */
+export const GOOGLE_KEY = "e2e-fake-key-0000000000";
+const PNG_1X1 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
 
 export interface Interval {
   readonly start: number;
@@ -73,6 +76,12 @@ export class MockApi {
   liveStreams = 0;
   /** Quando o motoboy do mapa mandou o último ponto no snapshot (ms atrás). */
   livePositionAgeMs = 5000;
+  /**
+   * Map Tiles API do Google de mentira (WN-3b): pedidos por endpoint. `sessionStatus` força a resposta do
+   * createSession; `tileStatus` a de todo tile; `refuseSessions` são sessões (`sessao-e2e`, `sessao-e2e-2`, ...) cujo
+   * tile volta 403, como sessão vencida.
+   */
+  googleTiles = { sessions: 0, tiles: 0, viewports: 0, sessionStatus: null as number | null, tileStatus: null as number | null, refuseSessions: new Set<string>(), copyright: "Dados do mapa ©2026 Google" };
 
   liveSnapshot() {
     const now = Date.now();
@@ -142,6 +151,7 @@ export class MockApi {
     this.streamSilent = false;
     this.livePositionAgeMs = 5000;
     this.liveStreams = 0;
+    this.googleTiles = { sessions: 0, tiles: 0, viewports: 0, sessionStatus: null as number | null, tileStatus: null as number | null, refuseSessions: new Set<string>(), copyright: "Dados do mapa ©2026 Google" };
     this.team = new MockTeam();
     this.deliveries = new MockDeliveries();
     this.settlements = new MockSettlements();
@@ -187,11 +197,57 @@ export class MockApi {
     const auth = path.startsWith("/web/auth/");
     const publicInvite = path.startsWith("/teams/invites/");
     const publicDelivery = path.startsWith("/public/deliveries/");
-    if (path === "/style.json") {
-      const headers = { "Content-Type": "application/json", ...(origin === ORIGIN ? { "Access-Control-Allow-Origin": ORIGIN } : {}) };
-      res.writeHead(200, headers);
-      res.end(JSON.stringify({ version: 8, name: "vazio", sources: {}, layers: [{ id: "fundo", type: "background", paint: { "background-color": "#161a22" } }] }));
-      return;
+    // Map Tiles API do Google (WN-3b): o build do E2E aponta NEXT_PUBLIC_GOOGLE_TILES_URL para cá. CORS como o do
+    // Google (a origem do painel volta no ACAO), sem credenciais.
+    // Caminhos exatos do Google, sem tirar o /v1: um pedido em /v1/tile/v1/viewport ou em /createSession não casa.
+    const google = url.pathname;
+    if (google === "/v1/createSession" || google.startsWith("/v1/2dtiles/") || google === "/tile/v1/viewport") {
+      const tileCors = { ...(origin === ORIGIN ? { "Access-Control-Allow-Origin": ORIGIN } : {}), Vary: "Origin" };
+      if (req.method === "OPTIONS") {
+        res.writeHead(200, { ...tileCors, "Access-Control-Allow-Methods": "GET, POST", "Access-Control-Allow-Headers": "content-type" });
+        return void res.end();
+      }
+      const reply = (status: number, body: unknown) => {
+        res.writeHead(status, { "Content-Type": "application/json", ...tileCors });
+        res.end(JSON.stringify(body));
+      };
+      if (url.searchParams.get("key") !== GOOGLE_KEY) return reply(403, { error: { code: 403, message: "API key not valid", status: "PERMISSION_DENIED" } });
+      if (google === "/v1/createSession") {
+        this.googleTiles.sessions += 1;
+        if (this.googleTiles.sessionStatus) return reply(this.googleTiles.sessionStatus, { error: { code: this.googleTiles.sessionStatus, message: "forced", status: "FORCED" } });
+        // Confere o corpo como o Google faria com um campo faltando: 400.
+        let body: Record<string, unknown> = {};
+        try {
+          body = JSON.parse(await new Promise<string>((resolve) => {
+            let data = "";
+            req.on("data", (chunk) => (data += chunk));
+            req.on("end", () => resolve(data));
+          })) as Record<string, unknown>;
+        } catch {
+          return reply(400, { error: { code: 400, message: "Invalid JSON", status: "INVALID_ARGUMENT" } });
+        }
+        const valid =
+          req.method === "POST" &&
+          body.mapType === "roadmap" &&
+          body.language === "pt-BR" &&
+          body.region === "BR" &&
+          body.scale === "scaleFactor2x" &&
+          body.highDpi === true &&
+          Array.isArray(body.styles) &&
+          body.styles.length > 0;
+        if (!valid) return reply(400, { error: { code: 400, message: "Invalid session request", status: "INVALID_ARGUMENT" } });
+        return reply(200, { session: this.googleTiles.sessions === 1 ? "sessao-e2e" : `sessao-e2e-${this.googleTiles.sessions}`, expiry: String(Math.floor(Date.now() / 1000) + 14 * 86_400), tileWidth: 512, tileHeight: 512, imageFormat: "png" });
+      }
+      if (!/^sessao-e2e(-\d+)?$/.test(url.searchParams.get("session") ?? "")) return reply(400, { error: { code: 400, message: "Invalid session", status: "INVALID_ARGUMENT" } });
+      if (google === "/tile/v1/viewport") {
+        this.googleTiles.viewports += 1;
+        return reply(200, { copyright: this.googleTiles.copyright, maxZoomRects: [] });
+      }
+      this.googleTiles.tiles += 1;
+      if (this.googleTiles.tileStatus) return reply(this.googleTiles.tileStatus, { error: { code: this.googleTiles.tileStatus, message: "forced", status: "FORCED" } });
+      if (this.googleTiles.refuseSessions.has(url.searchParams.get("session") ?? "")) return reply(403, { error: { code: 403, message: "Session expired", status: "PERMISSION_DENIED" } });
+      res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "private, max-age=86400", ...tileCors });
+      return void res.end(PNG_1X1);
     }
     // Portal do parceiro (Cardápio Web) de mentira: devolve o navegador ao painel com o code e o mesmo state.
     if (path === "/mock-portal") {
