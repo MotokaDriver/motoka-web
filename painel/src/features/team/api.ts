@@ -7,6 +7,7 @@ import {
   parseInviteLink,
   parseInvites,
   parseMember,
+  parseMembers,
   parseOnShift,
   parseSchedule,
   type CreatedShifts,
@@ -15,6 +16,7 @@ import {
   type InviteCreated,
   type InviteLink,
   type Member,
+  type MemberStatus,
   type OnShiftDriver,
   type Schedule,
 } from "./model";
@@ -99,3 +101,20 @@ export const createShifts = async (input: CreateShiftsInput): Promise<CreatedShi
 export const deleteShift = async (seriesId: string): Promise<void> => {
   await apiFetch<unknown>(`${BASE}/shifts/${path(seriesId)}`, { method: "DELETE" });
 };
+
+/** E1 filtrado por status (ex.: `pending`, os pedidos para entrar pelo link). */
+export const fetchMembers = async (status: MemberStatus, signal?: AbortSignal): Promise<Member[]> =>
+  parseMembers(await apiFetch<unknown>(`${BASE}/members`, { query: { status }, signal }));
+
+/** Aprova um pedido para entrar. `deal` `null`: sem corpo, fica o combinado que o vínculo já tem. */
+export const approveMember = async (memberId: string, deal: Deal | null): Promise<Member> =>
+  parseMember(
+    await apiFetch<unknown>(`${BASE}/members/${path(memberId)}/approve`, {
+      method: "POST",
+      ...(deal ? { body: { deal: dealBody(deal) } } : {}),
+    }),
+  );
+
+/** Recusa um pedido para entrar (o vínculo vira `removed`). */
+export const rejectMember = async (memberId: string): Promise<Member> =>
+  parseMember(await apiFetch<unknown>(`${BASE}/members/${path(memberId)}/reject`, { method: "POST" }));

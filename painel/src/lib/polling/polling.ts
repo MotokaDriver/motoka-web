@@ -7,6 +7,7 @@ export const POLLING = {
   delivery: 10_000,
   onShift: 30_000,
   teamSchedule: 60_000,
+  teamJoinRequests: 60_000,
   badge: 30_000,
 } as const;
 

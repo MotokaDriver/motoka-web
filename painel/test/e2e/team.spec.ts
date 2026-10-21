@@ -54,3 +54,39 @@ test.describe("Minha equipe (API mockada)", () => {
     await expect(page.getByText("Esta semana", { exact: true })).toBeVisible();
   });
 });
+
+test.describe("Pedidos para entrar (API mockada)", () => {
+  test("aprova com combinado e recusa com confirmação; a aba mostra o contador", async ({ page, guard, api }) => {
+    guard.expectResponse(REFRESH, 401);
+    api.team.addJoinRequest("Paulo Souza");
+    const rejected = api.team.addJoinRequest("Caio Mendes");
+
+    await page.goto("/entrar/");
+    await page.getByLabel("CPF/CNPJ ou e-mail").fill("11222333000181");
+    await page.getByLabel("Senha", { exact: true }).fill("NovaSenha@1");
+    await page.getByLabel("Senha", { exact: true }).press("Enter");
+    await expect(page).toHaveURL(/\/ao-vivo\/$/);
+    await openTeam(page);
+
+    const section = page.getByRole("region", { name: "Pedidos para entrar (2)" });
+    await expect(section).toBeVisible();
+    await expect(section.getByText("(41) 98888-7766").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Escala, 2 pedidos para entrar" })).toBeVisible();
+
+    await section.getByRole("button", { name: "Aprovar o pedido de Paulo Souza" }).click();
+    const approve = page.getByRole("dialog", { name: "Aprovar Paulo Souza" });
+    await approve.getByLabel("Por entrega", { exact: true }).fill("700");
+    await approve.getByRole("button", { name: "Aprovar", exact: true }).click();
+    await expect(page.getByText("Paulo Souza entrou na equipe.")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Pedidos para entrar (1)" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Recusar o pedido de Caio Mendes" }).click();
+    await page.getByRole("dialog", { name: "Recusar o pedido de Caio Mendes?" }).getByRole("button", { name: "Recusar", exact: true }).click();
+    await expect(page.getByText("Pedido de Caio Mendes recusado.")).toBeVisible();
+    await expect(page.getByRole("region", { name: /^Pedidos para entrar/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Escala", exact: true })).toBeVisible();
+
+    expect(api.team.calls).toEqual(expect.arrayContaining(["GET members", expect.stringMatching(/^POST members\/.+\/approve$/), `POST members/${rejected}/reject`]));
+    expect(api.team.joinRequests[0]?.deal).toMatchObject({ pay_type: "per_delivery", per_delivery_rate: "7.00" });
+  });
+});
