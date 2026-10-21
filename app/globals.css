@@ -18,6 +18,63 @@
   --color-primary: var(--primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Inline: a variável da Inter (next/font) fica no wrapper da landing, não no :root. */
+  --font-lp: var(--font-inter-sans), system-ui, sans-serif;
+}
+
+/* Landing (app/page.tsx): tema escuro próprio, independente do esquema do sistema. */
+@theme {
+  --color-lp-bg: #0A0A0A;
+  --color-lp-bg-2: #070707;
+  --color-lp-panel: #0C0F15;
+  --color-lp-ink: #FAFAFA;
+  --color-lp-ink-2: #B4B4B4;
+  --color-lp-ink-3: #8C8C8C;
+  --color-lp-line: #262626;
+  --color-lp-line-2: #333333;
+  --color-lp-blue: #4A6FC5;
+  --color-lp-blue-hover: #5A7DD0;
+  --color-lp-blue-2: #6B8CD9;
+  --color-lp-blue-ink: #9DB4EA;
+  --breakpoint-lp-md: 861px;
+  --breakpoint-lp-lg: 1081px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.font-lp) {
+    scroll-behavior: smooth;
+  }
+  .lp-swap {
+    animation: lp-swap-in 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .js-reveal [data-reveal] {
+    transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .js-reveal [data-reveal]:not(.in) {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes lp-swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lp-noscrollbar {
+  scrollbar-width: none;
+}
+.lp-noscrollbar::-webkit-scrollbar {
+  display: none;
+}
+.lp-faq summary::-webkit-details-marker {
+  display: none;
 }
 
 @media (prefers-color-scheme: dark) {
