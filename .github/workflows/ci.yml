@@ -58,19 +58,23 @@ jobs:
         run: |
           find out -type f | sed -E 's#_next/static/[^/]+/(_buildManifest|_ssgManifest|_clientMiddlewareManifest)#_next/static/BUILDID/\1#' | sort > "$RUNNER_TEMP/files-pr.txt"
           find out -name '*.css' -printf '%s\n' | awk '{s+=$1} END {print s+0}' > "$RUNNER_TEMP/css-pr.txt"
-      - name: Build da landing no main (base de comparação)
+      # Antes a checagem comparava com o CSS do main e reprovava qualquer crescimento, o que barrava
+      # classes novas legítimas da landing (o botão Entrar). Agora o invariante é testado direto:
+      # a landing é rebuildada sem painel/, docs/, .github/ e README.md e o CSS tem de sair
+      # idêntico. Se o Tailwind voltar a varrer algum deles, o tamanho muda e o job falha.
+      - name: O CSS da landing não depende do painel (Tailwind sem varrer o painel)
         run: |
-          git worktree add "$RUNNER_TEMP/base" origin/main
-          cd "$RUNNER_TEMP/base"
-          yarn install --frozen-lockfile
+          pr=$(cat "$RUNNER_TEMP/css-pr.txt")
+          fora="$RUNNER_TEMP/fora"
+          mkdir -p "$fora"
+          mv painel docs .github README.md "$fora/"
+          rm -rf .next out
           npx next build
-          find out -name '*.css' -printf '%s\n' | awk '{s+=$1} END {print s+0}' > "$RUNNER_TEMP/css-main.txt"
-      - name: O CSS da landing não cresce (Tailwind sem varrer o painel)
-        run: |
-          main=$(cat "$RUNNER_TEMP/css-main.txt"); pr=$(cat "$RUNNER_TEMP/css-pr.txt")
-          echo "CSS da landing: main=${main} bytes, PR=${pr} bytes"
-          if [ "$pr" -gt "$main" ]; then
-            echo "::error::O CSS da landing cresceu (${main} -> ${pr}). O Tailwind está varrendo o painel?"
+          sem=$(find out -name '*.css' -printf '%s\n' | awk '{s+=$1} END {print s+0}')
+          mv "$fora/painel" "$fora/docs" "$fora/.github" "$fora/README.md" .
+          echo "CSS da landing: repo inteiro=${pr} bytes, sem painel/docs/.github/README=${sem} bytes"
+          if [ "$pr" != "$sem" ]; then
+            echo "::error::O CSS da landing muda com painel/docs no repo (${sem} -> ${pr}). O Tailwind está varrendo fora da landing?"
             exit 1
           fi
 
