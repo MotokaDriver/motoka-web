@@ -23,7 +23,9 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: env.apiUrl,
     NEXT_PUBLIC_APP_ENV: env.appEnv,
-    NEXT_PUBLIC_MAP_STYLE_URL: env.mapStyleUrl,
+    // Mapa do Google (WN-3b): chave de navegador e base dos tiles (fixa em prod).
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: env.googleMapsKey,
+    NEXT_PUBLIC_GOOGLE_TILES_URL: env.googleTilesUrl,
     // O worker do MapLibre sai em /_maplibre/<versão>/ (pós-build); a versão vem do pacote instalado.
     NEXT_PUBLIC_MAPLIBRE_VERSION: maplibreVersion(__dirname),
   },

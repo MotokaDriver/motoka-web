@@ -15,7 +15,7 @@ yarn serve        # wrangler dev na 8787, servindo out/ com os headers reais
 yarn lint
 yarn typecheck    # app + páginas estáticas (checkJs)
 yarn test         # Vitest
-yarn e2e          # Playwright contra o wrangler dev, API mockada na 8790 (build com NEXT_PUBLIC_MAP_STYLE_URL=http://localhost:8790/style.json)
+yarn e2e          # Playwright contra o wrangler dev, API mockada na 8790 (build com NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=e2e-fake-key-0000000000 e NEXT_PUBLIC_GOOGLE_TILES_URL=http://localhost:8790)
 yarn size:login   # JS do login (teto 220 KiB gz) e da página /r/ (teto 30 KiB gz); rode depois do build
 yarn check-error-codes   # códigos da API (../../motoka-api) sem texto no catálogo
 ```
@@ -26,8 +26,8 @@ Variáveis de build (todas públicas, validadas no `next.config.ts`; nenhuma é 
 |---|---|
 | `NEXT_PUBLIC_APP_ENV` | `dev` (padrão), `e2e`, `preview` ou `prod`. Só `prod` emite HSTS e `upgrade-insecure-requests` |
 | `NEXT_PUBLIC_API_URL` | origem da API, sem `/v1`. Padrão `http://localhost:8000` fora de prod; obrigatória e https em `*.motokadriver.com` em prod |
-| `MAP_EXTRA_ORIGINS` | opcional, só no build: origens https extras para a CSP do mapa (lista separada por vírgula, sem caminho), para hosts que o build não enxerga. O pós-build já soma os hosts do estilo (tiles, glyphs, sprite) e os `tiles` de cada TileJSON |
-| `NEXT_PUBLIC_MAP_STYLE_URL` | estilo do mapa (WN-3), opcional. Sem ele, o mapa mostra "Mapa não configurado" e a lateral funciona. https sempre; `http://localhost` só fora de prod (E2E). O pós-build baixa o estilo e põe os hosts de tiles, glyphs e sprite na CSP |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | chave de navegador do Google Maps Platform para a Map Tiles API (WN-3b), opcional. Pública por natureza: o controle é a restrição por referrer e por API no console. Formato `[A-Za-z0-9_-]{20,80}`. Sem ela, o mapa mostra "Mapa não configurado", a lateral funciona e a CSP sai sem tiles. Com ela, a origem dos tiles entra em `img-src` e `connect-src` |
+| `NEXT_PUBLIC_GOOGLE_TILES_URL` | base dos tiles, só a origem. Em prod é sempre `https://tile.googleapis.com` (outro valor falha o build); fora de prod aceita `http://localhost` (o E2E usa o mock na 8790) |
 
 ## Portas de dev (DN-18)
 
@@ -43,6 +43,10 @@ Para o E2E contra o dev-env real (`D:\dev\motoka\dev-env`, API na 8000), o `out/
 NEXT_PUBLIC_APP_ENV=e2e NEXT_PUBLIC_API_URL=http://localhost:8000 yarn build
 npx playwright test -c playwright.devenv.config.ts
 ```
+
+Sem `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` no build (e no shell do teste), o `test/e2e-devenv/live.spec.ts` espera
+"Mapa não configurado" e os cartões. Com a chave de dev (restrita a `http://localhost:3001/*`, precisa de rede até o
+Google), ele espera os markers no mapa.
 
 Contas do seed: estabelecimento `11222333000181` / `NovaSenha@1`, motoboy `52998224725` / `Teste@123`.
 
@@ -88,11 +92,27 @@ Variáveis de build (prod):
 |---|---|---|
 | `NEXT_PUBLIC_APP_ENV` | `prod` | sim (sem ela o build sai como `dev`, sem HSTS e aceitando localhost) |
 | `NEXT_PUBLIC_API_URL` | `https://api.motokadriver.com` (origem, **sem** `/v1`) | sim em prod |
-| `NEXT_PUBLIC_MAP_STYLE_URL` | URL https do estilo do mapa | não (vazio: "Mapa não configurado") |
-| `MAP_EXTRA_ORIGINS` | origens https extras para a CSP do mapa | não |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | chave de navegador do Google, restrita por referrer e à Map Tiles API (ver abaixo) | não (vazia: "Mapa não configurado") |
 | `NODE_VERSION` | `22` (`engines.node >=22`) | recomendada |
 
 O job `painel-preview` do `ci.yml` (preview por PR via `wrangler versions upload`) segue
 desligado sem a variável de repositório `CLOUDFLARE_ENABLED=true`; a alternativa sem token são os
-builds de branches que não são a de produção do próprio Workers Builds.
+builds de branches que não são a de produção do próprio Workers Builds. O preview não recebe a chave do
+Google: lá o mapa mostra "Mapa não configurado" e a lateral funciona.
 
+
+## Mapa do Google (H-3, WN-3b)
+
+Os tiles vêm da Map Tiles API do Google (raster 2D dentro do MapLibre; plano em `docs/painel/WN-3b-mapa-google-plano.md`).
+Pendência humana, no Google Cloud do projeto da API:
+
+- habilitar a **Map Tiles API**;
+- criar uma chave de navegador restrita por referrer (`https://painel.motokadriver.com/*`; `http://localhost:3001/*`
+  numa chave separada de dev) e por API (só Map Tiles), e gravá-la como variável de build `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` do Worker `motoka-painel`;
+- cobrança por tile: colocar alerta de orçamento. A cota padrão é de 15.000 tiles 2D por dia (e 6.000 por minuto);
+  pedir aumento antes de abrir o mapa para muitas lojas e travar um teto que caiba no orçamento. Com a cota estourada
+  o mapa mostra "O mapa atingiu o limite de uso por agora";
+- texto de privacidade: o navegador do lojista faz requisições ao Google;
+- antes do merge, conferir com `curl` e `Referer: https://painel.motokadriver.com/`: `createSession` 200 com
+  `tileWidth` 512, `2dtiles` 200 `image/png` com ACAO, `viewport` com `copyright` não vazio, e o status de sessão
+  vencida (o painel renova a sessão em 401/403 de tile).

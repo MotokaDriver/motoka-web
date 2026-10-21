@@ -89,8 +89,10 @@ jobs:
       # Build do E2E: API mockada pelo servidor de teste na 8790 (test/e2e/mockApi.ts).
       NEXT_PUBLIC_APP_ENV: e2e
       NEXT_PUBLIC_API_URL: http://localhost:8790
-      # Estilo do mapa do mock (WN-3): o E2E espera o host dele na CSP e o mapa carregando.
-      NEXT_PUBLIC_MAP_STYLE_URL: http://localhost:8790/style.json
+      # Tiles do Google de mentira no mock (WN-3b): chave falsa no formato aceito e a base local; o E2E espera a
+      # origem na CSP, a sessão, os tiles e a atribuição.
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: e2e-fake-key-0000000000
+      NEXT_PUBLIC_GOOGLE_TILES_URL: http://localhost:8790
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -118,9 +120,9 @@ jobs:
         env:
           NEXT_PUBLIC_APP_ENV: prod
           NEXT_PUBLIC_API_URL: https://api.motokadriver.com
-          # Sem estilo do mapa: o job define o do mock (http://localhost), que o build de prod
-          # recusa, e o E2E de prod espera a CSP sem host de tiles.
-          NEXT_PUBLIC_MAP_STYLE_URL: ""
+          # Sem chave e com a base padrão: em prod a base local não passa no build-env, e a CSP sai sem tiles.
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ""
+          NEXT_PUBLIC_GOOGLE_TILES_URL: ""
           E2E_VARIANT: prod
         run: |
           yarn build
