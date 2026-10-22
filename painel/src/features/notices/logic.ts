@@ -36,6 +36,10 @@ export function lookOf(type: string): Look {
   switch (type) {
     case "order_cancelled":
       return { icon: "event_busy", tone: "error" };
+    case "order_payment_expired":
+      return { icon: "hourglass_empty", tone: "warning" };
+    case "order_refunded":
+      return { icon: "u_turn_left", tone: "info" };
     case "order_expired_no_drivers":
       return { icon: "person_off", tone: "error" };
     case "negotiation_rejected":

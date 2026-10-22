@@ -13,7 +13,7 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   service_started: "Em andamento",
   finished: "Finalizado",
   cancelled: "Cancelado",
-  unknown: "Pendente",
+  unknown: "Status indisponível",
 };
 
 export const STATUS_TONE: Record<OrderStatus, Tone> = {
@@ -131,7 +131,7 @@ export function cancelRule(order: Order, now: Date): CancelRule {
 export const CANCEL_NOTICE =
   "Em caso de cancelamento, faça com antecedência de 3hrs. Cancelamentos após esse prazo com motoboy confirmado não terão reembolso.";
 
-export const REFUND_NOTE = "A taxa de serviço já paga não é devolvida automaticamente: depois de cancelar, fale com o suporte para pedir o estorno.";
+export const REFUND_NOTE = "Este serviço será cancelado e o valor pago será estornado na mesma forma de pagamento. Essa ação não pode ser desfeita.";
 
 const REASON_LABEL: Record<string, string> = {
   expired_no_drivers: "Nenhum motoboy aceitou o serviço até o horário de início.",
@@ -140,6 +140,10 @@ const REASON_LABEL: Record<string, string> = {
   "system:auto_start_partial": "Iniciado automaticamente com a equipe incompleta.",
   "system:auto_finish": "Finalizado automaticamente no horário programado.",
   "driver removed": "Um motoboy foi removido do serviço.",
+  unpaid_before_start: "O pagamento não foi concluído até o horário de início.",
+  "system:unpaid_before_start": "O pagamento não foi concluído até o horário de início.",
+  paid_after_start: "O pagamento foi confirmado depois do horário de início. O valor será estornado.",
+  "system:paid_after_start": "O pagamento foi confirmado depois do horário de início. O valor será estornado.",
 };
 
 const SLUG = /^[a-z0-9]+([_.:-][a-z0-9]+)*$/;
@@ -209,9 +213,10 @@ export const PAYMENT_STATUS_LABEL: Record<Payment["status"], string> = {
   paid: "Pago",
   failed: "Falhou",
   cancelled: "Cancelado",
-  refunded: "Reembolsado",
+  refunded: "Estornado",
   expired: "Expirado",
-  unknown: "Pendente",
+  refund_pending: "Estorno em andamento",
+  unknown: "Status indisponível",
 };
 
 const GATEWAY_FAILURE: Record<string, string> = {
@@ -231,6 +236,7 @@ export function paymentFailure(payment: Payment): string {
   if (payment.status === "expired") return "O prazo deste pagamento expirou. Gere uma nova cobrança para confirmar o pedido.";
   if (payment.status === "cancelled") return "A cobrança foi cancelada. Você pode tentar novamente.";
   if (payment.status === "refunded") return GATEWAY_FAILURE.refunded ?? "";
+  if (payment.status === "refund_pending") return "O pedido foi cancelado e o valor pago está sendo estornado.";
   return "O pagamento não foi concluído. Tente novamente.";
 }
 
@@ -245,7 +251,8 @@ export function countdown(expiresAt: string | null, now: number): string | null 
   return `${String(minutes).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-export const PAYMENT_TERMINAL_FAILURE: ReadonlySet<Payment["status"]> = new Set(["failed", "cancelled", "refunded", "expired"]);
+// `unknown`: status que este build não conhece; tratado como cobrança morta, nunca como pendente (o app faz igual).
+export const PAYMENT_TERMINAL_FAILURE: ReadonlySet<Payment["status"]> = new Set(["failed", "cancelled", "refunded", "expired", "refund_pending", "unknown"]);
 
 export const CARD_TYPE_LABEL = (type: string): string => (type.toLowerCase() === "debit" ? "Débito" : "Crédito");
 

@@ -188,8 +188,8 @@ describe("Contratar motoboys", () => {
     const panel = await screen.findByRole("complementary", { name: "Detalhe do serviço" });
     await user.click(await within(panel).findByRole("button", { name: "Cancelar serviço" }));
     const cancelDialog = await screen.findByRole("dialog", { name: "Cancelar serviço" });
-    expect(cancelDialog).toHaveTextContent("não é devolvida automaticamente");
-    expect(cancelDialog).toHaveTextContent("fale com o suporte");
+    expect(cancelDialog).toHaveTextContent("o valor pago será estornado");
+    expect(cancelDialog).not.toHaveTextContent("fale com o suporte");
     await user.click(within(cancelDialog).getByRole("button", { name: "Cancelar serviço" }));
     await waitFor(() => expect(api.cancelOrder).toHaveBeenCalledWith(ID));
   });
