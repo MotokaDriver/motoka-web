@@ -7,6 +7,7 @@ import { UNKNOWN_MESSAGE } from "@/lib/errors/messages";
 import { POLLING, pollingInterval } from "@/lib/polling/polling";
 import { useToast } from "@/ui/Toast";
 import { fetchCards, fetchNegotiations, fetchOrder, fetchOrderDrivers, fetchOrders, fetchPayment } from "./api";
+import { PAYMENT_TERMINAL_FAILURE } from "./logic";
 import type { Payment } from "./model";
 
 export const serviceKeys = {
@@ -73,7 +74,8 @@ export function useCards(userId: string | null) {
 }
 
 /** Estados terminais do pagamento: o polling para neles. */
-export const PAYMENT_TERMINAL: ReadonlySet<Payment["status"]> = new Set(["paid", "failed", "cancelled", "refunded", "expired"]);
+// `refund_pending` nunca mais vira `paid`; `unknown` não se lê. Os dois param o polling, como no app.
+export const PAYMENT_TERMINAL: ReadonlySet<Payment["status"]> = new Set<Payment["status"]>(["paid", ...PAYMENT_TERMINAL_FAILURE]);
 
 /**
  * Status do pagamento (`GET /orders/{id}/payments`), a cada 3 s enquanto não for terminal. **A confirmação do PIX
