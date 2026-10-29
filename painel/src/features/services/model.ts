@@ -74,7 +74,17 @@ export interface Review {
   readonly pricePerDeliveryWithRain: string | null;
 }
 
-export type PaymentStatus = "created" | "processing" | "pending" | "paid" | "failed" | "cancelled" | "refunded" | "expired" | "unknown";
+export type PaymentStatus =
+  | "created"
+  | "processing"
+  | "pending"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refunded"
+  | "expired"
+  | "refund_pending"
+  | "unknown";
 
 export interface Payment {
   readonly id: string;
@@ -209,7 +219,7 @@ export function parseReview(value: unknown): Review {
   };
 }
 
-const PAYMENT_STATUSES: readonly string[] = ["created", "processing", "pending", "paid", "failed", "cancelled", "refunded", "expired"];
+const PAYMENT_STATUSES: readonly string[] = ["created", "processing", "pending", "paid", "failed", "cancelled", "refunded", "expired", "refund_pending"];
 /** O QR chega em base64 puro; só vira imagem se for base64 de verdade (nada de montar `data:` com texto livre). */
 const BASE64 = /^[A-Za-z0-9+/=\r\n]+$/;
 

@@ -88,7 +88,7 @@ export function ServiceDetail({ order, onGone, highlightNegotiation = null }: { 
   const reason = order.status === "cancelled" ? cancellationReasonLabel(order.cancellationReason) : null;
   const open = order.status !== "cancelled" && order.status !== "finished";
   const showNegotiation = order.status === "waiting_for_drivers" || order.status === "pending_service_start" || order.status === "service_started";
-  // A API ainda não estorna a taxa ao cancelar um serviço já pago: avisa antes, sem repetir a falha calado.
+  // Serviço já pago: o cancelamento estorna a taxa (a API marca o estorno e o worker o executa).
   const refundNote = order.status !== "pending_payment" && Number(order.internalFee) > 0;
   const needsPayment = order.status === "pending_payment" && Number(order.internalFee) > 0;
 
@@ -145,7 +145,7 @@ export function ServiceDetail({ order, onGone, highlightNegotiation = null }: { 
                 onClick={() =>
                   setConfirm({
                     title: "Cancelar serviço",
-                    description: refundNote ? `Tem certeza que deseja cancelar este serviço? Essa ação não pode ser desfeita. ${REFUND_NOTE}` : "Tem certeza que deseja cancelar este serviço? Essa ação não pode ser desfeita.",
+                    description: refundNote ? REFUND_NOTE : "Tem certeza que deseja cancelar este serviço? Essa ação não pode ser desfeita.",
                     confirmLabel: "Cancelar serviço",
                     cancelLabel: "Voltar",
                     danger: true,
